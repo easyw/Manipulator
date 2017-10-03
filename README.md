@@ -9,6 +9,8 @@ Manipulator-WB
 
 - *Align, Move and Rotate helpers for Part, App::Part and Body objects*
 
+![Manipulator Gui](Manipulator.png?raw=true "Manipulator Gui")
+
 Installing
 ----------
 
