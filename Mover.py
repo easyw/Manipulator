@@ -1068,6 +1068,8 @@ class Ui_DockWidget(object):
             self.DS_MoveInput.setEnabled(False)
             self.DS_RotateInput.setEnabled(False)
             self.Undo_Move.setEnabled(True)
+            DSMove_prev_Val=0
+            DSRotate_prev_Val=0
             FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
             for obj in FreeCAD.ActiveDocument.Objects:
                 FreeCADGui.Selection.removeSelection(obj)
