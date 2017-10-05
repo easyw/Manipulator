@@ -975,7 +975,8 @@ class Ui_DockWidget(object):
         #shape.Placement = o.Placement
         newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
         o.Placement = newshape.Placement
-
+        FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
+##
 
     def setReference(self):
         if self.rbBBox.isChecked():
