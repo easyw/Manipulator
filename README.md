@@ -11,6 +11,10 @@ Manipulator-WB
 
 ![Manipulator Gui](Manipulator.png?raw=true "Manipulator Gui")
 
+**Manipulator in action**
+
+![ManipulatorWB-preview](https://user-images.githubusercontent.com/4140247/31278727-273cd0a0-aa74-11e7-8ec7-d37ee6fc52c2.gif)
+
 Installing
 ----------
 
@@ -26,7 +30,9 @@ Manipulator Cheat sheet
 
 ### Requirements
 
-- **FreeCAD** 0.15 4671 or **0.16 >= 6712** or **0.17 >= 11707**
+- FreeCAD v0.15 4671
+- **FreeCAD v0.16 >= 6712** 
+- **FreeCAD v0.17 >= 11707**
 
 
 ### License
