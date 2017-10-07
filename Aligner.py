@@ -625,7 +625,7 @@ class Ui_DockWidget(object):
 
 ## retraslateUi Qt5 compatibility #############################################################################################################
     def retranslateUi(self, DockWidget):
-        DockWidget.setWindowTitle("Align tool")
+        DockWidget.setWindowTitle("Align tools")
         self.dock_float.setToolTip("expand")
         self.dock_minimize.setToolTip("minimize")
         self.close.setToolTip("close")
@@ -698,14 +698,14 @@ class Ui_DockWidget(object):
         Undo()
 ##
     def onHelp(self):
-        msg="""<b>Align Tool</b><br>
+        msg="""<b>Align Tools</b><br>
         <b>Ctrl+Clik</b> to add selection:<br>
         select Faces, Planes, Edges and Axis<br>
         then click the <i>'Align'</i> button<br>
         <i>Note:</i><br>The <b>first Selection</b> is the
         Reference for Aligning<br>
         <br>Use <i>'Move'</i> button to move a signle object<br>
-        <br><b>Align Tool</b> works with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects
+        <br><b>Align Tools</b> work with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects
         <b>Version:</b> 
         """+__version__
         QtGui.qApp.restoreOverrideCursor()
@@ -760,7 +760,7 @@ def Alg_checkInstance():
     #print str(dw)
     for i in dw:
         #say str(i.objectName())
-        if str(i.objectName()) == "Aligner": #"kicad StepUp 3D tools":
+        if str(i.objectName()) == "Aligner": #"kicad StepUp 3Dss":
             foundAlg=True
         else:
             pass

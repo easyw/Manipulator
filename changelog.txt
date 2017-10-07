@@ -1,1 +1,2 @@
+- v1.38 Mover & Aligner Tools working with Part, App::Part and Body objects
 - initial release
