@@ -91,6 +91,34 @@ class MoverTools:
 FreeCADGui.addCommand('MoverTools',MoverTools())
 ##
 
+class CaliperTools:
+    "manipulator Caliper tools object"
+ 
+    def GetResources(self):
+        return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Caliper.svg') , # the name of a svg file available in the resources
+                     'MenuText': "Caliper Tools" ,
+                     'ToolTip' : "Caliper Manipulator workbench"}
+ 
+    def IsActive(self):
+        #if FreeCAD.ActiveDocument == None:
+        #    return False
+        #else:
+        #    return True
+        #import Mover
+        import os, sys
+        return False #True
+ 
+    def Activated(self):
+        # do something here...
+        #import kicadStepUptools
+        #reload( kicadStepUptools )
+        import Caliper
+        reload(Caliper)
+        FreeCAD.Console.PrintWarning( 'Caliper active :)\n' )
+        #import kicadStepUptools
+ 
+FreeCADGui.addCommand('CaliperTools',CaliperTools())
+##
 
 #####
 class ManpHelpFiles:

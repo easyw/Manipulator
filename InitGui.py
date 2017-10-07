@@ -31,7 +31,7 @@ ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons
 global main_MWB_Icon
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
-MWB_wb_version='v 1.1.0'
+MWB_wb_version='v 1.1.2'
 #try:
 #    from FreeCADGui import Workbench
 #except ImportError as e:
@@ -55,11 +55,12 @@ class ManipulatorWB ( Workbench ):
         dirs = self.ListDemos()
 
         #self.appendToolbar("ksu Tools", ["ksuTools"])
-        self.appendToolbar("Manipulator Tools", ["AlignerTools","MoverTools"])
+        self.appendToolbar("Manipulator Tools", ["AlignerTools","MoverTools","CaliperTools"])
         
         #self.appendMenu("ksu Tools", ["ksuTools","ksuToolsEdit"])
         self.appendMenu("Manipulator Tools", ["AlignerTools"])
         self.appendMenu("Manipulator Tools", ["MoverTools"])
+        self.appendMenu("Manipulator Tools", ["CaliperTools"])
         self.appendMenu(["Manipulator Tools", "Help"], submenu)
         
         Log ("Loading Manipulator Module... done\n")
