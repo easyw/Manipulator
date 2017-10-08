@@ -1234,14 +1234,12 @@ class Ui_DockWidget(object):
                         FreeCADGui.Selection.removeSelection(obj)
 ##
     def onHelp(self):
-        msg="""<b>Mover Tools</b><br>
-        <b>Clik on Mover button</b> to start the Manipulation.<br>
-        Select Face or Plane (Normal At), Edge or Axis<br>
-        as reference Axis to be moved/rotated<br>
-        and change the Rotation/Position with the <i>'Move/Rotate'</i> spin boxes.<br>
-        <i>Note:</i><br>The <b>first Selection</b> is the
-        Reference for Moving/Rotating<br>
-        <br><b>Mover Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
+        msg="""<b>Caliper Tools</b><br>
+        <b>Clik on Measure button</b> to start the Measurement.<br>
+        Select the type of Snapping you need<br>
+        and then Click on a Face or an Edge<br>
+        to identify your measurement points.<br>
+        <br><b>Caliper Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
         <font color = blue><b>Version:  
         """+__version__+"""</b></font>"""
         QtGui.qApp.restoreOverrideCursor()
