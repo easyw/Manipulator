@@ -9,7 +9,7 @@
 #*                                                                          *
 # evolution of Macro_CenterFace                                             *
 # some part of Macro WorkFeature                                            *
-# and Macro Rotate To Point                                                 *
+# and Macro Rotate To Point, Macro_Delta_xyz                                *
 # and assembly2                                                             *
 #                                                                           *
 # Move objs along obj face Normal or edge                                   *
@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.1" #Manipulator for Parts
+__version__ = "1.0.2" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -40,7 +40,7 @@ testing2=False #true for showing helpers
 
 ## import statements
 
-import FreeCAD, FreeCADGui, Draft, Part, DraftTools, DraftVecUtils
+import FreeCAD, FreeCADGui, Draft, Part, DraftTools, DraftVecUtils, DraftGeomUtils
 from FreeCAD import Base
 import sys, math
 from PySide import QtCore, QtGui
@@ -49,7 +49,102 @@ from pivy import coin
 
 
 ##--------------------------------------------------------------------------------------
-
+class SelObserverCaliper:
+    def addSelection(self, document, object, element, position):  # Selection
+        global ui
+        global selobject, sel, posz, P,P1
+        global initial_placement, last_selection, objs
+        global added_dim, in_hierarchy
+        
+        
+        #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
+        
+        if 1:#try:
+            selobject = FreeCADGui.Selection.getSelection()           # Select an object
+            sel       = FreeCADGui.Selection.getSelectionEx()         # Select a  subObject
+            
+            #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
+            if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
+                if len(sel[0].SubObjects)>0: #Faces or Edges
+                    if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0])\
+                                                           or 'Vertex' in str(sel[0].SubObjects[0]):
+                        sayw('starting')
+                        objs = []
+                        if len (last_selection)>0:
+                            say ('last selection: ' + last_selection[0].Name)
+                            for o in last_selection:
+                                say('sel list ' + o.Name) #o.Object.Name)
+                        sayw('selecting')
+                        o = sel[0].Object
+                        #top_lvl=None
+                        #if in_hierarchy:
+                        posz=position
+                        sayw('posz '+str(posz))
+                        plcm, top_level_obj, bbC, pnt = get_placement_hierarchy (sel[0])
+                        if top_level_obj is not None:
+                            say('object in App::Part hierarchy or Body')
+                            top_level_obj_Name=top_level_obj.Name
+                            in_hierarchy=True
+                        else:
+                            say('object Part')
+                            top_level_obj_Name=sel[0].Object.Name
+                            in_hierarchy=False
+                        rot_center=bbC
+                        if in_hierarchy:
+                            say('in hierarchy and use hierarchy')
+                            last_selection.append(top_level_obj) #(sel[0])
+                            obj = top_level_obj #sel[0].Object
+                            initial_placement.append(obj.Placement)
+                            objs.append(obj)
+                            say ('initial Plcm '+str(obj.Placement))
+                        else:
+                            last_selection.append(sel[0].Object)
+                            obj = sel[0].Object
+                            initial_placement.append(obj.Placement)
+                            objs.append(obj)
+                            say ('initial Plcm '+str(obj.Placement))
+                        say ('last selection: ' + obj.Name)
+                        for o in last_selection:
+                            say('sel list ' + o.Name) #o.Object.Name)
+                        if CPDockWidget.ui.rbEndPnt.isChecked() or CPDockWidget.ui.rbCenterFace.isChecked()\
+                              or CPDockWidget.ui.rbBbox.isChecked():
+                            #print (sel[0].SubObjects[0].Vertexes[0].Point,sel[0].SubObjects[0].Vertexes[1].Point)
+                            #print 'pnt=',pnt[0]
+                            if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
+                                P1=pnt
+                                P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(P.Name))
+                                CPDockWidget.ui.DimensionP1.setEnabled(False)
+                                CPDockWidget.ui.DimensionP2.setEnabled(True)
+                            else:
+                                ##ln=Draft.makeLine(pnt,P1)
+                                ##print ln.Length
+                                CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                #print 'P2 enabled'
+                                FreeCAD.ActiveDocument.removeObject(P.Name)
+                                halfedge = (pnt.sub(P1)).multiply(.5)
+                                mid=FreeCAD.Vector.add(P1,halfedge)
+                                #print mid
+                                dim=Draft.makeDimension(pnt,P1,mid)
+                                Draft.autogroup(dim)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                sayw("Distance : "+str(dim.Distance))
+                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                FreeCAD.ActiveDocument.recompute()
+                        #if CPDockWidget.ui.rbCenterFace.isChecked and ('Edge' in str(sel[0].SubObjects[0]) \
+                        #                                            or 'Face' in str(sel[0].SubObjects[0])):
+                        #    if sel[0].SubObjects[0].isClosed():
+                                
+                            
+                    else: #Vertex not allowed in selection
+                        pass
+        if 0:#except:
+            sayerr('restarted')
+##
 def a_clear_console():
     #clearing previous messages
     mw=FreeCADGui.getMainWindow()
@@ -65,6 +160,8 @@ from sys import platform as _platform
 
 # window GUI dimensions parameters
 wdszX=304;wdszY=226
+##Mover size
+wdszMX=304;wdszMY=256
 # window GUI dimensions parameters
 ##Aligner size
 wdzX=342;wdzY=256
@@ -91,10 +188,10 @@ btn_sm_sizeX=20;btn_sm_sizeY=20;
 btn_md_sizeX=26;btn_md_sizeY=26;
 
 def close_caliper():
-    global sO
+    global s1
     #def closeEvent(self, e):
     try:
-        FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+        FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
     except:
         pass
     CPDockWidget.close()
@@ -123,6 +220,20 @@ def Cp_minimz():
     CPDockWidget.resize(sizeXmin,sizeYmin)
     CPDockWidget.activateWindow()
     CPDockWidget.raise_()
+##
+
+def sub(first, second): 
+	"sub(Vector,Vector) - subtracts second vector from first one"
+	if isinstance(first,FreeCAD.Vector) and isinstance(second,FreeCAD.Vector):
+		return FreeCAD.Vector(first.x-second.x, first.y-second.y, first.z-second.z)
+def length(first):
+	"lengh(Vector) - gives vector length"
+	if isinstance(first,FreeCAD.Vector):
+		return math.sqrt(first.x*first.x + first.y*first.y + first.z*first.z)
+def dist(first, second):
+	"dist(Vector,Vector) - returns the distance between both points/vectors"
+	if isinstance(first,FreeCAD.Vector) and isinstance(second,FreeCAD.Vector):
+		return length(sub(first,second))
 ##
 
 def recurse_node(obj,plcm,scl):
@@ -193,34 +304,41 @@ def get_sorted_list (obj):
     return listS
 ##
 
-def get_normal_placement_hierarchy (sel0):
+def get_placement_hierarchy (sel0):
     """get normal at face and placement relative to hierarchy
        of first selection object/face
-       return normal, placement, topObj, bbox center absolute"""
+       return normal, placement, topObj, bbox center, Pnt absolute"""
     
-    global use_hierarchy
+    global use_hierarchy, posz
     
     Obj=sel0.Object
     subObj=sel0.SubObjects[0]
     edge_op=0
+    pad=0
+    pV1= FreeCAD.Vector(0.0, 0.0, 0.0)
+    pV2= FreeCAD.Vector(0.0, 0.0, 0.0)
+    Pnt= FreeCAD.Vector(0.0, 0.0, 0.0)
     
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
+        if CPDockWidget.ui.rbBbox.isChecked():
+            subObj=Obj.Shape #forcing object to evaluate center of BBox
         say('Hierarchy obj')
-        
-        pad=0
         if 'Face' in str(subObj):
             say('Hierarchy obj Face')
             pad=0 #face
         elif 'Edge' in str(subObj):
+            #pV1=subObj.Vertex1.Point
             wire = Part.Wire(subObj)
             if subObj.isClosed():
                 subObj = Part.Face(wire)
             else:
+                #pV2=subObj.Vertex2.Point
                 subObj = wire
+                #print subObj.Vertex2.Point
                 edge_op=1
             pad=1 #edge
-        if use_hierarchy:
+        if 1: #use_hierarchy:
             nwshp = subObj.copy()
             pOriginal=subObj.Placement
             p0 =  FreeCAD.Placement (FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
@@ -258,38 +376,84 @@ def get_normal_placement_hierarchy (sel0):
                 acpy.Placement=acpy.Placement.multiply(pOriginal)
             nwshp.Placement = acpy.Placement
             if edge_op==1:
-                nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
-            else:
-                nwnorm = nwshp.normalAt(0,0)
+                #nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+                pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
+            #else:
+            #    pV1=findMidpoint(nwshp)
+            #    nwnorm = nwshp.normalAt(0,0)
             bbxCenter = nwshp.BoundBox.Center
-        else:
-            nwshp = subObj.copy()
+        # else:
+        #     nwshp = subObj.copy()
+        #     if edge_op==1:
+        #         #nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+        #         pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
+        #     #else:
+        #     #    nwnorm = nwshp.normalAt(0,0)
+        #     bbxCenter = nwshp.BoundBox.Center
+        if CPDockWidget.ui.rbEndPnt.isChecked():
+            pCkd=FreeCAD.Vector(posz)
+            #print 'points ',pV1, pV2, pCkd
             if edge_op==1:
-                nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
-            else:
-                nwnorm = nwshp.normalAt(0,0)
-            bbxCenter = nwshp.BoundBox.Center
-            
-        return nwnorm, nwshp.Placement, top_level_obj, bbxCenter
+                if 'Vertex' not in str(subObj):
+                    d1=dist(pV1,pCkd);d2=dist(pV2,pCkd)
+                    sayerr('d1 '+str(d1)+' d2 '+str(d2))
+                    if d1<=d2:
+                        Pnt=pV1
+                    else:
+                        Pnt=pV2
+                else:
+                    Pnt=nwshp.Vertex1.Point
+            else: #edge_op=0
+                Pnt=FreeCAD.Vector(bbxCenter)
+            return nwshp.Placement, top_level_obj, bbxCenter, Pnt
+        elif (CPDockWidget.ui.rbCenterFace.isChecked() or CPDockWidget.ui.rbBbox.isChecked())\
+                             and (edge_op==0 or pad==0):
+            Pnt=FreeCAD.Vector(bbxCenter)
+            return nwshp.Placement, top_level_obj, bbxCenter, Pnt
+        
 
-    elif 'Face' in str(subObj) or 'Edge' in str(subObj): # not in hierarchy
+    elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
         say('Part obj')
         pad=0 #face
+        if CPDockWidget.ui.rbBbox.isChecked():
+            subObj=Obj.Shape #forcing object to evaluate center of BBox
         if 'Edge' in str(subObj):
             wire = Part.Wire(subObj)
             if subObj.isClosed():
                 subObj = Part.Face(wire)
-                norm = subObj.normalAt(0,0)
+                #norm = subObj.normalAt(0,0)
             else:
-                norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+                edge_op=1
+                #norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+                pV1=subObj.Vertex1.Point; pV2=subObj.Vertex2.Point
             pad=1 #edge
-        else:
-            norm = subObj.normalAt(0,0)
+        #else:
+        #    norm = subObj.normalAt(0,0)
         bbxCenter = subObj.BoundBox.Center
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
+        pCkd=FreeCAD.Vector(posz)
+        #print 'points ',pV1, pV2, pCkd
+        if CPDockWidget.ui.rbEndPnt.isChecked():
+            sayw('points '+str(pV1)+str(pV2)+str(pCkd))
+            if edge_op==1:
+                if 'Vertex' not in str(subObj):
+                    d1=dist(pV1,pCkd);d2=dist(pV2,pCkd)
+                    sayerr('d1 '+str(d1)+' d2 '+str(d2))
+                    if d1<=d2:
+                        Pnt=pV1
+                    else:
+                        Pnt=pV2
+                else:
+                    Pnt=subObj.Vertex1.Point
+            else: #edge_op=0
+                Pnt=FreeCAD.Vector(bbxCenter)
+            sayw(Pnt)
+        elif (CPDockWidget.ui.rbCenterFace.isChecked() or CPDockWidget.ui.rbBbox.isChecked())\
+                and (edge_op==0 or pad==0):
+            Pnt=FreeCAD.Vector(bbxCenter)
         
-        return norm, Obj.Placement, top_level_obj, bbxCenter
+        return Obj.Placement, top_level_obj, bbxCenter, Pnt
             
 ##
 
@@ -369,7 +533,7 @@ PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0g
 global initial_placement, last_selection
 global moving, rotating
 global objs_moved, plc_moved
-global double_click_dly, inv_view
+global double_click_dly, inv_view, added_dim
 
 
 #init
@@ -381,10 +545,12 @@ objs_moved = []
 plc_moved = []
 double_click_dly = 2000  #delay for considering double click on a Face View
 inv_view = False
+posz=(0.0,0.0,0.0)
 #Draft.rotate(objs[j],-rot_angle,rot_center,rot_axis)
 #rotating=[rot_angle,rot_center,rot_axis]
 
 last_selection = []
+added_dim = []
 
 #################################################################
 
@@ -567,7 +733,7 @@ class Ui_DockWidget(object):
         icon6.addPixmap(QtGui.QPixmap("DimensionP1.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.DimensionP1.setIcon(icon6)
         self.DimensionP1.setIconSize(QtCore.QSize(32, 32))
-        self.DimensionP1.setCheckable(True)
+        self.DimensionP1.setCheckable(False)
         self.DimensionP1.setChecked(False)
         self.DimensionP1.setObjectName("DimensionP1")
         self.gridLayout_8.addWidget(self.DimensionP1, 0, 1, 1, 1)
@@ -581,7 +747,7 @@ class Ui_DockWidget(object):
         icon7.addPixmap(QtGui.QPixmap("DimensionP2.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.DimensionP2.setIcon(icon7)
         self.DimensionP2.setIconSize(QtCore.QSize(32, 32))
-        self.DimensionP2.setCheckable(True)
+        self.DimensionP2.setCheckable(False)
         self.DimensionP2.setChecked(False)
         self.DimensionP2.setObjectName("DimensionP2")
         self.gridLayout_8.addWidget(self.DimensionP2, 0, 2, 1, 1)
@@ -704,18 +870,18 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Caliper_b64))
         self.Measure.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.Measure.setIcon(QtGui.QIcon(pm))
-        # self.Measure.toggled.connect(self.onMeasure_toggled)
+        self.Measure.toggled.connect(self.onMeasure_toggled)
         # # http://www.qtcentre.org/threads/61391-QPushButton-State-(in-PyQt)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(DimensionP1_b64))
         self.DimensionP1.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.DimensionP1.setIcon(QtGui.QIcon(pm))
-        self.DimensionP1.setEnabled(True)
+        #self.DimensionP1.setEnabled(True)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(DimensionP2_b64))
         self.DimensionP2.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.DimensionP2.setIcon(QtGui.QIcon(pm))
-        self.DimensionP2.setEnabled(True)
+        #self.DimensionP2.setEnabled(True)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(help_b64))
         self.Help_Caliper.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
@@ -725,7 +891,7 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Measure_Delete_b64))
         self.CleanDist.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.CleanDist.setIcon(QtGui.QIcon(pm))
-        # self.CleanDist.clicked.connect(self.onClean)
+        self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Center_Bbox_b64))
         self.rbBbox.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
@@ -740,6 +906,7 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Snap_MidPnt_b64))
         self.rbMidPnt.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbMidPnt.setIcon(QtGui.QIcon(pm))
+        self.rbMidPnt.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Snap_Center_b64))
@@ -750,21 +917,25 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Dim_Radius_b64))
         self.rbRadius.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbRadius.setIcon(QtGui.QIcon(pm))
+        self.rbRadius.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Length_b64))
         self.rbLength.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbLength.setIcon(QtGui.QIcon(pm))
+        self.rbLength.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Angle_b64))
         self.rbAngle.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbAngle.setIcon(QtGui.QIcon(pm))
+        self.rbAngle.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Parallel_b64))
         self.rbParallel.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbParallel.setIcon(QtGui.QIcon(pm))
+        self.rbParallel.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
         ####
         
@@ -787,75 +958,27 @@ class Ui_DockWidget(object):
 ###############################################################################################################
 # widgets connected functions
 
-    def onDoubleClick(self):
-        global inv_view
-        
-        inv_view = False
 ##
-    def onViewAlign(self):
-        """ macro Macro_Align_View_to_Face 
-            App:Part and Body compliant"""
-        global selobject, sel, double_click_dly, inv_view, use_hierarchy
-
-        def pointAt(normal, up):
-            z = normal
-            y = up
-            x = y.cross(z)
-            y = z.cross(x)
+    def onClean(self):
+        global added_dim
+        for d in added_dim:
+            try:
+                FreeCAD.ActiveDocument.removeObject(d.Name)
+            except:
+                pass
+        if FreeCAD.ActiveDocument is not None:
+            FreeCAD.ActiveDocument.recompute()
+            for ob in FreeCAD.ActiveDocument.Objects:
+                FreeCADGui.Selection.removeSelection(ob)
+        added_dim=[]
         
-            rot = FreeCAD.Matrix()
-            rot.A11 = x.x
-            rot.A21 = x.y
-            rot.A31 = x.z
-            rot.A12 = y.x
-            rot.A22 = y.y
-            rot.A32 = y.z
-            rot.A13 = z.x
-            rot.A23 = z.y
-            rot.A33 = z.z
-        
-            return FreeCAD.Placement(rot).Rotation
-        
-        #try:
-        sl=FreeCADGui.Selection.getSelectionEx()
-        if len (sl)>0:
-            if len (sl[0].SubObjects)>0:
-                if 'Vertex' not in str(sl[0].SubObjects[0]) and 'Edge' not in str(sl[0].SubObjects[0]):
-                    QtCore.QTimer.singleShot(double_click_dly,self.onDoubleClick)
-                    ob=sl[0]
-                    #faceSel = ob.SubObjects[0]
-                    norm, plcm, top, bbC = get_normal_placement_hierarchy (sl[0])
-                    cam = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
-                    
-                    if inv_view==1:
-                        sayerr('double click: inversion View')
-                        #dir = faceSel.normalAt(0,0)*-1
-                        dir = norm*-1
-                    else:
-                        sayw('single click: standard View')
-                        #dir = faceSel.normalAt(0,0)
-                        dir = norm
-                    if dir.z == 1 :
-                        rot = pointAt(dir, FreeCAD.Vector(0.0,1.0,0.0))
-                    elif dir.z == -1 :
-                        rot = pointAt(dir, FreeCAD.Vector(0.0,1.0,0.0))
-                    else :
-                        rot = pointAt(dir, FreeCAD.Vector(0.0,0.0,-1.0))
-                    
-                    cam.orientation.setValue(rot.Q)
-                    #FreeCADGui.SendMsgToActiveView("ViewSelection")
-                    FreeCADGui.SendMsgToActiveView("ViewFit")
-                    inv_view = True
-                else:
-                    sayerr('select a Face!')
-            else:
-                sayerr('select a Face!')
 ##
     def onAxis(self):
         global DSMove_prev_Val, DSRotate_prev_Val
         global selobject, sel
         global initial_placement, last_selection, objs
         
+        #if CPDockWidget.ui.rbEndPnt.isChecked:
         last_selection.append(sel[0].Object)
         obj = sel[0].Object
         initial_placement.append(obj.Placement)
@@ -897,7 +1020,7 @@ class Ui_DockWidget(object):
             if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
                 #say('Face or Edge selected'); sayw(sel[0].Object.Name)
                 #norm = sel[0].SubObjects[0].normalAt(0,0)
-                norm, plcm, top_level_obj, bbC = get_normal_placement_hierarchy (sel[0])
+                norm, plcm, top_level_obj, bbC, pnt = get_normal_placement_hierarchy (sel[0])
                 if top_level_obj is not None:
                     top_level_obj_Name=top_level_obj.Name
                 else:
@@ -979,7 +1102,7 @@ class Ui_DockWidget(object):
         #elif self.rbAxis.isChecked:
         if len(sel[0].SubObjects)>0: #Faces or Edges
             if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
-                norm, plcm, top_level_obj, bbC = get_normal_placement_hierarchy (sel[0])
+                norm, plcm, top_level_obj, bbC, pnt = get_normal_placement_hierarchy (sel[0])
                 if top_level_obj is not None:
                     top_level_obj_Name=top_level_obj.Name
                 else:
@@ -1073,10 +1196,10 @@ class Ui_DockWidget(object):
         pass
 ##
 
-    def onMove_toggled(self,checked):
+    def onMeasure_toggled(self,checked):
         global selobject, sel
         global initial_placement, last_selection, objs
-        global sO, DSMove_prev_Val, DSRotate_prev_Val
+        global s1, DSMove_prev_Val, DSRotate_prev_Val
         
         #say("Move clicked")
         #Move()
@@ -1090,38 +1213,25 @@ class Ui_DockWidget(object):
                     FreeCADGui.Selection.removeSelection(ob)
                 sayerr('starting!')
                 self.rowOverride = True
-                self.DS_MoveInput.setValue(0.0)
-                self.DS_RotateInput.setValue(0.0)
-                DSMove_prev_Val=0
-                DSRotate_prev_Val=0
-                #self.DS_MoveInput.setEnabled(True)
-                #self.DS_RotateInput.setEnabled(True)
-                #selobject = FreeCADGui.Selection.getSelection()           # Select an object
-                #sel       = FreeCADGui.Selection.getSelectionEx()         # Select an subObject
-                self.Undo_Move.setEnabled(False)
-                self.cbHierarchy.setEnabled(False)
-                sO=SelObserver()
-                FreeCADGui.Selection.addObserver(sO) # install resident function
+                self.DimensionP1.setEnabled(True)
+                self.DimensionP2.setEnabled(False)
+                self.CleanDist.setEnabled(False)
+                s1=SelObserverCaliper()
+                FreeCADGui.Selection.addObserver(s1) # install resident function
             else:
                 sayerr('removing observer')
                 self.rowOverride = False
-                self.DS_MoveInput.setEnabled(False)
-                self.DS_RotateInput.setEnabled(False)
-                self.Undo_Move.setEnabled(True)
-                self.cbHierarchy.setEnabled(True)
-                DSMove_prev_Val=0
-                DSRotate_prev_Val=0
-                FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
-                for obj in FreeCAD.ActiveDocument.Objects:
-                    FreeCADGui.Selection.removeSelection(obj)
-                #self.MoveDial.setValue(0.0)
-                #self.RotateDial.setValue(0.0)
-##
-    def onUndo(self):
-        say("Undo clicked")
-        self.DS_MoveInput.setValue(0.0)
-        self.DS_RotateInput.setValue(0.0)
-        Undo()
+                self.DimensionP1.setEnabled(False)
+                self.DimensionP2.setEnabled(False)
+                self.CleanDist.setEnabled(True)
+                #FreeCADGui.Selection.removeObserver(s1)
+                try:
+                    FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
+                except:
+                    pass
+                if FreeCAD.ActiveDocument is not None:
+                    for obj in FreeCAD.ActiveDocument.Objects:
+                        FreeCADGui.Selection.removeSelection(obj)
 ##
     def onHelp(self):
         msg="""<b>Mover Tools</b><br>
@@ -1150,17 +1260,17 @@ def Cp_centerOnScreen (widg):
     xp=(resolution.width() / 2) - sizeX/2 # - (KSUWidget.frameSize().width() / 2)
     yp=(resolution.height() / 2) - sizeY/2 # - (KSUWidget.frameSize().height() / 2))
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
-    widg.setGeometry(xp, yp, sizeX, sizeY)
+    widg.setGeometry(xp+wdszMX+10, yp, sizeX, sizeY)
 ##
 
 def Cp_singleInstance():
-    global sO
+    global s1
     app = QtGui.qApp
 
     for i in app.topLevelWidgets():
         if i.objectName() == "Caliper":
             try:
-                FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+                FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
             except:
                 pass
             i.deleteLater()
@@ -1173,7 +1283,7 @@ def Cp_singleInstance():
         #say str(i.objectName())
         if str(i.objectName()) == "Caliper": #"kicad StepUp 3D tools":
             try:
-                FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+                FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
             except:
                 pass
             i.deleteLater()
@@ -1275,76 +1385,8 @@ def reset_prop_shapes(obj):
 ##
 
 ##################################################################################################
-class SelObserver:
-    def addSelection(self, document, object, element, position):  # Selection
-        global ui
-        global selobject, sel
-        global initial_placement, last_selection, objs
-        global DSMove_prev_Val, DSRotate_prev_Val, in_hierarchy, use_hierarchy
-        
-        
-        #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
-        
-        if 1:#try:
-            selobject = FreeCADGui.Selection.getSelection()           # Select an object
-            sel       = FreeCADGui.Selection.getSelectionEx()         # Select an subObject
-            
-            #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
-            if CpDockWidget.ui.rbOneObj.isChecked:
-                if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
-                    if len(sel[0].SubObjects)>0: #Faces or Edges
-                        if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
-                            CPDockWidget.ui.DS_MoveInput.setEnabled(True)
-                            CPDockWidget.ui.DS_RotateInput.setEnabled(True)
-                            sayw('starting')
-                            objs = []
-                            if len (last_selection)>0:
-                                say ('last selection: ' + last_selection[0].Name)
-                                for o in last_selection:
-                                    say('sel list ' + o.Name) #o.Object.Name)
-                            sayw('selecting')
-                            o = sel[0].Object
-                            top_lvl=None
-                            #if in_hierarchy:
-                            top_lvl=get_top_level(o)
-                            if top_lvl is not None:
-                                say('object in App::Part hierarchy or Body')
-                                in_hierarchy=True
-                                #say(top_lvl.Name)
-                                #pass
-                            else:
-                                say('object Part')
-                                in_hierarchy=False
-                            if in_hierarchy and use_hierarchy:
-                                say('in hierarchy and use hierarchy')
-                                last_selection.append(top_lvl) #(sel[0])
-                                obj = top_lvl #sel[0].Object
-                                initial_placement.append(obj.Placement)
-                                objs.append(obj)
-                                say ('initial Plcm '+str(obj.Placement))
-                                DSMove_prev_Val=0
-                                DSRotate_prev_Val=0
-                                CPDockWidget.ui.DS_MoveInput.setValue(0.0)
-                                CPDockWidget.ui.DS_RotateInput.setValue(0.0)
-                            else:
-                                last_selection.append(sel[0].Object)
-                                obj = sel[0].Object
-                                initial_placement.append(obj.Placement)
-                                objs.append(obj)
-                                say ('initial Plcm '+str(obj.Placement))
-                                DSMove_prev_Val=0
-                                DSRotate_prev_Val=0
-                                CPDockWidget.ui.DS_MoveInput.setValue(0.0)
-                                CPDockWidget.ui.DS_RotateInput.setValue(0.0)
-                            say ('last selection: ' + obj.Name)
-                            for o in last_selection:
-                                say('sel list ' + o.Name) #o.Object.Name)
-                        else: #Vertex not allowed in selection
-                            CPDockWidget.ui.DS_MoveInput.setEnabled(False)
-                            CPDockWidget.ui.DS_RotateInput.setEnabled(False)
-        if 0:#except:
-            sayerr('restarted')
-    
+    #def removeSelection(self,document, object, element): # Delete the selected object
+    #    FreeCAD.Console.PrintMessage("removeSelection"+"\n")    
 
 #s=SelObserver()
 #FreeCADGui.Selection.addObserver(s)                    # installe la fonction en mode resident

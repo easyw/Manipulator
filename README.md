@@ -7,7 +7,7 @@ Manipulator-WB
 
 **Manipulator features:** 
 
-- *Align, Move and Rotate helpers for Part, App::Part and Body objects*
+- *Align, Move and Rotate and Measure helpers for Part, App::Part and Body objects*
 
 ![Manipulator Gui](Manipulator.png?raw=true "Manipulator Gui")
 

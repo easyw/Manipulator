@@ -106,7 +106,7 @@ class CaliperTools:
         #    return True
         #import Mover
         import os, sys
-        return False #True
+        return True #False #True
  
     def Activated(self):
         # do something here...

@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.8" #Manipulator for Parts
+__version__ = "1.3.9" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -96,6 +96,7 @@ def close_mover():
     try:
         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
     except:
+        sayerr('not able to remove observer')
         pass
     MVDockWidget.close()
     #self.setWindowState(QtCore.Qt.WindowActive)
@@ -1159,7 +1160,10 @@ class Ui_DockWidget(object):
                 self.cbHierarchy.setEnabled(True)
                 DSMove_prev_Val=0
                 DSRotate_prev_Val=0
-                FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+                try:
+                    FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+                except:
+                    sayerr('not able to remove observer')
                 for obj in FreeCAD.ActiveDocument.Objects:
                     FreeCADGui.Selection.removeSelection(obj)
                 #self.MoveDial.setValue(0.0)
@@ -1210,6 +1214,7 @@ def Mv_singleInstance():
             try:
                 FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
             except:
+                sayerr('not able to remove observer')
                 pass
             i.deleteLater()
         else:
@@ -1223,6 +1228,7 @@ def Mv_singleInstance():
             try:
                 FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
             except:
+                sayerr('not able to remove observer')
                 pass
             i.deleteLater()
         else:

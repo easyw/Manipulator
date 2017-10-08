@@ -1,3 +1,3 @@
-- v1.10 Caliper initial release
+- v1.02 Caliper initial working release
 - v1.38 Mover & Aligner Tools working with Part, App::Part and Body objects
 - initial release
