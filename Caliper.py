@@ -114,6 +114,8 @@ class SelObserverCaliper:
                                 P1=pnt
                                 P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(P.Name))
+                                FreeCADGui.ActiveDocument.getObject(P.Name).PointSize = 10.000
+                                FreeCADGui.ActiveDocument.getObject(P.Name).PointColor = (1.000,0.667,0.000)
                                 CPDockWidget.ui.DimensionP1.setEnabled(False)
                                 CPDockWidget.ui.DimensionP2.setEnabled(True)
                             else:
@@ -134,7 +136,7 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                sayw("Distance : "+str(dim.Distance))
+                                say("Distance : "+str(dim.Distance))
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
