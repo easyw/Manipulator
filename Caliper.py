@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.6" #Manipulator for Parts
+__version__ = "1.0.7" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -475,11 +475,12 @@ def get_placement_hierarchy (sel0):
             #bbxCenter=subObj.BoundBox.Center
             if edge_op==1:
                 curve_type = type(nwshp.Edges[0].Curve)
-                if curve_type == Part.Circle:
+                if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
                     circ=nwshp.Edges[0].Curve
                     bbxCenter=circ.Center
                 else:
-                    bbxCenter=nwshp.BoundBox.Center
+                    #bbxCenter=nwshp.BoundBox.Center
+                    bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
             else:
                 bbxCenter=nwshp.BoundBox.Center
             if pad==1:
@@ -553,13 +554,15 @@ def get_placement_hierarchy (sel0):
         elif CPDockWidget.ui.rbRadius.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
+            # print edge_op, '-', type(subObj.Curve)
             if edge_op==1:
                 curve_type = type(subObj.Curve)
-                if curve_type == Part.Circle:
+                if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
                     circ=subObj.Curve
                     bbxCenter=circ.Center
                 else:
-                    bbxCenter=subObj.BoundBox.Center
+                    #bbxCenter=subObj.BoundBox.Center
+                    bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
             else:
                 bbxCenter=subObj.BoundBox.Center
             if pad==1:
