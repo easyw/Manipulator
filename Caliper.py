@@ -1005,7 +1005,7 @@ class Ui_DockWidget(object):
         msg="""<b>Caliper Tools</b><br>
         <b>Clik on Measure button</b> to start the Measurement.<br>
         Select the type of Snapping you need<br>
-        and then Click on a Face or an Edge<br>
+        and then Click on a Face, an Edge or a Vertex<br>
         to identify your measurement points.<br>
         <br><b>Caliper Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
         <font color = blue><b>Version:  
