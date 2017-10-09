@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.5" #Manipulator for Parts
+__version__ = "1.0.6" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -142,6 +142,50 @@ class SelObserverCaliper:
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.recompute()
+                        elif (CPDockWidget.ui.rbRadius.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
+                                CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                #print 'bbC',bbC
+                                P1=FreeCAD.Vector(bbC)
+                                halfedge = (pnt.sub(P1)).multiply(.5)
+                                mid=FreeCAD.Vector.add(P1,halfedge)
+                                dim=Draft.makeDimension(pnt,P1,mid)
+                                #P1=Draft.makePoint(P1[0],P1[1],P1[2])
+                                #P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                Draft.autogroup(dim)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                say("Distance : "+str(dim.Distance))
+                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                FreeCAD.ActiveDocument.recompute()
+                        elif (CPDockWidget.ui.rbLength.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
+                                CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                P1=FreeCAD.Vector(bbC)
+                                halfedge = (pnt.sub(P1)).multiply(.5)
+                                mid=FreeCAD.Vector.add(P1,halfedge)
+                                dim=Draft.makeDimension(pnt,P1,mid)
+                                Draft.autogroup(dim)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                say("Distance : "+str(dim.Distance))
+                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                FreeCAD.ActiveDocument.recompute()
+                                
                         #if CPDockWidget.ui.rbCenterFace.isChecked and ('Edge' in str(sel[0].SubObjects[0]) \
                         #                                            or 'Face' in str(sel[0].SubObjects[0])):
                         #    if sel[0].SubObjects[0].isClosed():
@@ -339,6 +383,7 @@ def get_placement_hierarchy (sel0):
             wire = Part.Wire(subObj)
             if subObj.isClosed():
                 subObj = Part.Face(wire)
+                circ=subObj.copy()
             else:
                 #pV2=subObj.Vertex2.Point
                 subObj = wire
@@ -425,7 +470,36 @@ def get_placement_hierarchy (sel0):
                              and (edge_op==0 or pad==0):
             Pnt=FreeCAD.Vector(bbxCenter)
             return nwshp.Placement, top_level_obj, bbxCenter, Pnt
-        
+        elif CPDockWidget.ui.rbRadius.isChecked():
+            #bbxCenter=DraftGeomUtils.findMidpoint(circ)
+            #bbxCenter=subObj.BoundBox.Center
+            if edge_op==1:
+                curve_type = type(nwshp.Edges[0].Curve)
+                if curve_type == Part.Circle:
+                    circ=nwshp.Edges[0].Curve
+                    bbxCenter=circ.Center
+                else:
+                    bbxCenter=nwshp.BoundBox.Center
+            else:
+                bbxCenter=nwshp.BoundBox.Center
+            if pad==1:
+                Pnt=nwshp.Vertex1.Point
+            else:
+                Pnt=FreeCAD.Vector(bbxCenter)
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt
+            #sayerr(bbxCenter)
+            #sayw(Pnt)
+        elif CPDockWidget.ui.rbLength.isChecked():
+            #bbxCenter=DraftGeomUtils.findMidpoint(circ)
+            #bbxCenter=subObj.BoundBox.Center
+            if edge_op==1:
+                Pnt=nwshp.Vertex1.Point
+                bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+            else:
+                Pnt=nwshp.Vertex1.Point
+                bbxCenter=nwshp.BoundBox.Center
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt
+
 
     elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
         #say('Part obj')
@@ -435,6 +509,7 @@ def get_placement_hierarchy (sel0):
         if 'Edge' in str(subObj):
             wire = Part.Wire(subObj)
             if subObj.isClosed():
+                circ=subObj.copy()
                 subObj = Part.Face(wire)
                 #norm = subObj.normalAt(0,0)
             else:
@@ -475,7 +550,34 @@ def get_placement_hierarchy (sel0):
         elif (CPDockWidget.ui.rbSnap.isChecked() or CPDockWidget.ui.rbBbox.isChecked())\
                 and (edge_op==0 or pad==0):
             Pnt=FreeCAD.Vector(bbxCenter)
-        
+        elif CPDockWidget.ui.rbRadius.isChecked():
+            #bbxCenter=DraftGeomUtils.findMidpoint(circ)
+            #bbxCenter=subObj.BoundBox.Center
+            if edge_op==1:
+                curve_type = type(subObj.Curve)
+                if curve_type == Part.Circle:
+                    circ=subObj.Curve
+                    bbxCenter=circ.Center
+                else:
+                    bbxCenter=subObj.BoundBox.Center
+            else:
+                bbxCenter=subObj.BoundBox.Center
+            if pad==1:
+                Pnt=wire.Vertex1.Point
+            else:
+                Pnt=FreeCAD.Vector(bbxCenter)
+            #sayerr(bbxCenter)
+            #sayw(Pnt)
+        elif CPDockWidget.ui.rbLength.isChecked():
+            #bbxCenter=DraftGeomUtils.findMidpoint(circ)
+            #bbxCenter=subObj.BoundBox.Center
+            if edge_op==1:
+                Pnt=subObj.Vertex1.Point
+                bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+            else:
+                Pnt=subObj.Vertex1.Point
+                bbxCenter=subObj.BoundBox.Center
+            
         return Obj.Placement, top_level_obj, bbxCenter, Pnt
             
 ##
@@ -688,12 +790,12 @@ class Ui_DockWidget(object):
         self.Label.setText("<b>Click on Measure button</b><br>to start measuring")
         self.Label.setObjectName("Label")
         self.Controls_Group = QtGui.QGroupBox(self.dockWidgetContents)
-        self.Controls_Group.setGeometry(QtCore.QRect(3, 35, 297, 159))
+        self.Controls_Group.setGeometry(QtCore.QRect(3, 35, 295, 169))
         self.Controls_Group.setToolTip("Controls")
         self.Controls_Group.setTitle("Controls")
         self.Controls_Group.setObjectName("Controls_Group")
         self.gridLayoutWidget_6 = QtGui.QWidget(self.Controls_Group)
-        self.gridLayoutWidget_6.setGeometry(QtCore.QRect(5, 16, 289, 65))
+        self.gridLayoutWidget_6.setGeometry(QtCore.QRect(5, 16, 287, 65))
         self.gridLayoutWidget_6.setObjectName("gridLayoutWidget_6")
         self.gridLayout_8 = QtGui.QGridLayout(self.gridLayoutWidget_6)
         self.gridLayout_8.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
@@ -766,91 +868,73 @@ class Ui_DockWidget(object):
         self.DimensionP2.setChecked(False)
         self.DimensionP2.setObjectName("DimensionP2")
         self.gridLayout_8.addWidget(self.DimensionP2, 0, 2, 1, 1)
-        self.gridLayoutWidget_8 = QtGui.QWidget(self.Controls_Group)
-        self.gridLayoutWidget_8.setGeometry(QtCore.QRect(5, 80, 289, 37))
-        self.gridLayoutWidget_8.setObjectName("gridLayoutWidget_8")
-        self.gridLayout_10 = QtGui.QGridLayout(self.gridLayoutWidget_8)
-        self.gridLayout_10.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.gridLayout_10.setSpacing(2)
-        self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_10.setObjectName("gridLayout_10")
-        self.rbSnap = QtGui.QRadioButton(self.gridLayoutWidget_8)
-        self.rbSnap.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbSnap.setToolTip("Snap to EndPoint, MiddlePoint, Center")
-        self.rbSnap.setText("")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("Snap_Opt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbSnap.setIcon(icon8)
-        self.rbSnap.setIconSize(QtCore.QSize(78, 26))
-        self.rbSnap.setChecked(True)
-        self.rbSnap.setObjectName("rbSnap")
-        self.gridLayout_10.addWidget(self.rbSnap, 0, 0, 1, 1)
-        self.rbBbox = QtGui.QRadioButton(self.gridLayoutWidget_8)
-        self.rbBbox.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbBbox.setToolTip("Center of BoundingBox")
-        self.rbBbox.setText("")
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap("CenterBBox.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbBbox.setIcon(icon9)
-        self.rbBbox.setIconSize(QtCore.QSize(28, 28))
-        self.rbBbox.setChecked(False)
-        self.rbBbox.setObjectName("rbBbox")
-        self.gridLayout_10.addWidget(self.rbBbox, 0, 1, 1, 1)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_10.addItem(spacerItem, 0, 2, 1, 1)
-        self.gridLayoutWidget_9 = QtGui.QWidget(self.Controls_Group)
-        self.gridLayoutWidget_9.setGeometry(QtCore.QRect(6, 116, 287, 35))
-        self.gridLayoutWidget_9.setObjectName("gridLayoutWidget_9")
-        self.gridLayout_11 = QtGui.QGridLayout(self.gridLayoutWidget_9)
-        self.gridLayout_11.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.gridLayout_11.setSpacing(2)
-        self.gridLayout_11.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_11.setObjectName("gridLayout_11")
-        self.rbAngle = QtGui.QRadioButton(self.gridLayoutWidget_9)
-        self.rbAngle.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbAngle.setToolTip("Get Angle")
-        self.rbAngle.setText("")
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap("Angle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbAngle.setIcon(icon10)
-        self.rbAngle.setIconSize(QtCore.QSize(32, 32))
-        self.rbAngle.setChecked(False)
-        self.rbAngle.setObjectName("rbAngle")
-        self.gridLayout_11.addWidget(self.rbAngle, 0, 2, 1, 1)
-        self.rbLength = QtGui.QRadioButton(self.gridLayoutWidget_9)
-        self.rbLength.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbLength.setToolTip("Get Length of Edge")
-        self.rbLength.setText("")
-        icon11 = QtGui.QIcon()
-        icon11.addPixmap(QtGui.QPixmap("Length.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbLength.setIcon(icon11)
-        self.rbLength.setIconSize(QtCore.QSize(32, 32))
-        self.rbLength.setChecked(False)
-        self.rbLength.setObjectName("rbLength")
-        self.gridLayout_11.addWidget(self.rbLength, 0, 1, 1, 1)
-        self.rbRadius = QtGui.QRadioButton(self.gridLayoutWidget_9)
+        self.rbRadius = QtGui.QRadioButton(self.Controls_Group)
+        self.rbRadius.setGeometry(QtCore.QRect(6, 120, 64, 32))
         self.rbRadius.setMinimumSize(QtCore.QSize(64, 32))
         self.rbRadius.setToolTip("Get Radius of Arc or Circle")
         self.rbRadius.setText("")
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("Radius.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbRadius.setIcon(icon12)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap("Radius.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbRadius.setIcon(icon8)
         self.rbRadius.setIconSize(QtCore.QSize(28, 28))
         self.rbRadius.setChecked(False)
         self.rbRadius.setObjectName("rbRadius")
-        self.gridLayout_11.addWidget(self.rbRadius, 0, 0, 1, 1)
-        self.rbParallel = QtGui.QRadioButton(self.gridLayoutWidget_9)
+        self.rbAngle = QtGui.QRadioButton(self.Controls_Group)
+        self.rbAngle.setGeometry(QtCore.QRect(144, 120, 64, 33))
+        self.rbAngle.setMinimumSize(QtCore.QSize(64, 32))
+        self.rbAngle.setToolTip("Get Angle")
+        self.rbAngle.setText("")
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap("Angle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbAngle.setIcon(icon9)
+        self.rbAngle.setIconSize(QtCore.QSize(32, 32))
+        self.rbAngle.setChecked(False)
+        self.rbAngle.setObjectName("rbAngle")
+        self.rbLength = QtGui.QRadioButton(self.Controls_Group)
+        self.rbLength.setGeometry(QtCore.QRect(74, 120, 64, 32))
+        self.rbLength.setMinimumSize(QtCore.QSize(64, 32))
+        self.rbLength.setToolTip("Get Length of Edge")
+        self.rbLength.setText("")
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap("Length.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbLength.setIcon(icon10)
+        self.rbLength.setIconSize(QtCore.QSize(32, 32))
+        self.rbLength.setChecked(False)
+        self.rbLength.setObjectName("rbLength")
+        self.rbParallel = QtGui.QRadioButton(self.Controls_Group)
+        self.rbParallel.setGeometry(QtCore.QRect(210, 120, 64, 32))
         self.rbParallel.setMinimumSize(QtCore.QSize(64, 32))
         self.rbParallel.setToolTip("Get Distance\n"
 "between Parallel Edges")
         self.rbParallel.setText("")
-        icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap("Distance_Parallel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbParallel.setIcon(icon13)
+        icon11 = QtGui.QIcon()
+        icon11.addPixmap(QtGui.QPixmap("Distance_Parallel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbParallel.setIcon(icon11)
         self.rbParallel.setIconSize(QtCore.QSize(32, 32))
         self.rbParallel.setChecked(False)
         self.rbParallel.setObjectName("rbParallel")
-        self.gridLayout_11.addWidget(self.rbParallel, 0, 3, 1, 1)
+        self.rbSnap = QtGui.QRadioButton(self.Controls_Group)
+        self.rbSnap.setGeometry(QtCore.QRect(6, 86, 109, 32))
+        self.rbSnap.setMinimumSize(QtCore.QSize(64, 32))
+        self.rbSnap.setToolTip("Snap to EndPoint, MiddlePoint, Center")
+        self.rbSnap.setText("")
+        icon12 = QtGui.QIcon()
+        icon12.addPixmap(QtGui.QPixmap("Snap_Opt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbSnap.setIcon(icon12)
+        self.rbSnap.setIconSize(QtCore.QSize(78, 26))
+        self.rbSnap.setChecked(True)
+        self.rbSnap.setObjectName("rbSnap")
+        self.rbBbox = QtGui.QRadioButton(self.Controls_Group)
+        self.rbBbox.setGeometry(QtCore.QRect(122, 84, 67, 32))
+        self.rbBbox.setMinimumSize(QtCore.QSize(64, 32))
+        self.rbBbox.setToolTip("Center of BoundingBox")
+        self.rbBbox.setText("")
+        icon13 = QtGui.QIcon()
+        icon13.addPixmap(QtGui.QPixmap("CenterBBox.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbBbox.setIcon(icon13)
+        self.rbBbox.setIconSize(QtCore.QSize(28, 28))
+        self.rbBbox.setChecked(False)
+        self.rbBbox.setObjectName("rbBbox")
         DockWidget.setWidget(self.dockWidgetContents)
 
 ###############################################################################################################
@@ -904,18 +988,19 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Snap_Options_b64))
         self.rbSnap.setIconSize(QtCore.QSize(3*btn_md_sizeX,btn_md_sizeY))
         self.rbSnap.setIcon(QtGui.QIcon(pm))
-        # self.CleanDist.clicked.connect(self.onClean)
+        #self.rbSnap.clicked.connect(self.onSnap)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Radius_b64))
         self.rbRadius.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbRadius.setIcon(QtGui.QIcon(pm))
-        self.rbRadius.setEnabled(False)
-        # self.CleanDist.clicked.connect(self.onClean)
+        self.rbRadius.setEnabled(True)
+        #self.rbRadius.clicked.connect(self.onRuler)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Length_b64))
         self.rbLength.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbLength.setIcon(QtGui.QIcon(pm))
-        self.rbLength.setEnabled(False)
+        #self.rbLength.setEnabled(False)
+        #self.rbLength.clicked.connect(self.onRuler)
         # self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Angle_b64))
@@ -949,6 +1034,16 @@ class Ui_DockWidget(object):
 ### ------------------------------------------------------------------------------------ ###
 ###############################################################################################################
 # widgets connected functions
+##
+    def onRuler(self):
+        self.rbSnap.setChecked(False)
+        self.rbBbox.setChecked(False)
+        sayerr('Ruler')
+##        
+    def onSnap(self):
+        self.rbRadius.setChecked(False)
+        self.rbLength.setChecked(False)
+        sayerr('Snap')
 
 ##
     def onClean(self):
