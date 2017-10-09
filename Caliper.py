@@ -132,7 +132,7 @@ class SelObserverCaliper:
                                 Draft.autogroup(dim)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
