@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.4" #Manipulator for Parts
+__version__ = "1.0.5" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -68,44 +68,44 @@ class SelObserverCaliper:
                 if len(sel[0].SubObjects)>0: #Faces or Edges
                     if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0])\
                                                            or 'Vertex' in str(sel[0].SubObjects[0]):
-                        sayw('starting')
+                        #sayw('starting')
                         objs = []
-                        if len (last_selection)>0:
-                            say ('last selection: ' + last_selection[0].Name)
-                            for o in last_selection:
-                                say('sel list ' + o.Name) #o.Object.Name)
-                        sayw('selecting')
+                        #if len (last_selection)>0:
+                        #    say ('last selection: ' + last_selection[0].Name)
+                        #    for o in last_selection:
+                        #        say('sel list ' + o.Name) #o.Object.Name)
+                        #sayw('selecting')
                         o = sel[0].Object
                         #top_lvl=None
                         #if in_hierarchy:
                         posz=position
-                        sayw('posz '+str(posz))
+                        #sayw('posz '+str(posz))
                         plcm, top_level_obj, bbC, pnt = get_placement_hierarchy (sel[0])
                         if top_level_obj is not None:
-                            say('object in App::Part hierarchy or Body')
+                            #say('object in App::Part hierarchy or Body')
                             top_level_obj_Name=top_level_obj.Name
                             in_hierarchy=True
                         else:
-                            say('object Part')
+                            #say('object Part')
                             top_level_obj_Name=sel[0].Object.Name
                             in_hierarchy=False
                         rot_center=bbC
                         if in_hierarchy:
-                            say('in hierarchy and use hierarchy')
+                            #say('in hierarchy and use hierarchy')
                             last_selection.append(top_level_obj) #(sel[0])
                             obj = top_level_obj #sel[0].Object
                             initial_placement.append(obj.Placement)
                             objs.append(obj)
-                            say ('initial Plcm '+str(obj.Placement))
+                            #say ('initial Plcm '+str(obj.Placement))
                         else:
                             last_selection.append(sel[0].Object)
                             obj = sel[0].Object
                             initial_placement.append(obj.Placement)
                             objs.append(obj)
-                            say ('initial Plcm '+str(obj.Placement))
-                        say ('last selection: ' + obj.Name)
-                        for o in last_selection:
-                            say('sel list ' + o.Name) #o.Object.Name)
+                            #say ('initial Plcm '+str(obj.Placement))
+                        #say ('last selection: ' + obj.Name)
+                        #for o in last_selection:
+                        #    say('sel list ' + o.Name) #o.Object.Name)
                         if CPDockWidget.ui.rbSnap.isChecked()\
                               or CPDockWidget.ui.rbBbox.isChecked():
                             #print (sel[0].SubObjects[0].Vertexes[0].Point,sel[0].SubObjects[0].Vertexes[1].Point)
@@ -242,7 +242,7 @@ def dist(first, second):
 ##
 
 def recurse_node(obj,plcm,scl):
-    sayerr(obj.Name)
+    #sayerr(obj.Name)
     if "App::Part" in obj.TypeId or "Body" in obj.TypeId or "Compound" in obj.TypeId:
         for o in obj.Group:
             #sayerr(o.Name)
@@ -288,7 +288,7 @@ def get_sorted_list (obj):
     #            top = ap2
     #            lvl = len(ap2.InListRecursive)
     #    listS.append(top)
-    sayw(listUsName)
+    #sayw(listUsName)
     i=0
     while len (listUsName) > 0:
         for apName in listUsName:
@@ -328,9 +328,9 @@ def get_placement_hierarchy (sel0):
     if top_level_obj is not None: #hierarchy object
         if CPDockWidget.ui.rbBbox.isChecked():
             subObj=Obj.Shape #forcing object to evaluate center of BBox
-        say('Hierarchy obj')
+        #say('Hierarchy obj')
         if 'Face' in str(subObj):
-            say('Hierarchy obj Face')
+            #say('Hierarchy obj Face')
             pad=0 #face
         elif 'Edge' in str(subObj):
             #pV1=subObj.Vertex1.Point
@@ -359,8 +359,8 @@ def get_placement_hierarchy (sel0):
             acpy.Placement=FreeCAD.Placement()
             if hasattr(Obj,'InListRecursive'):
                 lrl=len(Obj.InListRecursive)
-                for o_ in Obj.InListRecursive:
-                    say(o_.Name)
+                #for o_ in Obj.InListRecursive:
+                #    say(o_.Name)
                 if len(Obj.InList):
                     top_level_obj = get_top_level(Obj)
                     #sayerr(top_level_obj[j].Label)
@@ -374,7 +374,7 @@ def get_placement_hierarchy (sel0):
                             #if 'Plane' not in ob.InListRecursive[i].TypeId:
                             if listSorted[i].hasExtension("App::GeoFeatureGroupExtension"):
                                 acpy.Placement=acpy.Placement.multiply(listSorted[i].Placement)
-            say(acpy.Placement)
+            #say(acpy.Placement)
             #acpy.Placement=acpy.Placement.multiply(pOriginal)
             #acpy.Placement=acpy.Placement.multiply(pOriginal)
             if pad == 0: #note making wire from edge already resets the original placement
@@ -406,7 +406,7 @@ def get_placement_hierarchy (sel0):
                     #Draft.makePoint(mid[0],mid[1],mid[2]) #  creating a point takes selection
                     #sayw(mid)
                     d3=dist(pCkd,mid)
-                    sayerr('d1 '+str(d1)+' d2 '+str(d2)+' d3 '+str(d3))
+                    #sayerr('d1 '+str(d1)+' d2 '+str(d2)+' d3 '+str(d3))
                     d=min(d1,d2,d3)
                     if d==d1:
                         Pnt=pV1
@@ -426,7 +426,7 @@ def get_placement_hierarchy (sel0):
         
 
     elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
-        say('Part obj')
+        #say('Part obj')
         pad=0 #face
         if CPDockWidget.ui.rbBbox.isChecked():
             subObj=Obj.Shape #forcing object to evaluate center of BBox
@@ -448,7 +448,7 @@ def get_placement_hierarchy (sel0):
         pCkd=FreeCAD.Vector(posz)
         #print 'points ',pV1, pV2, pCkd
         if CPDockWidget.ui.rbSnap.isChecked():
-            sayw('points '+str(pV1)+str(pV2)+str(pCkd))
+            #sayw('points '+str(pV1)+str(pV2)+str(pCkd))
             if edge_op==1:
                 if 'Vertex' not in str(subObj):
                     d1=dist(pV1,pCkd);d2=dist(pV2,pCkd)
@@ -457,7 +457,7 @@ def get_placement_hierarchy (sel0):
                     #Draft.makePoint(mid[0],mid[1],mid[2]) #  creating a point takes selection
                     #sayw(mid)
                     d3=dist(pCkd,mid)
-                    sayerr('d1 '+str(d1)+' d2 '+str(d2)+' d3 '+str(d3))
+                    #sayerr('d1 '+str(d1)+' d2 '+str(d2)+' d3 '+str(d3))
                     d=min(d1,d2,d3)
                     if d==d1:
                         Pnt=pV1
@@ -469,7 +469,7 @@ def get_placement_hierarchy (sel0):
                     Pnt=subObj.Vertex1.Point
             else: #edge_op=0
                 Pnt=FreeCAD.Vector(bbxCenter)
-            sayw(Pnt)
+            #sayw(Pnt)
         elif (CPDockWidget.ui.rbSnap.isChecked() or CPDockWidget.ui.rbBbox.isChecked())\
                 and (edge_op==0 or pad==0):
             Pnt=FreeCAD.Vector(bbxCenter)
@@ -963,229 +963,7 @@ class Ui_DockWidget(object):
         added_dim=[]
         
 ##
-    def onAxis(self):
-        global DSMove_prev_Val, DSRotate_prev_Val
-        global selobject, sel
-        global initial_placement, last_selection, objs
         
-        #if CPDockWidget.ui.rbEndPnt.isChecked:
-        last_selection.append(sel[0].Object)
-        obj = sel[0].Object
-        initial_placement.append(obj.Placement)
-        objs.append(obj)        
-        DSMove_prev_Val=0
-        DSRotate_prev_Val=0
-        self.DS_MoveInput.setValue(0.0)
-        self.DS_RotateInput.setValue(0.0)
-##
-        
-    #def on_MoveDial(self, val):
-    def on_MoveDS(self, val):
-        global selobject, sel
-        global initial_placement, last_selection, objs
-        global DSMove_prev_Val, in_hierarchy, use_hierarchy
-        
-        #x=self.DS_MoveInput.value()
-        #sign = lambda x: x and (1, -1)[x < 0]
-        #delta=math.copysign(1,x)
-        
-        delta=self.DS_MoveInput.value()-DSMove_prev_Val
-        DSMove_prev_Val=self.DS_MoveInput.value()
-        #delta=sign
-        #print 'delta '+str(delta)
-        o = objs[0]
-        #top_lvl=None
-        ##if use_hierarchy:
-        #top_lvl=get_top_level(o)
-        #if top_lvl is not None:
-        #    say('object in App::Part hierarchy or Body')
-        #    #say(top_lvl.Name)
-        #    pass
-
-        #print 'delta '+str(delta)
-        #deltaVect = FreeCAD.Vector(v.x,v.y,v.z)*delta
-        norm=FreeCAD.Vector(1,0,0)
-        #if self.rbAxis.isChecked:
-        if len(sel[0].SubObjects)>0: #Faces or Edges
-            if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
-                #say('Face or Edge selected'); sayw(sel[0].Object.Name)
-                #norm = sel[0].SubObjects[0].normalAt(0,0)
-                norm, plcm, top_level_obj, bbC, pnt = get_normal_placement_hierarchy (sel[0])
-                if top_level_obj is not None:
-                    top_level_obj_Name=top_level_obj.Name
-                else:
-                    top_level_obj_Name=sel[0].Object.Name
-                rot_center=bbC
-                
-                # if in_hierarchy and not use_hierarchy:
-                #     norm = sel[0].SubObjects[0].normalAt(0,0)
-                #     rot_center=sel[0].SubObjects[0].BoundBox.Center
-                # else:
-                #     rot_center=bbC
-                #Draft.makePoint(rot_center) #  creating a point takes selection
-                say('norm '+str(norm)+' plcm '+str(plcm)+' top '+top_level_obj_Name)
-        #        rot_center=sel[0].SubObjects[0].BoundBox.Center
-        else: ## Object selected
-            #say('Object selected')
-            if hasattr(o,'Shape'):
-                norm = o.Shape.Faces[0].normalAt(0,0)
-                top_level_obj=o
-            else: #App::Part
-                norm=FreeCAD.Vector(1,0,0)
-                top_level_obj=o
-            #say('selected object, using Face[0]')
-        #norm=FreeCAD.Vector(1,0,0)
-        #print 'rbX', self.rbX.isChecked()
-        #say('Vector '+str(norm))
-        if self.rbX.isChecked():
-            norm=FreeCAD.Vector(1,0,0)
-        elif self.rbY.isChecked():
-            norm=FreeCAD.Vector(0,1,0)
-        elif self.rbZ.isChecked():
-            norm=FreeCAD.Vector(0,0,1)
-        if in_hierarchy and use_hierarchy:  ## only ok for Faces and not for Normal ATM
-            deltaVect = norm*delta
-            newshape = Part.Shape() #o.Shape.copy()
-            #newshape = Part.Shape
-            newshape.Placement = top_level_obj.Placement
-            newshape.translate(deltaVect)
-            #o.Placement=newshape.Placement 
-            top_level_obj.Placement=newshape.Placement
-        elif in_hierarchy and not use_hierarchy:  ## only ok for Faces and not for Normal ATM
-            sayerr('subobject moved alone')
-            deltaVect = norm*delta
-            #newshape = o.Shape.copy()
-            newshape = Part.Shape()
-            newshape.Placement = o.Placement #o.Placement
-            newshape.translate(deltaVect)
-            o.Placement=newshape.Placement 
-        else:
-            deltaVect = norm*delta
-            newshape = o.Shape.copy()
-            newshape.translate(deltaVect)
-            o.Placement=newshape.Placement
-        #objs[0].Placement = FreeCAD.Vector(pointsDirection[int(val)])
-        #self.label_1.setText("Position (" + str(float(val)/10) + " mm)")
-        #self.DS_horizontalSlider.setValue(float(val))
-        FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
-        
-##
-    def on_RotateDS(self, val):
-        global selobject, sel
-        global initial_placement, last_selection, objs
-        global DSRotate_prev_Val
-        
-        #x=self.DS_MoveInput.value()
-        #sign = lambda x: x and (1, -1)[x < 0]
-        #delta=math.copysign(1,x)
-        delta=self.DS_RotateInput.value()-DSRotate_prev_Val
-        DSRotate_prev_Val=self.DS_RotateInput.value()
-        #delta=sign
-        o = objs[0]
-        #print 'delta '+str(delta)
-        #deltaVect = FreeCAD.Vector(v.x,v.y,v.z)*delta
-        norm=FreeCAD.Vector(1,0,0)
-        if in_hierarchy:
-            rot_center=sel[0].Object.Shape.BoundBox.Center
-        else:
-            rot_center=o.Shape.BoundBox.Center
-        #elif self.rbAxis.isChecked:
-        if len(sel[0].SubObjects)>0: #Faces or Edges
-            if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
-                norm, plcm, top_level_obj, bbC, pnt = get_normal_placement_hierarchy (sel[0])
-                if top_level_obj is not None:
-                    top_level_obj_Name=top_level_obj.Name
-                else:
-                    top_level_obj_Name=sel[0].Object.Name
-                #if in_hierarchy and not use_hierarchy:
-                #    norm = sel[0].SubObjects[0].normalAt(0,0)
-                #    rot_center=sel[0].SubObjects[0].BoundBox.Center
-                #else:
-                rot_center=bbC
-                say('norm '+str(norm)+' plcm '+str(plcm)+' top '+top_level_obj_Name)
-                sayw('Face in Hierarchy')
-        else: ## Object selected
-            if hasattr(o,'Shape'):
-                norm = o.Shape.Faces[0].normalAt(0,0).normalize()
-                rot_center=o.Shape.BoundBox.Center
-                top_level_obj=o
-            else: # App::Part container
-                norm=FreeCAD.Vector(1,0,0)
-                rot_center=o.Placement.Base
-                top_level_obj=o                    
-            #say('selected object, using Face[0]')
-        if self.rbX.isChecked():
-            norm=FreeCAD.Vector(1,0,0)
-        elif self.rbY.isChecked():
-            norm=FreeCAD.Vector(0,1,0)
-        elif self.rbZ.isChecked():
-            norm=FreeCAD.Vector(0,0,1)
-        #    norm=FreeCAD.Vector(1,0,0)
-        #say('Vector '+str(norm))
-        #deltaVect = norm*delta
-        ## OK rotation on axis
-        #rot_center=o.Shape.BoundBox.Center
-        if in_hierarchy and use_hierarchy:  ## only ok for Faces and not for Normal ATM
-            rot_axis=norm
-            rot_angle=delta
-            newshape = Part.Shape() #o.Shape.copy()
-            #newshape = Part.Shape
-            newshape.Placement = top_level_obj.Placement
-            # prevSel=sel
-            # prevSelObj=selobject
-            # Draft.makePoint(rot_center) # creating a point takes selection
-            # sel=prevSel
-            # selobject=prevSelObj
-            # FreeCADGui.Selection.addSelection(selobject[0])         # Select an object
-            # #FreeCADGui.Selection.addSelectionEx(sel[0])
-            newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
-            #o.Placement=newshape.Placement 
-            top_level_obj.Placement=newshape.Placement
-        elif in_hierarchy and not use_hierarchy:  ## only ok for Faces and not for Normal ATM
-            sayerr('subobject moved alone')
-            rot_axis=norm
-            rot_angle=delta
-            newshape = Part.Shape()
-            newshape.Placement = o.Placement #o.Placement
-            newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
-            o.Placement=newshape.Placement 
-        else:
-            rot_axis=norm
-            rot_angle=delta
-            newshape = o.Shape.copy()
-            #shape.Placement = o.Placement
-            newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
-            o.Placement = newshape.Placement
-
-        #rot_axis=norm
-        #rot_angle=delta
-        #newshape = o.Shape.copy()
-        # #shape.Placement = o.Placement
-        #newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
-        #o.Placement = newshape.Placement
-        FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
-##
-
-    def setReference(self):
-        if self.rbBBox.isChecked():
-            say("centering on Bounding Boxes")
-            type=0
-        else:
-            say("centering on Center of Mass")
-            type=1
-##
-    def setNormal(self):
-        if self.rbNormal.isChecked():
-            normal=0
-            say("Align on NormalAt")
-        else:
-            say("Align on Inverted NormalAt")
-            normal=1
-##
-    def onHierarchy(self):
-        pass
-##
-
     def onMeasure_toggled(self,checked):
         global selobject, sel
         global initial_placement, last_selection, objs
@@ -1336,48 +1114,10 @@ Cp_centerOnScreen(CPDockWidget)
 
 ### ------------------------------------------------------------------------------------ ###
 
-
-def reset_prop_shapes(obj):
-
-    s=obj.Shape
-    #say('resetting props #2')
-    r=[]
-    t=s.copy()
-    for i in t.childShapes():
-        c=i.copy()
-        c.Placement=t.Placement.multiply(c.Placement)
-        r.append((i,c))
-
-    w=t.replaceShape(r)
-    w.Placement=FreeCAD.Placement()
-    Part.show(w)
-    #say(w)
-    #
-    #FreeCADGui.ActiveDocument.ActiveObject.ShapeColor=FreeCADGui.ActiveDocument.Part__Feature.ShapeColor
-    #FreeCADGui.ActiveDocument.ActiveObject.LineColor=FreeCADGui.ActiveDocument.Part__Feature.LineColor
-    #FreeCADGui.ActiveDocument.ActiveObject.PointColor=FreeCADGui.ActiveDocument.Part__Feature.PointColor
-    #FreeCADGui.ActiveDocument.ActiveObject.DiffuseColor=FreeCADGui.ActiveDocument.Part__Feature.DiffuseColor
-    FreeCADGui.ActiveDocument.ActiveObject.ShapeColor=FreeCADGui.ActiveDocument.getObject(obj.Name).ShapeColor
-    FreeCADGui.ActiveDocument.ActiveObject.LineColor=FreeCADGui.ActiveDocument.getObject(obj.Name).LineColor
-    FreeCADGui.ActiveDocument.ActiveObject.PointColor=FreeCADGui.ActiveDocument.getObject(obj.Name).PointColor
-    FreeCADGui.ActiveDocument.ActiveObject.DiffuseColor=FreeCADGui.ActiveDocument.getObject(obj.Name).DiffuseColor
-    new_label=obj.Label
-    FreeCAD.ActiveDocument.removeObject(obj.Name)
-    FreeCAD.ActiveDocument.recompute()
-    FreeCAD.ActiveDocument.ActiveObject.Label=new_label
-    rstObj=FreeCAD.ActiveDocument.ActiveObject
-    #say(rstObj)
-    #
-
-    return rstObj
-##
-
 ##################################################################################################
     #def removeSelection(self,document, object, element): # Delete the selected object
     #    FreeCAD.Console.PrintMessage("removeSelection"+"\n")    
 
-#s=SelObserver()
-#FreeCADGui.Selection.addObserver(s)                    # installe la fonction en mode resident
 ###################################################################################################
 
 
