@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.3x" #undo alignment for App::Part hierarchical objects
+__version__ = "1.5.4" #undo alignment for App::Part hierarchical objects
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -575,6 +575,7 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Planes_Centers_b64))
         self.rbPlanesCenters.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.rbPlanesCenters.setIcon(QtGui.QIcon(pm))
+        self.rbPlanesCenters.setChecked(True)
         #self.rbPlanesCenters.clicked.connect(AlignOn)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Centers_b64))
