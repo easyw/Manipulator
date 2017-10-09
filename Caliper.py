@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.3" #Manipulator for Parts
+__version__ = "1.0.4" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -129,6 +129,11 @@ class SelObserverCaliper:
                                 dim=Draft.makeDimension(pnt,P1,mid)
                                 Draft.autogroup(dim)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 sayw("Distance : "+str(dim.Distance))
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
