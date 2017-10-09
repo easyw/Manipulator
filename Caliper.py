@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.7" #Manipulator for Parts
+__version__ = "1.0.8" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -150,8 +150,10 @@ class SelObserverCaliper:
                                 halfedge = (pnt.sub(P1)).multiply(.5)
                                 mid=FreeCAD.Vector.add(P1,halfedge)
                                 dim=Draft.makeDimension(pnt,P1,mid)
-                                #P1=Draft.makePoint(P1[0],P1[1],P1[2])
+                                PC=Draft.makePoint(P1[0],P1[1],P1[2])
                                 #P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                PC.Label='Center_Mid'
+                                FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
                                 Draft.autogroup(dim)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -164,6 +166,7 @@ class SelObserverCaliper:
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                 FreeCAD.ActiveDocument.recompute()
                         elif (CPDockWidget.ui.rbLength.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
