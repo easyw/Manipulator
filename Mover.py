@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.9" #Manipulator for Parts
+__version__ = "1.4.0" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -259,7 +259,7 @@ def get_normal_placement_hierarchy (sel0):
                 acpy.Placement=acpy.Placement.multiply(pOriginal)
             nwshp.Placement = acpy.Placement
             if edge_op==1:
-                nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+                nwnorm = (nwshp.Vertex2.Point - nwshp.Vertex1.Point).normalize()
             else:
                 nwnorm = nwshp.normalAt(0,0)
             bbxCenter = nwshp.BoundBox.Center
