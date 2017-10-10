@@ -56,7 +56,7 @@ class SelObserverCaliper:
         global initial_placement, last_selection, objs
         global added_dim, in_hierarchy
         
-        fntsize='0.5mm'
+        fntsize='0.2mm'
         ticksize='0.1mm'
         
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
