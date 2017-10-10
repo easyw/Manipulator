@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.8" #Manipulator for Parts
+__version__ = "1.0.9" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -56,6 +56,8 @@ class SelObserverCaliper:
         global initial_placement, last_selection, objs
         global added_dim, in_hierarchy
         
+        fntsize='0.5mm'
+        ticksize='0.1mm'
         
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
         
@@ -130,10 +132,18 @@ class SelObserverCaliper:
                                 #print mid
                                 dim=Draft.makeDimension(pnt,P1,mid)
                                 Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
+                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                #if int(dst/40)>0:
+                                #    fntsize = int(dst/40)
+                                #else:
+                                #    fntsize = (dst/40)
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 say("Distance : "+str(dim.Distance))
@@ -155,10 +165,18 @@ class SelObserverCaliper:
                                 PC.Label='Center_Mid'
                                 FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
                                 Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
+                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                #if int(dst/40)>0:
+                                #    fntsize = int(dst/40)
+                                #else:
+                                #    fntsize = (dst/40)
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 say("Distance : "+str(dim.Distance))
@@ -176,11 +194,19 @@ class SelObserverCaliper:
                                 mid=FreeCAD.Vector.add(P1,halfedge)
                                 dim=Draft.makeDimension(pnt,P1,mid)
                                 Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                #if int(dst/40)>0:
+                                #    fntsize = int(dst/40)
+                                #else:
+                                #    fntsize = (dst/40)
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = '0.1 mm'
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 say("Distance : "+str(dim.Distance))
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
