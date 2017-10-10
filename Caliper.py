@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.0.9" #Manipulator for Parts
+__version__ = "1.1.0" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -46,7 +46,16 @@ import sys, math
 from PySide import QtCore, QtGui
 from pivy import coin
 
+def normalized(first):
+	"normalized(Vector) - returns a unit vector"
+	if isinstance(first,FreeCAD.Vector):
+		l=length(first)
+		return FreeCAD.Vector(first.x/l, first.y/l, first.z/l)
 
+def dotproduct(first, other):
+	"dotproduct(Vector,Vector) - returns the dot product of both vectors"
+	if isinstance(first,FreeCAD.Vector) and isinstance(other,FreeCAD.Vector):
+		return (first.x*other.x + first.y*other.y + first.z*other.z)
 
 ##--------------------------------------------------------------------------------------
 class SelObserverCaliper:
@@ -54,7 +63,7 @@ class SelObserverCaliper:
         global ui
         global selobject, sel, posz, P,P1
         global initial_placement, last_selection, objs
-        global added_dim, in_hierarchy
+        global added_dim, in_hierarchy, vec1, midP
         
         fntsize='0.2mm'
         ticksize='0.1mm'
@@ -213,6 +222,66 @@ class SelObserverCaliper:
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                FreeCAD.ActiveDocument.recompute()
+                        elif (CPDockWidget.ui.rbAngle.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
+                            if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
+                                pnt
+                                P1=FreeCAD.Vector(bbC)
+                                halfedge = (pnt.sub(P1)).multiply(.5)
+                                midP=FreeCAD.Vector.add(P1,halfedge)                                #P_2=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                ##P_1=Draft.makePoint(midP[0],midP[1],midP[2])
+                                #added_dim.append(FreeCAD.ActiveDocument.getObject(P_1.Name))
+                                #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
+                                vec1 = pnt - P1
+                                #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
+                                #print normal
+                                #stop
+                                #for a in range(len(angles)):
+                                #    if angles[a] > 2*math.pi:
+                                #        angles[a] = angles[a]-(2*math.pi)
+                                CPDockWidget.ui.DimensionP1.setEnabled(False)
+                                CPDockWidget.ui.DimensionP2.setEnabled(True)
+                            else:
+                                ##ln=Draft.makeLine(pnt,P1)
+                                ##print ln.Length
+                                CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                #print 'P2 enabled'
+                                P1=pnt
+                                P2=FreeCAD.Vector(bbC)
+                                
+                                halfedge = (pnt.sub(P2)).multiply(.5)
+                                mid=FreeCAD.Vector.add(P2,halfedge)   
+                                ##Px=Draft.makePoint(mid[0],mid[1],mid[2])
+                                
+                                halfedge = (mid.sub(midP)).multiply(.5)
+                                mid2=FreeCAD.Vector.add(midP,halfedge)                                   
+                                #dim=Draft.makeDimension(mid,midP,mid2)
+                                #Draft.autogroup(dim)
+                                ##FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                #dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                #FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
+                                #added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                vec2 = P1 - P2
+                                #angle = vec1.getAngle(vec2)
+                                #v1.cross(v2)).normalize()
+                                #print 'dot ',str(dotproduct(normalized(vec2),normalized(vec1)))
+                                if str(dotproduct(normalized(vec2),normalized(vec1))) == '-1.0':
+                                    angle = 0.0
+                                else:
+                                    angle = math.degrees(math.acos(dotproduct(normalized(vec2),normalized(vec1))))-180
+                                #FreeCAD.ActiveDocument.getObject(dim.Name).Distance = angle
+                                
+                                sayw("Angle : "+str(angle))
+                                #sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                #sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                #sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 FreeCAD.ActiveDocument.recompute()
                                 
                         #if CPDockWidget.ui.rbCenterFace.isChecked and ('Edge' in str(sel[0].SubObjects[0]) \
@@ -529,6 +598,16 @@ def get_placement_hierarchy (sel0):
                 Pnt=nwshp.Vertex1.Point
                 bbxCenter=nwshp.BoundBox.Center
             return Obj.Placement, top_level_obj, bbxCenter, Pnt
+        elif CPDockWidget.ui.rbAngle.isChecked():
+            #bbxCenter=DraftGeomUtils.findMidpoint(circ)
+            #bbxCenter=subObj.BoundBox.Center
+            if edge_op==1:
+                Pnt=nwshp.Vertex1.Point
+                bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+            else:
+                Pnt=nwshp.Vertex1.Point
+                bbxCenter=nwshp.BoundBox.Center
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt
 
 
     elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
@@ -609,7 +688,13 @@ def get_placement_hierarchy (sel0):
             else:
                 Pnt=subObj.Vertex1.Point
                 bbxCenter=subObj.BoundBox.Center
-            
+        elif CPDockWidget.ui.rbAngle.isChecked():
+            if edge_op==1:
+                Pnt=subObj.Vertex1.Point
+                bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+            else:
+                Pnt=subObj.Vertex1.Point
+                bbxCenter=subObj.BoundBox.Center    
         return Obj.Placement, top_level_obj, bbxCenter, Pnt
             
 ##
@@ -1038,7 +1123,7 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Dim_Angle_b64))
         self.rbAngle.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbAngle.setIcon(QtGui.QIcon(pm))
-        self.rbAngle.setEnabled(False)
+        self.rbAngle.setEnabled(True)
         # self.CleanDist.clicked.connect(self.onClean)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Dim_Parallel_b64))
