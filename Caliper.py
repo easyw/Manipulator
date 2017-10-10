@@ -256,18 +256,18 @@ class SelObserverCaliper:
                                 
                                 halfedge = (mid.sub(midP)).multiply(.5)
                                 mid2=FreeCAD.Vector.add(midP,halfedge)                                   
-                                #dim=Draft.makeDimension(mid,midP,mid2)
-                                #Draft.autogroup(dim)
-                                ##FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                #dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                #FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
-                                #added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                dim=Draft.makeDimension(mid,midP,mid2)
+                                Draft.autogroup(dim)
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
+                                FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 vec2 = P1 - P2
                                 #angle = vec1.getAngle(vec2)
                                 #v1.cross(v2)).normalize()
@@ -275,8 +275,8 @@ class SelObserverCaliper:
                                 if str(dotproduct(normalized(vec2),normalized(vec1))) == '-1.0':
                                     angle = 0.0
                                 else:
-                                    angle = math.degrees(math.acos(dotproduct(normalized(vec2),normalized(vec1))))-180
-                                #FreeCAD.ActiveDocument.getObject(dim.Name).Distance = angle
+                                    angle = -(math.degrees(math.acos(dotproduct(normalized(vec2),normalized(vec1))))-180)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).Override = str(angle)+'°'
                                 
                                 sayw("Angle : "+str(angle))
                                 #sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
