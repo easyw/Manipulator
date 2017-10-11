@@ -272,13 +272,13 @@ class SelObserverCaliper:
                                 #angle = vec1.getAngle(vec2)
                                 #v1.cross(v2)).normalize()
                                 #print 'dot ',str(dotproduct(normalized(vec2),normalized(vec1)))
-                                if str(dotproduct(normalized(vec2),normalized(vec1))) == '-1.0':
+                                if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
                                     angle = 0.0
                                 else:
-                                    angle = -(math.degrees(math.acos(dotproduct(normalized(vec2),normalized(vec1))))-180)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).Override = str(angle)+'°'
+                                    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                 
-                                sayw("Angle : "+str(angle))
+                                sayw("Angle : "+'{0:.2f}'.format(angle))
                                 #sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 #sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 #sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
