@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.0" #Manipulator for Parts
+__version__ = "1.1.1" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -57,13 +57,42 @@ def dotproduct(first, other):
 	if isinstance(first,FreeCAD.Vector) and isinstance(other,FreeCAD.Vector):
 		return (first.x*other.x + first.y*other.y + first.z*other.z)
 
+def angleBetween(e1, e2):
+    """ Return the angle (in degrees) between 2 edges.
+    """
+    if isinstance(e1,Part.Edge) and isinstance(e2,Part.Edge):
+        # Create the Vector for first edge
+        v1 = e1.Vertexes[-1].Point
+        v2 = e1.Vertexes[0].Point
+        ve1 = v1.sub(v2)
+        # Create the Vector for second edge
+        v3 = e2.Vertexes[-1].Point
+        v4 = e2.Vertexes[0].Point
+        ve2 = v3.sub(v4)
+    elif isinstance(e1,Base.Vector) and isinstance(e2,Base.Vector):
+        ve1 = e1
+        ve2 = e2
+    elif isinstance(e1,Part.Edge) and isinstance(e2,Base.Vector):
+        v1 = e1.Vertexes[-1].Point
+        v2 = e1.Vertexes[0].Point
+        ve1 = v1.sub(v2)
+        ve2 = e2
+    elif isinstance(e1,Base.Vector) and  isinstance(e2,Part.Edge):
+        ve1 = e1
+        v3 = e2.Vertexes[-1].Point
+        v4 = e2.Vertexes[0].Point
+        ve2 = v3.sub(v4)   
+    else:
+        return
+
+        
 ##--------------------------------------------------------------------------------------
 class SelObserverCaliper:
     def addSelection(self, document, object, element, position):  # Selection
         global ui
         global selobject, sel, posz, P,P1
         global initial_placement, last_selection, objs
-        global added_dim, in_hierarchy, vec1, midP
+        global added_dim, in_hierarchy, vec1, midP, va, vb, P_T
         
         fntsize='0.2mm'
         ticksize='0.1mm'
@@ -124,6 +153,7 @@ class SelObserverCaliper:
                             if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
                                 P1=pnt
                                 P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                P_T=pnt
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(P.Name))
                                 FreeCADGui.ActiveDocument.getObject(P.Name).PointSize = 10.000
                                 FreeCADGui.ActiveDocument.getObject(P.Name).PointColor = (1.000,0.667,0.000)
@@ -139,27 +169,31 @@ class SelObserverCaliper:
                                 halfedge = (pnt.sub(P1)).multiply(.5)
                                 mid=FreeCAD.Vector.add(P1,halfedge)
                                 #print mid
-                                dim=Draft.makeDimension(pnt,P1,mid)
-                                Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                #if int(dst/40)>0:
-                                #    fntsize = int(dst/40)
-                                #else:
-                                #    fntsize = (dst/40)
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                say("Distance : "+str(dim.Distance))
+                                if mid!=P1: #non coincident points
+                                    dim=Draft.makeDimension(pnt,P1,mid)
+                                    #dim=Draft.makeDimension(pnt,P1,mid)
+                                    Draft.autogroup(dim)
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                    dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                    #if int(dst/40)>0:
+                                    #    fntsize = int(dst/40)
+                                    #else:
+                                    #    fntsize = (dst/40)
+                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
+                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                    say("Distance : "+str(dim.Distance))
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                else:
+                                    say("Distance : 0.0")
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.recompute()
                         elif (CPDockWidget.ui.rbRadius.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
@@ -227,10 +261,13 @@ class SelObserverCaliper:
                             if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
                                 pnt
                                 P1=FreeCAD.Vector(bbC)
+                                va=pnt; vb=P1
                                 halfedge = (pnt.sub(P1)).multiply(.5)
                                 midP=FreeCAD.Vector.add(P1,halfedge)                                #P_2=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                ##P_1=Draft.makePoint(midP[0],midP[1],midP[2])
-                                #added_dim.append(FreeCAD.ActiveDocument.getObject(P_1.Name))
+                                P_T=Draft.makePoint(midP[0],midP[1],midP[2])
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(P_T.Name))
+                                FreeCADGui.ActiveDocument.getObject(P_T.Name).PointSize = 10.000
+                                FreeCADGui.ActiveDocument.getObject(P_T.Name).PointColor = (1.000,0.333,0.498)
                                 #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
                                 vec1 = pnt - P1
                                 #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
@@ -246,6 +283,7 @@ class SelObserverCaliper:
                                 ##print ln.Length
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                FreeCAD.ActiveDocument.removeObject(P_T.Name)
                                 #print 'P2 enabled'
                                 P1=pnt
                                 P2=FreeCAD.Vector(bbC)
@@ -256,7 +294,10 @@ class SelObserverCaliper:
                                 
                                 halfedge = (mid.sub(midP)).multiply(.5)
                                 mid2=FreeCAD.Vector.add(midP,halfedge)                                   
-                                dim=Draft.makeDimension(mid,midP,mid2)
+                                if mid!=midP: #non coincident points
+                                    dim=Draft.makeDimension(mid,midP,mid2)
+                                else:
+                                    dim=Draft.makeDimension(pnt,mid,P2)                                
                                 Draft.autogroup(dim)
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -272,10 +313,22 @@ class SelObserverCaliper:
                                 #angle = vec1.getAngle(vec2)
                                 #v1.cross(v2)).normalize()
                                 #print 'dot ',str(dotproduct(normalized(vec2),normalized(vec1)))
-                                if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
-                                    angle = 0.0
-                                else:
-                                    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
+                                v1 = va #e1.Vertexes[-1].Point
+                                v2 = vb #e1.Vertexes[0].Point
+                                ve1 = v1.sub(v2)
+                                # Create the Vector for second edge
+                                v3 = pnt #e2.Vertexes[-1].Point
+                                v4 = P2 #e2.Vertexes[0].Point
+                                ve2 = v3.sub(v4)                                
+                                
+                                #m_angle, m_angle_rad = angleBetween(vec1,vec2)
+                                angle = math.degrees(ve1.getAngle(ve2))
+                                #print("m_angle = " + str(angle))
+
+                                #if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
+                                #    angle = 0.0
+                                #else:
+                                #    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                 
                                 sayw("Angle : "+'{0:.2f}'.format(angle))
