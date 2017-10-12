@@ -272,7 +272,7 @@ class SelObserverCaliper:
                                 #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
                                 vec1 = pnt - P1
                                 ornt_1 = orient
-                                print orient
+                                # print orient
                                 #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
                                 #print normal
                                 #stop
@@ -325,12 +325,12 @@ class SelObserverCaliper:
                                 v4 = P2 #e2.Vertexes[0].Point
                                 ve2 = v3.sub(v4)                                
                                                                 
-                                print orient, ornt_1
+                                # print orient, ornt_1
                                 #if orient==ornt_1:
                                 #    print 'adjusting angle'
                                 #    angle = 180-angle
                                 if orient==ornt_1:
-                                    print 'adjusting angle'
+                                    # print 'adjusting angle'
                                     ve2 = v4.sub(v3)                                
                                 angle = math.degrees(ve2.getAngle(ve1))
                                 
