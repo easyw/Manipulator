@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.1" #Manipulator for Parts
+__version__ = "1.1.2" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -93,6 +93,7 @@ class SelObserverCaliper:
         global selobject, sel, posz, P,P1
         global initial_placement, last_selection, objs
         global added_dim, in_hierarchy, vec1, midP, va, vb, P_T
+        global ornt_1
         
         fntsize='0.2mm'
         ticksize='0.1mm'
@@ -120,7 +121,7 @@ class SelObserverCaliper:
                         #if in_hierarchy:
                         posz=position
                         #sayw('posz '+str(posz))
-                        plcm, top_level_obj, bbC, pnt = get_placement_hierarchy (sel[0])
+                        plcm, top_level_obj, bbC, pnt, orient = get_placement_hierarchy (sel[0])
                         if top_level_obj is not None:
                             #say('object in App::Part hierarchy or Body')
                             top_level_obj_Name=top_level_obj.Name
@@ -259,7 +260,7 @@ class SelObserverCaliper:
                                 FreeCAD.ActiveDocument.recompute()
                         elif (CPDockWidget.ui.rbAngle.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
                             if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
-                                pnt
+                                #pnt
                                 P1=FreeCAD.Vector(bbC)
                                 va=pnt; vb=P1
                                 halfedge = (pnt.sub(P1)).multiply(.5)
@@ -270,6 +271,8 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(P_T.Name).PointColor = (1.000,0.333,0.498)
                                 #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
                                 vec1 = pnt - P1
+                                ornt_1 = orient
+                                print orient
                                 #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
                                 #print normal
                                 #stop
@@ -316,15 +319,24 @@ class SelObserverCaliper:
                                 v1 = va #e1.Vertexes[-1].Point
                                 v2 = vb #e1.Vertexes[0].Point
                                 ve1 = v1.sub(v2)
+                                #print ve1.Orientation
                                 # Create the Vector for second edge
                                 v3 = pnt #e2.Vertexes[-1].Point
                                 v4 = P2 #e2.Vertexes[0].Point
                                 ve2 = v3.sub(v4)                                
+                                                                
+                                print orient, ornt_1
+                                #if orient==ornt_1:
+                                #    print 'adjusting angle'
+                                #    angle = 180-angle
+                                if orient==ornt_1:
+                                    print 'adjusting angle'
+                                    ve2 = v4.sub(v3)                                
+                                angle = math.degrees(ve2.getAngle(ve1))
                                 
-                                #m_angle, m_angle_rad = angleBetween(vec1,vec2)
-                                angle = math.degrees(ve1.getAngle(ve2))
                                 #print("m_angle = " + str(angle))
-
+                                ##ax, angle = rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector2c( ve1, ve2 )
+                                ##angle = math.degrees(angle)
                                 #if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
                                 #    angle = 0.0
                                 #else:
@@ -520,6 +532,7 @@ def get_placement_hierarchy (sel0):
     pV1= FreeCAD.Vector(0.0, 0.0, 0.0)
     pV2= FreeCAD.Vector(0.0, 0.0, 0.0)
     Pnt= FreeCAD.Vector(0.0, 0.0, 0.0)
+    orient = None
     
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
@@ -531,6 +544,7 @@ def get_placement_hierarchy (sel0):
             pad=0 #face
         elif 'Edge' in str(subObj):
             #pV1=subObj.Vertex1.Point
+            orient=subObj.Orientation
             wire = Part.Wire(subObj)
             if subObj.isClosed():
                 subObj = Part.Face(wire)
@@ -616,11 +630,11 @@ def get_placement_hierarchy (sel0):
                     Pnt=nwshp.Vertex1.Point
             else: #edge_op=0
                 Pnt=FreeCAD.Vector(bbxCenter)
-            return nwshp.Placement, top_level_obj, bbxCenter, Pnt
+            return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient
         elif (CPDockWidget.ui.rbSnap.isChecked() or CPDockWidget.ui.rbBbox.isChecked())\
                              and (edge_op==0 or pad==0):
             Pnt=FreeCAD.Vector(bbxCenter)
-            return nwshp.Placement, top_level_obj, bbxCenter, Pnt
+            return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient
         elif CPDockWidget.ui.rbRadius.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
@@ -638,7 +652,7 @@ def get_placement_hierarchy (sel0):
                 Pnt=nwshp.Vertex1.Point
             else:
                 Pnt=FreeCAD.Vector(bbxCenter)
-            return Obj.Placement, top_level_obj, bbxCenter, Pnt
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
             #sayerr(bbxCenter)
             #sayw(Pnt)
         elif CPDockWidget.ui.rbLength.isChecked():
@@ -650,7 +664,7 @@ def get_placement_hierarchy (sel0):
             else:
                 Pnt=nwshp.Vertex1.Point
                 bbxCenter=nwshp.BoundBox.Center
-            return Obj.Placement, top_level_obj, bbxCenter, Pnt
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
         elif CPDockWidget.ui.rbAngle.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
@@ -660,7 +674,7 @@ def get_placement_hierarchy (sel0):
             else:
                 Pnt=nwshp.Vertex1.Point
                 bbxCenter=nwshp.BoundBox.Center
-            return Obj.Placement, top_level_obj, bbxCenter, Pnt
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
 
 
     elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
@@ -670,6 +684,7 @@ def get_placement_hierarchy (sel0):
             subObj=Obj.Shape #forcing object to evaluate center of BBox
         if 'Edge' in str(subObj):
             wire = Part.Wire(subObj)
+            orient=subObj.Orientation
             if subObj.isClosed():
                 circ=subObj.copy()
                 subObj = Part.Face(wire)
@@ -748,7 +763,7 @@ def get_placement_hierarchy (sel0):
             else:
                 Pnt=subObj.Vertex1.Point
                 bbxCenter=subObj.BoundBox.Center    
-        return Obj.Placement, top_level_obj, bbxCenter, Pnt
+        return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
             
 ##
 
