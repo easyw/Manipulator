@@ -21,7 +21,7 @@ Installing
 Download and install your corresponding version of FreeCAD from [wiki Download page](http://www.freecadweb.org/wiki/Download) and either install
 
 - automatically using the [FreeCAD Add-on Manager](https://github.com/FreeCAD/FreeCAD-addons) (bundled in to 0.17 dev version under Tools Menu)
-- manually by copying the Manipolator folder to the Mod sub-directory of the FreeCAD application.
+- manually by copying the Manipulator folder to the Mod sub-directory of the FreeCAD application.
 
 Manipulator Cheat sheet
 ------------------
