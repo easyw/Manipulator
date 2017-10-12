@@ -48,6 +48,8 @@ from pivy import coin
 
 import numpy as np
 
+angle_tolerance = 1e-5 #
+
 def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
 
     ''' Given two lines defined by numpy.array pairs (a0,a1,b0,b1)
@@ -423,7 +425,8 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                 
                                 sayw("Angle : "+'{0:.2f}'.format(angle))
-                                if angle==0 or angle==180:
+                                #sayerr(angle)
+                                if abs(angle)<angle_tolerance or abs(angle)<180+angle_tolerance:
                                     #calculating Distance between // edges
                                     a1=np.array([v1[0],v1[1],v1[2]])
                                     a0=np.array([v2[0],v2[1],v2[2]])
