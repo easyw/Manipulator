@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.2" #Manipulator for Parts
+__version__ = "1.1.3" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -46,6 +46,112 @@ import sys, math
 from PySide import QtCore, QtGui
 from pivy import coin
 
+import numpy as np
+
+def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
+
+    ''' Given two lines defined by numpy.array pairs (a0,a1,b0,b1)
+        Return the closest points on each segment and their distance
+    '''
+
+    # If clampAll=True, set all clamps to True
+    if clampAll:
+        clampA0=True
+        clampA1=True
+        clampB0=True
+        clampB1=True
+
+
+    # Calculate denomitator
+    A = a1 - a0
+    B = b1 - b0
+    magA = np.linalg.norm(A)
+    magB = np.linalg.norm(B)
+
+    _A = A / magA
+    _B = B / magB
+
+    cross = np.cross(_A, _B);
+    denom = np.linalg.norm(cross)**2
+
+
+    # If lines are parallel (denom=0) test if lines overlap.
+    # If they don't overlap then there is a closest point solution.
+    # If they do overlap, there are infinite closest positions, but there is a closest distance
+    if not denom:
+        d0 = np.dot(_A,(b0-a0))
+
+        # Overlap only possible with clamping
+        if clampA0 or clampA1 or clampB0 or clampB1:
+            d1 = np.dot(_A,(b1-a0))
+
+            # Is segment B before A?
+            if d0 <= 0 >= d1:
+                if clampA0 and clampB1:
+                    if np.absolute(d0) < np.absolute(d1):
+                        return a0,b0,np.linalg.norm(a0-b0)
+                    return a0,b1,np.linalg.norm(a0-b1)
+
+
+            # Is segment B after A?
+            elif d0 >= magA <= d1:
+                if clampA1 and clampB0:
+                    if np.absolute(d0) < np.absolute(d1):
+                        return a1,b0,np.linalg.norm(a1-b0)
+                    return a1,b1,np.linalg.norm(a1-b1)
+
+
+        # Segments overlap, return distance between parallel segments
+        return None,None,np.linalg.norm(((d0*_A)+a0)-b0)
+
+
+
+    # Lines criss-cross: Calculate the projected closest points
+    t = (b0 - a0);
+    detA = np.linalg.det([t, _B, cross])
+    detB = np.linalg.det([t, _A, cross])
+
+    t0 = detA/denom;
+    t1 = detB/denom;
+
+    pA = a0 + (_A * t0) # Projected closest point on segment A
+    pB = b0 + (_B * t1) # Projected closest point on segment B
+
+
+    # Clamp projections
+    if clampA0 or clampA1 or clampB0 or clampB1:
+        if clampA0 and t0 < 0:
+            pA = a0
+        elif clampA1 and t0 > magA:
+            pA = a1
+
+        if clampB0 and t1 < 0:
+            pB = b0
+        elif clampB1 and t1 > magB:
+            pB = b1
+
+        # Clamp projection A
+        if (clampA0 and t0 < 0) or (clampA1 and t0 > magA):
+            dot = np.dot(_B,(pA-b0))
+            if clampB0 and dot < 0:
+                dot = 0
+            elif clampB1 and dot > magB:
+                dot = magB
+            pB = b0 + (_B * dot)
+
+        # Clamp projection B
+        if (clampB0 and t1 < 0) or (clampB1 and t1 > magB):
+            dot = np.dot(_A,(pB-a0))
+            if clampA0 and dot < 0:
+                dot = 0
+            elif clampA1 and dot > magA:
+                dot = magA
+            pA = a0 + (_A * dot)
+
+
+    return pA,pB,np.linalg.norm(pA-pB)
+
+
 def normalized(first):
 	"normalized(Vector) - returns a unit vector"
 	if isinstance(first,FreeCAD.Vector):
@@ -57,33 +163,6 @@ def dotproduct(first, other):
 	if isinstance(first,FreeCAD.Vector) and isinstance(other,FreeCAD.Vector):
 		return (first.x*other.x + first.y*other.y + first.z*other.z)
 
-def angleBetween(e1, e2):
-    """ Return the angle (in degrees) between 2 edges.
-    """
-    if isinstance(e1,Part.Edge) and isinstance(e2,Part.Edge):
-        # Create the Vector for first edge
-        v1 = e1.Vertexes[-1].Point
-        v2 = e1.Vertexes[0].Point
-        ve1 = v1.sub(v2)
-        # Create the Vector for second edge
-        v3 = e2.Vertexes[-1].Point
-        v4 = e2.Vertexes[0].Point
-        ve2 = v3.sub(v4)
-    elif isinstance(e1,Base.Vector) and isinstance(e2,Base.Vector):
-        ve1 = e1
-        ve2 = e2
-    elif isinstance(e1,Part.Edge) and isinstance(e2,Base.Vector):
-        v1 = e1.Vertexes[-1].Point
-        v2 = e1.Vertexes[0].Point
-        ve1 = v1.sub(v2)
-        ve2 = e2
-    elif isinstance(e1,Base.Vector) and  isinstance(e2,Part.Edge):
-        ve1 = e1
-        v3 = e2.Vertexes[-1].Point
-        v4 = e2.Vertexes[0].Point
-        ve2 = v3.sub(v4)   
-    else:
-        return
 
         
 ##--------------------------------------------------------------------------------------
@@ -344,9 +423,18 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                 
                                 sayw("Angle : "+'{0:.2f}'.format(angle))
-                                #sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                #sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                #sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                if angle==0 or angle==180:
+                                    #calculating Distance between // edges
+                                    a1=np.array([v1[0],v1[1],v1[2]])
+                                    a0=np.array([v2[0],v2[1],v2[2]])
+                                    b0=np.array([v3[0],v3[1],v3[2]])
+                                    b1=np.array([v4[0],v4[1],v4[2]])
+                                    say("Distance // vectors : "+'{0:.3f}'.format(closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=True)[2]))
+                                #sayw("Delta X  : "+str(abs(mid[0]-midP[0])))    
+                                #sayw("Delta Y  : "+str(abs(mid[1]-midP[1])))    
+                                #sayw("Delta Z  : "+str(abs(mid[2]-midP[2])))    
+                                #if angle==0 or angle==180:
+                                #    say("Distance // vectors : "+'{0:.2f}'.format(float(dst)))
                                 FreeCAD.ActiveDocument.recompute()
                                 
                         #if CPDockWidget.ui.rbCenterFace.isChecked and ('Edge' in str(sel[0].SubObjects[0]) \
