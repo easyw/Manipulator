@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.3" #Manipulator for Parts
+__version__ = "1.1.4" # Manipulator for Parts: the Caliper
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -422,17 +422,22 @@ class SelObserverCaliper:
                                 #    angle = 0.0
                                 #else:
                                 #    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                 
                                 sayw("Angle : "+'{0:.2f}'.format(angle))
                                 #sayerr(angle)
-                                if abs(angle)<angle_tolerance or abs(angle)<180+angle_tolerance:
+                                if 0: #abs(angle)<angle_tolerance or abs(angle)<180+angle_tolerance:
+                                    ### this must be checked more
                                     #calculating Distance between // edges
                                     a1=np.array([v1[0],v1[1],v1[2]])
                                     a0=np.array([v2[0],v2[1],v2[2]])
                                     b0=np.array([v3[0],v3[1],v3[2]])
                                     b1=np.array([v4[0],v4[1],v4[2]])
-                                    say("Distance // vectors : "+'{0:.3f}'.format(closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=True)[2]))
+                                    dst=closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=True)[2]
+                                    dst_str='{0:.2f}'.format(dst)
+                                    say("Distance // vectors : "+'{0:.3f}'.format(dst))
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° '+dst_str+' mm'
+                                else:
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                 #sayw("Delta X  : "+str(abs(mid[0]-midP[0])))    
                                 #sayw("Delta Y  : "+str(abs(mid[1]-midP[1])))    
                                 #sayw("Delta Z  : "+str(abs(mid[2]-midP[2])))    
