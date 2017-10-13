@@ -19,7 +19,7 @@ Manipulator-WB
 
 **Mover:**
 <img src="https://www.freecadweb.org/wiki/images/b/b0/Manipulator-WB-Mover.gif">
-<img src="https://www.freecadweb.org/wiki/File:Manipulator-WB-Mover-with-App_Part%26Body.gif">
+<img src="https://www.freecadweb.org/wiki/images/f/f4/Manipulator-WB-Mover-with-App_Part%26Body.gif">
 
 **Caliper:**
 <img src="https://www.freecadweb.org/wiki/images/1/14/Manipulator-WB-Measure-Radius.gif">
