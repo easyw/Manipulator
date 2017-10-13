@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.0" #Manipulator for Parts
+__version__ = "1.4.1" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -551,7 +551,7 @@ class Ui_DockWidget(object):
         self.gridLayout_9.addWidget(self.rbX, 0, 1, 1, 1)
         self.rbAxis = QtGui.QRadioButton(self.gridLayoutWidget_7)
         self.rbAxis.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbAxis.setToolTip("move/rotate on Selected Axis")
+        self.rbAxis.setToolTip("move/rotate on Selected Edge Axis")
         self.rbAxis.setText("")
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap("Rotate-Axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
