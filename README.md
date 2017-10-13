@@ -13,11 +13,17 @@ Manipulator-WB
 
 **Manipulator in action**
 
-![ManipulatorWB-Aligner](https://www.freecadweb.org/wiki/images/6/60/Manipulator-WB-Aligner.gif)
-![ManipulatorWB-Mover](https://www.freecadweb.org/wiki/images/b/b0/Manipulator-WB-Mover.gif)
-![ManipulatorWB-Mover](https://www.freecadweb.org/wiki/File:Manipulator-WB-Mover-with-App_Part%26Body.gif)
-![ManipulatorWB-Caliper](https://www.freecadweb.org/wiki/images/1/14/Manipulator-WB-Measure-Radius.gif)
-![ManipulatorWB-Caliper](https://www.freecadweb.org/wiki/images/f/fe/Manipulator-WB-Measure-Angles.gif)
+**Aligner:**
+
+<img src="https://www.freecadweb.org/wiki/images/6/60/Manipulator-WB-Aligner.gif">
+
+**Mover:**
+<img src="https://www.freecadweb.org/wiki/images/b/b0/Manipulator-WB-Mover.gif">
+<img src="https://www.freecadweb.org/wiki/File:Manipulator-WB-Mover-with-App_Part%26Body.gif">
+
+**Caliper:**
+<img src="https://www.freecadweb.org/wiki/images/1/14/Manipulator-WB-Measure-Radius.gif">
+<img src="https://www.freecadweb.org/wiki/images/f/fe/Manipulator-WB-Measure-Angles.gif">
 
 Installing
 ----------
