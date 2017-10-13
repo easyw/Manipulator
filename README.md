@@ -9,7 +9,7 @@ Manipulator-WB
 
 - **Align <img src="Resources/icons/Center-Align.svg" width="32">, Move and Rotate <img src="Resources/icons/Manipulator-icon.svg" width="32"> and Measure <img src="Resources/icons/Caliper.svg" width="32"> helpers for Part, App::Part and Body objects**
 
-- **Each Tool has a Help Button  <img src="https://www.freecadweb.org/wiki/images/5/5f/Help-btn.png" width="32"> to get some useful tips**
+- **Each Tool has a Help Button  <img src="https://www.freecadweb.org/wiki/images/5/5f/Help-btn.png" width="28"> to get some useful tips**
 
 ![Manipulator Gui](Manipulator.png?raw=true "Manipulator Gui")
 
