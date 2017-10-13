@@ -7,13 +7,17 @@ Manipulator-WB
 
 **Manipulator features:** 
 
-- *Align, Move and Rotate and Measure helpers for Part, App::Part and Body objects*
+- *Align <img src="Resources/icons/Center-Align.svg" width="32">, Move and Rotate <img src="Resources/icons/Manipulator-icon.svg" width="32"> and Measure <img src="Resources/icons/Caliper.svg" width="32"> helpers for Part, App::Part and Body objects*
 
 ![Manipulator Gui](Manipulator.png?raw=true "Manipulator Gui")
 
 **Manipulator in action**
 
-![ManipulatorWB-preview](https://user-images.githubusercontent.com/4140247/31278727-273cd0a0-aa74-11e7-8ec7-d37ee6fc52c2.gif)
+![ManipulatorWB-Aligner](https://www.freecadweb.org/wiki/images/6/60/Manipulator-WB-Aligner.gif)
+![ManipulatorWB-Mover](https://www.freecadweb.org/wiki/images/b/b0/Manipulator-WB-Mover.gif)
+![ManipulatorWB-Mover](https://www.freecadweb.org/wiki/File:Manipulator-WB-Mover-with-App_Part%26Body.gif)
+![ManipulatorWB-Caliper](https://www.freecadweb.org/wiki/images/1/14/Manipulator-WB-Measure-Radius.gif)
+![ManipulatorWB-Caliper](https://www.freecadweb.org/wiki/images/f/fe/Manipulator-WB-Measure-Angles.gif)
 
 Installing
 ----------
