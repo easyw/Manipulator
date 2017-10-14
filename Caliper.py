@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.5" #Manipulator for Parts
+__version__ = "1.1.6" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -697,7 +697,10 @@ def get_placement_hierarchy (sel0):
             if CPDockWidget.ui.rbBbox.isChecked():
                 bbxCenter = nwshp.BoundBox.Center
             else:
-                bbxCenter = nwshp.CenterOfMass
+                if hasattr(nwshp,'CenterOfMass'):
+                    bbxCenter = nwshp.CenterOfMass
+                else:
+                    bbxCenter = nwshp.BoundBox.Center
         # else:
         #     nwshp = subObj.copy()
         #     if edge_op==1:
@@ -749,7 +752,10 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
-                    bbxCenter = nwshp.CenterOfMass
+                    if hasattr(nwshp,'CenterOfMass'):
+                        bbxCenter = nwshp.CenterOfMass
+                    else:
+                        bbxCenter = nwshp.BoundBox.Center
             if pad==1:
                 Pnt=nwshp.Vertex1.Point
             else:
@@ -768,7 +774,10 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
-                    bbxCenter = nwshp.CenterOfMass
+                    if hasattr(nwshp,'CenterOfMass'):
+                        bbxCenter = nwshp.CenterOfMass
+                    else:
+                        bbxCenter = nwshp.BoundBox.Center
             return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
         elif CPDockWidget.ui.rbAngle.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
@@ -781,7 +790,10 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
-                    bbxCenter = nwshp.CenterOfMass
+                    if hasattr(nwshp,'CenterOfMass'):
+                        bbxCenter = nwshp.CenterOfMass
+                    else:
+                        bbxCenter = nwshp.BoundBox.Center                    
             return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
 
 
@@ -807,7 +819,10 @@ def get_placement_hierarchy (sel0):
         if CPDockWidget.ui.rbBbox.isChecked():
             bbxCenter = subObj.BoundBox.Center
         else:
-            bbxCenter = subObj.CenterOfMass
+            if hasattr(subObj,'CenterOfMass'):
+                bbxCenter = subObj.CenterOfMass
+            else:
+                bbxCenter = subObj.BoundBox.Center
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
         pCkd=FreeCAD.Vector(posz)
@@ -854,7 +869,10 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
                 else:
-                    bbxCenter = subObj.CenterOfMass
+                    if hasattr(subObj,'CenterOfMass'):
+                        bbxCenter = subObj.CenterOfMass
+                    else:
+                        bbxCenter = subObj.BoundBox.Center
             if pad==1:
                 Pnt=wire.Vertex1.Point
             else:
@@ -872,7 +890,10 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
                 else:
-                    bbxCenter = subObj.CenterOfMass
+                    if hasattr(subObj,'CenterOfMass'):
+                        bbxCenter = subObj.CenterOfMass
+                    else:
+                        bbxCenter = subObj.BoundBox.Center
         elif CPDockWidget.ui.rbAngle.isChecked():
             if edge_op==1:
                 Pnt=subObj.Vertex1.Point
@@ -882,7 +903,10 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
                 else:
-                    bbxCenter = subObj.CenterOfMass
+                    if hasattr(subObj,'CenterOfMass'):
+                        bbxCenter = subObj.CenterOfMass
+                    else:
+                        bbxCenter = subObj.BoundBox.Center
         return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
             
 ##
