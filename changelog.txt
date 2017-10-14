@@ -1,3 +1,3 @@
-- v1.02 Caliper initial working release
-- v1.38 Mover & Aligner Tools working with Part, App::Part and Body objects
+- v1.2.0 Caliper Tools: measuring Length, Radius, Distance for Part, App::Part and Body objects
+- v1.3.8 Mover & Aligner Tools working with Part, App::Part and Body objects
 - initial release

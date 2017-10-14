@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.8" #Manipulator for Parts
+__version__ = "1.2.0" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -178,7 +178,7 @@ class SelObserverCaliper:
         
         fntsize='0.2mm'
         ticksize='0.1mm'
-        
+        Vtx_sel=False
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
         
         if 1:#try:
@@ -191,6 +191,8 @@ class SelObserverCaliper:
                     if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0])\
                                                            or 'Vertex' in str(sel[0].SubObjects[0]):
                         #sayw('starting')
+                        if 'Vertex' in str(sel[0].SubObjects[0]):
+                            Vtx_sel=True
                         objs = []
                         #if len (last_selection)>0:
                         #    say ('last selection: ' + last_selection[0].Name)
@@ -202,7 +204,7 @@ class SelObserverCaliper:
                         #if in_hierarchy:
                         posz=position
                         #sayw('posz '+str(posz))
-                        plcm, top_level_obj, bbC, pnt, orient = get_placement_hierarchy (sel[0])
+                        plcm, top_level_obj, bbC, pnt, orient, norm = get_placement_hierarchy (sel[0])
                         if top_level_obj is not None:
                             #say('object in App::Part hierarchy or Body')
                             top_level_obj_Name=top_level_obj.Name
@@ -278,7 +280,8 @@ class SelObserverCaliper:
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 FreeCAD.ActiveDocument.recompute()
-                        elif (CPDockWidget.ui.rbRadius.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
+                        elif (CPDockWidget.ui.rbRadius.isChecked() and not Vtx_sel):
+                            if 'Edge' in str(sel[0].SubObjects[0]):
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 #print 'bbC',bbC
@@ -324,7 +327,8 @@ class SelObserverCaliper:
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                 FreeCAD.ActiveDocument.recompute()
-                        elif (CPDockWidget.ui.rbLength.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
+                        elif (CPDockWidget.ui.rbLength.isChecked() and not Vtx_sel):
+                            if 'Edge' in str(sel[0].SubObjects[0]):
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 P1=FreeCAD.Vector(bbC)
@@ -353,118 +357,136 @@ class SelObserverCaliper:
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.recompute()
-                        elif (CPDockWidget.ui.rbAngle.isChecked() and 'Edge' in str(sel[0].SubObjects[0])):
-                            if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
-                                #pnt
-                                P1=FreeCAD.Vector(bbC)
-                                va=pnt; vb=P1
-                                halfedge = (pnt.sub(P1)).multiply(.5)
-                                midP=FreeCAD.Vector.add(P1,halfedge)                                #P_2=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                P_T=Draft.makePoint(midP[0],midP[1],midP[2])
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(P_T.Name))
-                                FreeCADGui.ActiveDocument.getObject(P_T.Name).PointSize = 10.000
-                                FreeCADGui.ActiveDocument.getObject(P_T.Name).PointColor = (1.000,0.333,0.498)
-                                #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
-                                vec1 = pnt - P1
-                                ornt_1 = orient
-                                # print orient
-                                #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
-                                #print normal
-                                #stop
-                                #for a in range(len(angles)):
-                                #    if angles[a] > 2*math.pi:
-                                #        angles[a] = angles[a]-(2*math.pi)
-                                CPDockWidget.ui.DimensionP1.setEnabled(False)
-                                CPDockWidget.ui.DimensionP2.setEnabled(True)
-                            else:
-                                ##ln=Draft.makeLine(pnt,P1)
-                                ##print ln.Length
-                                CPDockWidget.ui.DimensionP2.setEnabled(False)
-                                CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                FreeCAD.ActiveDocument.removeObject(P_T.Name)
-                                #print 'P2 enabled'
-                                P1=pnt
-                                P2=FreeCAD.Vector(bbC)
-                                
-                                halfedge = (pnt.sub(P2)).multiply(.5)
-                                mid=FreeCAD.Vector.add(P2,halfedge)   
-                                ##Px=Draft.makePoint(mid[0],mid[1],mid[2])
-                                
-                                halfedge = (mid.sub(midP)).multiply(.5)
-                                mid2=FreeCAD.Vector.add(midP,halfedge)                                   
-                                if mid!=midP: #non coincident points
-                                    dim=Draft.makeDimension(mid,midP,mid2)
+                        elif (CPDockWidget.ui.rbAngle.isChecked() and not Vtx_sel):
+                            if ('Edge' in str(sel[0].SubObjects[0]) or 'Face' in str(sel[0].SubObjects[0])):
+                                if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
+                                    if 'Face' in str(sel[0].SubObjects[0]):
+                                        P1=FreeCAD.Vector(bbC)
+                                        midP=P1
+                                        P_T=Draft.makePoint(P1[0],P1[1],P1[2])
+                                        vec1 = norm
+                                        ornt_1 = orient
+                                        #print 'norm ', norm, norm[0],norm[1],norm[2]
+                                        #print 'bbC ', bbC[0], bbC[1], bbC[2]
+                                        va=P1; 
+                                        vb=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
+                                        #print va, vb
+                                    else:
+                                        P1=FreeCAD.Vector(bbC)
+                                        halfedge = (pnt.sub(P1)).multiply(.5)
+                                        midP=FreeCAD.Vector.add(P1,halfedge)                                #P_2=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                        P_T=Draft.makePoint(midP[0],midP[1],midP[2])
+                                        #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
+                                        va=pnt; vb=P1
+                                        vec1 = pnt - P1
+                                        ornt_1 = orient
+                                        # print orient
+                                        #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
+                                        #print normal
+                                        #stop
+                                        #for a in range(len(angles)):
+                                        #    if angles[a] > 2*math.pi:
+                                        #        angles[a] = angles[a]-(2*math.pi)
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(P_T.Name))
+                                    FreeCADGui.ActiveDocument.getObject(P_T.Name).PointSize = 10.000
+                                    FreeCADGui.ActiveDocument.getObject(P_T.Name).PointColor = (1.000,0.333,0.498)
+                                    CPDockWidget.ui.DimensionP1.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP2.setEnabled(True)
                                 else:
-                                    dim=Draft.makeDimension(pnt,mid,P2)                                
-                                Draft.autogroup(dim)
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
-                                FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
-                                vec2 = P1 - P2
-                                #angle = vec1.getAngle(vec2)
-                                #v1.cross(v2)).normalize()
-                                #print 'dot ',str(dotproduct(normalized(vec2),normalized(vec1)))
-                                v1 = va #e1.Vertexes[-1].Point
-                                v2 = vb #e1.Vertexes[0].Point
-                                ve1 = v1.sub(v2)
-                                #print ve1.Orientation
-                                # Create the Vector for second edge
-                                v3 = pnt #e2.Vertexes[-1].Point
-                                v4 = P2 #e2.Vertexes[0].Point
-                                ve2 = v3.sub(v4)                                
-                                                                
-                                # print orient, ornt_1
-                                #if orient==ornt_1:
-                                #    print 'adjusting angle'
-                                #    angle = 180-angle
-                                if orient==ornt_1:
-                                    # print 'adjusting angle'
-                                    ve2 = v4.sub(v3)                                
-                                angle = math.degrees(ve2.getAngle(ve1))
-                                
-                                #print("m_angle = " + str(angle))
-                                ##ax, angle = rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector2c( ve1, ve2 )
-                                ##angle = math.degrees(angle)
-                                #if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
-                                #    angle = 0.0
-                                #else:
-                                #    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
-                                
-                                sayw("Angle : "+'{0:.2f}'.format(angle))
-                                #sayerr(angle)
-                                if 0: #abs(angle)<angle_tolerance or abs(angle)<180+angle_tolerance:
-                                    ### this must be checked more
-                                    #calculating Distance between // edges
-                                    a1=np.array([v1[0],v1[1],v1[2]])
-                                    a0=np.array([v2[0],v2[1],v2[2]])
-                                    b0=np.array([v3[0],v3[1],v3[2]])
-                                    b1=np.array([v4[0],v4[1],v4[2]])
-                                    dst=closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=True)[2]
-                                    dst_str='{0:.2f}'.format(dst)
-                                    say("Distance // vectors : "+'{0:.3f}'.format(dst))
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° '+dst_str+' mm'
-                                else:
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
-                                #sayw("Delta X  : "+str(abs(mid[0]-midP[0])))    
-                                #sayw("Delta Y  : "+str(abs(mid[1]-midP[1])))    
-                                #sayw("Delta Z  : "+str(abs(mid[2]-midP[2])))    
-                                #if angle==0 or angle==180:
-                                #    say("Distance // vectors : "+'{0:.2f}'.format(float(dst)))
-                                FreeCAD.ActiveDocument.recompute()
-                                
+                                    ##ln=Draft.makeLine(pnt,P1)
+                                    ##print ln.Length
+                                    CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                    FreeCAD.ActiveDocument.removeObject(P_T.Name)
+                                    slct=sel[0].SubObjects[0]
+                                    #print 'P2 enabled'
+                                    P1=pnt
+                                    P2=FreeCAD.Vector(bbC)
+                                    if 'Face' in str(slct):
+                                        v4=P2; 
+                                        v3=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
+                                        mid=FreeCAD.Vector(bbC)
+                                        
+                                    else:
+                                        v3 = pnt #e2.Vertexes[-1].Point
+                                        v4 = P2 #e2.Vertexes[0].Point
+                                        halfedge = (pnt.sub(P2)).multiply(.5)
+                                        mid=FreeCAD.Vector.add(P2,halfedge)   
+                                        ##Px=Draft.makePoint(mid[0],mid[1],mid[2])
+        
+                                    halfedge = (mid.sub(midP)).multiply(.5)
+                                    mid2=FreeCAD.Vector.add(midP,halfedge)                                   
+                                    if mid!=midP: #non coincident points
+                                        dim=Draft.makeDimension(mid,midP,mid2)
+                                    else:
+                                        dim=Draft.makeDimension(pnt,mid,P2)                                
+                                    Draft.autogroup(dim)
+                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                    dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
+                                    FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                    vec2 = P1 - P2
+                                    #angle = vec1.getAngle(vec2)
+                                    #v1.cross(v2)).normalize()
+                                    #print 'dot ',str(dotproduct(normalized(vec2),normalized(vec1)))
+                                    v1 = va #e1.Vertexes[-1].Point
+                                    v2 = vb #e1.Vertexes[0].Point
+                                    ve1 = v1.sub(v2)
+                                    #print ve1.Orientation
+                                    # Create the Vector for second edge
+                                    ve2 = v3.sub(v4)                                
+                                                                    
+                                    # print orient, ornt_1
+                                    #if orient==ornt_1:
+                                    #    print 'adjusting angle'
+                                    #    angle = 180-angle
+                                    if orient==ornt_1:
+                                        # print 'adjusting angle'
+                                        ve2 = v4.sub(v3)                                
+                                    angle = math.degrees(ve2.getAngle(ve1))
+                                    
+                                    #print("m_angle = " + str(angle))
+                                    ##ax, angle = rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector2c( ve1, ve2 )
+                                    ##angle = math.degrees(angle)
+                                    #if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
+                                    #    angle = 0.0
+                                    #else:
+                                    #    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
+                                    
+                                    sayw("Angle : "+'{0:.2f}'.format(angle))
+                                    #sayerr(angle)
+                                    if 0: #abs(angle)<angle_tolerance or abs(angle)<180+angle_tolerance:
+                                        ### this must be checked more
+                                        #calculating Distance between // edges
+                                        a1=np.array([v1[0],v1[1],v1[2]])
+                                        a0=np.array([v2[0],v2[1],v2[2]])
+                                        b0=np.array([v3[0],v3[1],v3[2]])
+                                        b1=np.array([v4[0],v4[1],v4[2]])
+                                        dst=closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=True)[2]
+                                        dst_str='{0:.2f}'.format(dst)
+                                        say("Distance // vectors : "+'{0:.3f}'.format(dst))
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° '+dst_str+' mm'
+                                    else:
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+                                    #sayw("Delta X  : "+str(abs(mid[0]-midP[0])))    
+                                    #sayw("Delta Y  : "+str(abs(mid[1]-midP[1])))    
+                                    #sayw("Delta Z  : "+str(abs(mid[2]-midP[2])))    
+                                    #if angle==0 or angle==180:
+                                    #    say("Distance // vectors : "+'{0:.2f}'.format(float(dst)))
+                                    FreeCAD.ActiveDocument.recompute()
+                                    
                         #if CPDockWidget.ui.rbCenterFace.isChecked and ('Edge' in str(sel[0].SubObjects[0]) \
                         #                                            or 'Face' in str(sel[0].SubObjects[0])):
                         #    if sel[0].SubObjects[0].isClosed():
                                 
                             
-                    else: #Vertex not allowed in selection
+                    else: #OLD Vertex not allowed in selection
                         pass
         if 0:#except:
             sayerr('restarted')
@@ -642,7 +664,7 @@ def get_placement_hierarchy (sel0):
     pV1= FreeCAD.Vector(0.0, 0.0, 0.0)
     pV2= FreeCAD.Vector(0.0, 0.0, 0.0)
     Pnt= FreeCAD.Vector(0.0, 0.0, 0.0)
-    orient = None
+    orient = None; nwnorm = None; Vtx=False
     
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
@@ -666,7 +688,8 @@ def get_placement_hierarchy (sel0):
                 edge_op=1
             pad=1 #edge
         elif 'Vertex' in str(subObj):
-            sayerr('vertex')
+            #sayerr('vertex')
+            Vtx=True
             Pt=subObj.Point
             #point = subObj.Point
             #P=subObj.Point
@@ -714,6 +737,8 @@ def get_placement_hierarchy (sel0):
             if edge_op==1:
                 #nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
                 pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
+            if pad==0 and not Vtx:
+                nwnorm = nwshp.normalAt(0,0)
             #else:
             #    pV1=findMidpoint(nwshp)
             #    nwnorm = nwshp.normalAt(0,0)
@@ -755,11 +780,11 @@ def get_placement_hierarchy (sel0):
                     Pnt=nwshp.Vertex1.Point
             else: #edge_op=0
                 Pnt=FreeCAD.Vector(bbxCenter)
-            return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient
+            return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
         elif (CPDockWidget.ui.rbSnap.isChecked() or CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked())\
                              and (edge_op==0 or pad==0):
             Pnt=FreeCAD.Vector(bbxCenter)
-            return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient
+            return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
         elif CPDockWidget.ui.rbRadius.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
@@ -783,7 +808,7 @@ def get_placement_hierarchy (sel0):
                 Pnt=nwshp.Vertex1.Point
             else:
                 Pnt=FreeCAD.Vector(bbxCenter)
-            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
             #sayerr(bbxCenter)
             #sayw(Pnt)
         elif CPDockWidget.ui.rbLength.isChecked():
@@ -801,7 +826,7 @@ def get_placement_hierarchy (sel0):
                         bbxCenter = nwshp.CenterOfMass
                     else:
                         bbxCenter = nwshp.BoundBox.Center
-            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
         elif CPDockWidget.ui.rbAngle.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
@@ -817,7 +842,7 @@ def get_placement_hierarchy (sel0):
                         bbxCenter = nwshp.CenterOfMass
                     else:
                         bbxCenter = nwshp.BoundBox.Center                    
-            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
+            return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
 
 
     elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
@@ -839,6 +864,8 @@ def get_placement_hierarchy (sel0):
             pad=1 #edge
         #else:
         #    norm = subObj.normalAt(0,0)
+        if pad==0 and 'Vertex' not in str(subObj):
+            nwnorm = subObj.normalAt(0,0)
         if CPDockWidget.ui.rbBbox.isChecked():
             bbxCenter = subObj.BoundBox.Center
         else:
@@ -930,7 +957,7 @@ def get_placement_hierarchy (sel0):
                         bbxCenter = subObj.CenterOfMass
                     else:
                         bbxCenter = subObj.BoundBox.Center
-        return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient
+        return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
             
 ##
 
