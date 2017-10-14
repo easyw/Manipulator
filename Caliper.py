@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.7" #Manipulator for Parts
+__version__ = "1.1.8" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -269,6 +269,7 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                     #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                    FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                     say("Distance : "+str(dim.Distance))
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 else:
@@ -281,13 +282,20 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 #print 'bbC',bbC
+                                has_radius=False
+                                curve_type = type(sel[0].SubObjects[0].Curve)
+                                if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
+                                    has_radius=True
                                 P1=FreeCAD.Vector(bbC)
                                 halfedge = (pnt.sub(P1)).multiply(.5)
                                 mid=FreeCAD.Vector.add(P1,halfedge)
                                 dim=Draft.makeDimension(pnt,P1,mid)
                                 PC=Draft.makePoint(P1[0],P1[1],P1[2])
                                 #P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                PC.Label='Center_Mid'
+                                if has_radius:
+                                    PC.Label='Center'
+                                else:
+                                    PC.Label='Mid'
                                 FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
                                 Draft.autogroup(dim)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -304,7 +312,12 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                say("Distance : "+str(dim.Distance))
+                                if has_radius:
+                                    say("Radius   : "+str(dim.Distance))
+                                    FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
+                                else:
+                                    say("Distance : "+str(dim.Distance))
+                                    FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
@@ -333,6 +346,7 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
                                 say("Distance : "+str(dim.Distance))
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
