@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.1.6" #Manipulator for Parts
+__version__ = "1.1.7" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -651,6 +651,15 @@ def get_placement_hierarchy (sel0):
                 #print subObj.Vertex2.Point
                 edge_op=1
             pad=1 #edge
+        elif 'Vertex' in str(subObj):
+            sayerr('vertex')
+            Pt=subObj.Point
+            #point = subObj.Point
+            #P=subObj.Point
+            nP=Draft.makePoint(Pt)
+            #wire = Part.Wire(nP)
+            subObj = nP.Shape
+            FreeCAD.ActiveDocument.removeObject(nP.Name)
         if 1: #use_hierarchy:
             nwshp = subObj.copy()
             pOriginal=subObj.Placement
