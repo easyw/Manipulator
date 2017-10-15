@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.2.0" #Manipulator for Parts
+__version__ = "1.2.2" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -174,7 +174,7 @@ class SelObserverCaliper:
         global selobject, sel, posz, P,P1
         global initial_placement, last_selection, objs
         global added_dim, in_hierarchy, vec1, midP, va, vb, P_T
-        global ornt_1
+        global ornt_1, sel1
         
         fntsize='0.2mm'
         ticksize='0.1mm'
@@ -318,12 +318,13 @@ class SelObserverCaliper:
                                 if has_radius:
                                     say("Radius   : "+str(dim.Distance))
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
+                                    sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
                                 else:
                                     say("Distance : "+str(dim.Distance))
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
-                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                    sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                    sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                    sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                 FreeCAD.ActiveDocument.recompute()
@@ -366,6 +367,7 @@ class SelObserverCaliper:
                                         P_T=Draft.makePoint(P1[0],P1[1],P1[2])
                                         vec1 = norm
                                         ornt_1 = orient
+                                        sel1='face'
                                         #print 'norm ', norm, norm[0],norm[1],norm[2]
                                         #print 'bbC ', bbC[0], bbC[1], bbC[2]
                                         va=P1; 
@@ -380,6 +382,7 @@ class SelObserverCaliper:
                                         va=pnt; vb=P1
                                         vec1 = pnt - P1
                                         ornt_1 = orient
+                                        sel1='edge'
                                         # print orient
                                         #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
                                         #print normal
@@ -406,14 +409,14 @@ class SelObserverCaliper:
                                         v4=P2; 
                                         v3=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
                                         mid=FreeCAD.Vector(bbC)
-                                        
+                                        sel2='face'
                                     else:
                                         v3 = pnt #e2.Vertexes[-1].Point
                                         v4 = P2 #e2.Vertexes[0].Point
                                         halfedge = (pnt.sub(P2)).multiply(.5)
                                         mid=FreeCAD.Vector.add(P2,halfedge)   
                                         ##Px=Draft.makePoint(mid[0],mid[1],mid[2])
-        
+                                        sel2='edge'
                                     halfedge = (mid.sub(midP)).multiply(.5)
                                     mid2=FreeCAD.Vector.add(midP,halfedge)                                   
                                     if mid!=midP: #non coincident points
@@ -450,7 +453,12 @@ class SelObserverCaliper:
                                         # print 'adjusting angle'
                                         ve2 = v4.sub(v3)                                
                                     angle = math.degrees(ve2.getAngle(ve1))
-                                    
+                                    #if sel1=='face' and sel2=='edge':
+                                    #    angle=angle-90
+                                    #if sel1=='edge' and sel2=='face':
+                                    #    angle=angle-90
+                                    #if sel1=='face' and sel2=='face':
+                                    #    angle=angle+90
                                     #print("m_angle = " + str(angle))
                                     ##ax, angle = rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector2c( ve1, ve2 )
                                     ##angle = math.degrees(angle)
