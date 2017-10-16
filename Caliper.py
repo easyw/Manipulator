@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.2.2" #Manipulator for Parts
+__version__ = "1.2.3" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -676,6 +676,9 @@ def get_placement_hierarchy (sel0):
     
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
+        if 'Face' in str(subObj):
+            #say('Hierarchy obj Face')
+            face=sel0.SubObjects[0]
         if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
             subObj=Obj.Shape #forcing object to evaluate center of BBox
         #say('Hierarchy obj')
@@ -688,6 +691,7 @@ def get_placement_hierarchy (sel0):
             wire = Part.Wire(subObj)
             if subObj.isClosed():
                 subObj = Part.Face(wire)
+                face=subObj
                 circ=subObj.copy()
             else:
                 #pV2=subObj.Vertex2.Point
@@ -746,7 +750,8 @@ def get_placement_hierarchy (sel0):
                 #nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
                 pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
             if pad==0 and not Vtx:
-                nwnorm = nwshp.normalAt(0,0)
+                face.Placement=nwshp.Placement
+                nwnorm = face.normalAt(0,0)
             #else:
             #    pV1=findMidpoint(nwshp)
             #    nwnorm = nwshp.normalAt(0,0)
@@ -856,6 +861,7 @@ def get_placement_hierarchy (sel0):
     elif 'Face' in str(subObj) or 'Edge' in str(subObj) or 'Vertex' in str(subObj): # not in hierarchy
         #say('Part obj')
         pad=0 #face
+        face=subObj
         if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
             subObj=Obj.Shape #forcing object to evaluate center of BBox
         if 'Edge' in str(subObj):
@@ -864,6 +870,7 @@ def get_placement_hierarchy (sel0):
             if subObj.isClosed():
                 circ=subObj.copy()
                 subObj = Part.Face(wire)
+                face=subObj
                 #norm = subObj.normalAt(0,0)
             else:
                 edge_op=1
@@ -873,7 +880,7 @@ def get_placement_hierarchy (sel0):
         #else:
         #    norm = subObj.normalAt(0,0)
         if pad==0 and 'Vertex' not in str(subObj):
-            nwnorm = subObj.normalAt(0,0)
+            nwnorm = face.normalAt(0,0)
         if CPDockWidget.ui.rbBbox.isChecked():
             bbxCenter = subObj.BoundBox.Center
         else:
