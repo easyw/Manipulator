@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.2.3" #Manipulator for Parts
+__version__ = "1.2.8" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -40,7 +40,7 @@ testing2=False #true for showing helpers
 
 ## import statements
 
-import FreeCAD, FreeCADGui, Draft, Part, DraftTools, DraftVecUtils, DraftGeomUtils
+import FreeCAD, FreeCADGui, Draft, Part, PartGui, DraftTools, DraftVecUtils, DraftGeomUtils
 from FreeCAD import Base
 import sys, math
 from PySide import QtCore, QtGui
@@ -164,17 +164,124 @@ def dotproduct(first, other):
 	"dotproduct(Vector,Vector) - returns the dot product of both vectors"
 	if isinstance(first,FreeCAD.Vector) and isinstance(other,FreeCAD.Vector):
 		return (first.x*other.x + first.y*other.y + first.z*other.z)
+###
+def colinearVectors(A, B, C, info=0, tolerance=1e-12):
+    """ Return true if the 3 points are aligned.
+    """
+    Vector_1 = B - A
+    Vector_2 = C - B
+    #if info != 0:
+    #    print_point(Vector_1, msg="Vector_1 : ")
+    #    print_point(Vector_2, msg="Vector_2 : ")
+    Vector_3 = Vector_1.cross(Vector_2)
+    #if info != 0:
+    #    print_point(Vector_3, msg="Vector_1.cross(Vector_2) : ")
+        
+    if abs(Vector_3.x) <= tolerance and abs(Vector_3.y) <= tolerance and abs(Vector_3.z) <= tolerance:
+        if info != 0:
+            sayw("Colinear Vectors !")
+        return True
+    else:
+        if info != 0:
+            sayw("NOT Colinear Vectors !")
+        return False
+    return 
+###
+def reset_prop_shapes(obj):
 
+    s=obj.Shape
+    #say('resetting props #2')
+    r=[]
+    t=s.copy()
+    for i in t.childShapes():
+        c=i.copy()
+        c.Placement=t.Placement.multiply(c.Placement)
+        r.append((i,c))
+
+    w=t.replaceShape(r)
+    w.Placement=FreeCAD.Placement()
+    Part.show(w)
+    FreeCADGui.ActiveDocument.ActiveObject.ShapeColor=FreeCADGui.ActiveDocument.getObject(obj.Name).ShapeColor
+    FreeCADGui.ActiveDocument.ActiveObject.LineColor=FreeCADGui.ActiveDocument.getObject(obj.Name).LineColor
+    FreeCADGui.ActiveDocument.ActiveObject.PointColor=FreeCADGui.ActiveDocument.getObject(obj.Name).PointColor
+    FreeCADGui.ActiveDocument.ActiveObject.DiffuseColor=FreeCADGui.ActiveDocument.getObject(obj.Name).DiffuseColor
+    FreeCADGui.ActiveDocument.ActiveObject.Transparency=FreeCADGui.ActiveDocument.getObject(obj.Name).Transparency
+    new_label=obj.Label
+    FreeCAD.ActiveDocument.removeObject(obj.Name)
+    FreeCAD.ActiveDocument.recompute()
+    FreeCAD.ActiveDocument.ActiveObject.Label=new_label
+    rstObj=FreeCAD.ActiveDocument.ActiveObject
+    #say(rstObj)
+    #
+    return rstObj
+###
+
+def makeAPlane(w, w_multipl,norm,plcm,PC):
+    """ creating an Annotation Plane and reference for Dimension
+        aligned to the selected Face and centered on its center"""
+    
+    FreeCAD.ActiveDocument.addObject("Part::Plane","AnnotationPlane")
+    APT=FreeCAD.ActiveDocument.ActiveObject
+    APTName=APT.Name
+    lng=w*w_multipl
+    FreeCAD.ActiveDocument.getObject(APTName).Length=lng
+    FreeCAD.ActiveDocument.getObject(APTName).Width=lng
+    FreeCAD.ActiveDocument.getObject(APTName).Placement=Base.Placement(Base.Vector(0.0,0.0,0.0),Base.Rotation(0.000,0.000,0.000,1.000))
+    FreeCAD.ActiveDocument.getObject(APTName).Label='APlane'
+    FreeCADGui.ActiveDocument.getObject(APTName).ShapeColor = (0.667,0.667,0.498)
+    FreeCADGui.ActiveDocument.getObject(APTName).Transparency = 50 #99
+
+    FreeCAD.ActiveDocument.recompute()
+
+    #Draft.rotate(FreeCAD.ActiveDocument.getObject(APEdgeName),45,FreeCAD.Vector(0,0,0),FreeCAD.Vector(0,0,1))
+    
+    sh1=FreeCAD.ActiveDocument.getObject(APTName).Shape.copy()
+    #print sh1.normalAt(0,0)
+    sh1.Placement=plcm
+    #print PC
+    sh1.translate(FreeCAD.Vector(PC[0]-lng/2,PC[1]-lng/2,PC[2]))
+    rot_angle = math.degrees(FreeCAD.Vector(0.0,0.0,1.0).getAngle(norm))
+    rot_axis = FreeCAD.Vector(0.0,0.0,1.0).cross(norm)
+    Origin = Base.Vector(0, 0, 0)
+    if colinearVectors(norm, Origin, FreeCAD.Vector(0.0,0.0,1.0), info=0, tolerance=1e-12):
+        rot_axis = Base.Vector(0, 0, 1).cross(norm)
+        if rot_axis==FreeCAD.Vector (0.0, 0.0, 0.0):
+            rot_axis=Base.Vector(0, 1, 0).cross(norm)
+        #rot_angle = 180. # + m_angleAlignFaces
+        rot_angle=0.
+    #print rot_axis
+    sh1.rotate(DraftVecUtils.tup(PC), DraftVecUtils.tup(rot_axis), rot_angle)
+    FreeCAD.ActiveDocument.getObject(APTName).Placement=sh1.Placement
+
+    FreeCAD.ActiveDocument.recompute()
+
+    
+    # PLN=FreeCAD.ActiveDocument.getObject(APT.Name)
+    # AP=reset_prop_shapes(PLN)
+    
+    #sh1=FreeCAD.ActiveDocument.getObject(AP.Name).Shape.copy()
+    #sh1.translate(FreeCAD.Vector(-w/2,-w/2,0))
+    #FreeCAD.ActiveDocument.getObject(AP.Name).Placement=sh1.Placement    
+                                        
+    return APTName
+##
+def remove_all_selection():
+    if FreeCAD.ActiveDocument is not None:
+        FreeCAD.ActiveDocument.recompute()
+        for ob in FreeCAD.ActiveDocument.Objects:
+            FreeCADGui.Selection.removeSelection(ob)
+        
+##
 
         
 ##--------------------------------------------------------------------------------------
 class SelObserverCaliper:
     def addSelection(self, document, object, element, position):  # Selection
         global ui
-        global selobject, sel, posz, P,P1
+        global selobject, sel, posz, P,P1,P2,PE,PC,APName
         global initial_placement, last_selection, objs
-        global added_dim, in_hierarchy, vec1, midP, va, vb, P_T
-        global ornt_1, sel1
+        global added_dim, in_hierarchy, vec1, mid, midP, va, vb, P_T
+        global ornt_1, sel1, has_radius, w, angle
         
         fntsize='0.2mm'
         ticksize='0.1mm'
@@ -230,91 +337,164 @@ class SelObserverCaliper:
                         #say ('last selection: ' + obj.Name)
                         #for o in last_selection:
                         #    say('sel list ' + o.Name) #o.Object.Name)
+                        
                         if CPDockWidget.ui.rbSnap.isChecked()\
-                              or CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
+                              or CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():    ### Snap
                             #print (sel[0].SubObjects[0].Vertexes[0].Point,sel[0].SubObjects[0].Vertexes[1].Point)
                             #print 'pnt=',pnt[0]
-                            if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
+                            if CPDockWidget.ui.DimensionP1.isEnabled(): #step #1
                                 P1=pnt
-                                P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                P_T=pnt
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(P.Name))
-                                FreeCADGui.ActiveDocument.getObject(P.Name).PointSize = 10.000
-                                FreeCADGui.ActiveDocument.getObject(P.Name).PointColor = (1.000,0.667,0.000)
+                                PC=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
+                                FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
                                 CPDockWidget.ui.DimensionP1.setEnabled(False)
                                 CPDockWidget.ui.DimensionP2.setEnabled(True)
-                            else:
-                                ##ln=Draft.makeLine(pnt,P1)
-                                ##print ln.Length
+                            elif CPDockWidget.ui.DimensionP2.isEnabled(): #step #2
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
-                                CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                #print 'P2 enabled'
-                                FreeCAD.ActiveDocument.removeObject(P.Name)
-                                halfedge = (pnt.sub(P1)).multiply(.5)
-                                mid=FreeCAD.Vector.add(P1,halfedge)
-                                #print mid
-                                if mid!=P1: #non coincident points
-                                    dim=Draft.makeDimension(pnt,P1,mid)
-                                    #dim=Draft.makeDimension(pnt,P1,mid)
-                                    Draft.autogroup(dim)
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                    dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                    #if int(dst/40)>0:
-                                    #    fntsize = int(dst/40)
-                                    #else:
-                                    #    fntsize = (dst/40)
-                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
-                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                    FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
-                                    say("Distance : "+str(dim.Distance))
-                                    added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                w=dist(P1, pnt)*5
+                                P2=pnt
+                                if CPDockWidget.ui.cbAPlane.isChecked():
+                                    PE=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.667,0.000)
+                                    CPDockWidget.ui.APlane.setEnabled(True)
+                                    CPDockWidget.ui.DimensionP1.setEnabled(False)
                                 else:
-                                    say("Distance : 0.0")
-                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
-                                FreeCAD.ActiveDocument.recompute()
-                        elif (CPDockWidget.ui.rbRadius.isChecked() and not Vtx_sel):
-                            if 'Edge' in str(sel[0].SubObjects[0]):
-                                CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                    FreeCAD.ActiveDocument.removeObject(PC.Name)
+                                    halfedge = (pnt.sub(P1)).multiply(.5)
+                                    mid=FreeCAD.Vector.add(P1,halfedge)
+                                    if mid!=P1: #non coincident points
+                                        dim=Draft.makeDimension(pnt,P1,mid)
+                                        Draft.autogroup(dim)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
+                                        say("Distance : "+str(dim.Distance))
+                                        added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                    else:
+                                        say("Distance : 0.0")
+                                    sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                    sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                    sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                            elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
+                                CPDockWidget.ui.APlane.setEnabled(False)
+                                CPDockWidget.ui.DimensionP3.setEnabled(True)
+                                #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
+                                plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
+                                APName=makeAPlane(w,1.,norm,plcmT,P1)
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+                            elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
+                                CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                #print 'bbC',bbC
-                                has_radius=False
-                                curve_type = type(sel[0].SubObjects[0].Curve)
-                                if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
-                                    has_radius=True
-                                P1=FreeCAD.Vector(bbC)
-                                halfedge = (pnt.sub(P1)).multiply(.5)
-                                mid=FreeCAD.Vector.add(P1,halfedge)
-                                dim=Draft.makeDimension(pnt,P1,mid)
-                                PC=Draft.makePoint(P1[0],P1[1],P1[2])
-                                #P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                if has_radius:
-                                    PC.Label='Center'
-                                else:
-                                    PC.Label='Mid'
-                                FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
+                                
+                                dim=Draft.makeDimension(P2,P1,posz)
                                 Draft.autogroup(dim)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                #if int(dst/40)>0:
-                                #    fntsize = int(dst/40)
-                                #else:
-                                #    fntsize = (dst/40)
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
+                                FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
+                                say("Distance : "+str(dim.Distance))
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                FreeCAD.ActiveDocument.removeObject(PC.Name)
+                                FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                FreeCAD.ActiveDocument.removeObject(APName)
+                                
+                            FreeCAD.ActiveDocument.recompute()
+### -------------------------------------------------- end Snap ------------------------------------------------------------- ###
+
+                        elif (CPDockWidget.ui.rbRadius.isChecked() and not Vtx_sel): ### Radius
+                            if CPDockWidget.ui.DimensionP1.isEnabled():# and not CPDockWidget.ui.APlane.isEnabled(): #step #1                            
+                                if 'Edge' in str(sel[0].SubObjects[0]):
+                                    CPDockWidget.ui.DimensionP1.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                    #print 'bbC',bbC
+                                    has_radius=False
+                                    curve_type = type(sel[0].SubObjects[0].Curve)
+                                    if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
+                                        has_radius=True
+                                    P1=FreeCAD.Vector(bbC)
+                                    P2=pnt
+                                    halfedge = (pnt.sub(P1)).multiply(.5)
+                                    mid=FreeCAD.Vector.add(P1,halfedge)
+                                    PC=Draft.makePoint(P1[0],P1[1],P1[2])
+                                    PE=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    w=dist(P1, pnt)*5
+                                    if CPDockWidget.ui.cbAPlane.isChecked():
+                                        CPDockWidget.ui.APlane.setEnabled(True)
+                                        #APName,APEdgeName=makeAPlane(w,norm,plcm,P1)
+                                        #added_dim.append(FreeCAD.ActiveDocument.getObject(APEdgeName))
+                                        #added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
+                                    #print norm
+                                    #P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    if has_radius:
+                                        PC.Label='Center'
+                                    else:
+                                        PC.Label='Mid'
+                                    FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.667,0.000)
+                                    FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
+                                    
+                                    if not CPDockWidget.ui.cbAPlane.isChecked():
+                                        dim=Draft.makeDimension(pnt,P1,mid)
+                                        Draft.autogroup(dim)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                        if has_radius:
+                                            say("Radius   : "+str(dim.Distance))
+                                            FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
+                                            sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
+                                        else:
+                                            say("Distance : "+str(dim.Distance))
+                                            FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
+                                            sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                            sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                            sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                        added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                    FreeCAD.ActiveDocument.recompute()
+                                    #print 'step#1 norm ', norm, ' plcm ',plcm, ' P1 ',P1
+                            elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
+                                CPDockWidget.ui.APlane.setEnabled(False)
+                                CPDockWidget.ui.DimensionP3.setEnabled(True)
+                                #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
+                                plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
+                                APName=makeAPlane(w,2.,norm,plcmT,P1)
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+                            
+                            elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
+                                CPDockWidget.ui.DimensionP3.setEnabled(False)
+                                CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                
+                                dim=Draft.makeDimension(P2,P1,posz)
+                                Draft.autogroup(dim)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 if has_radius:
                                     say("Radius   : "+str(dim.Distance))
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
@@ -326,105 +506,192 @@ class SelObserverCaliper:
                                     sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                     sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                FreeCAD.ActiveDocument.removeObject(APName)
+                                
                                 FreeCAD.ActiveDocument.recompute()
-                        elif (CPDockWidget.ui.rbLength.isChecked() and not Vtx_sel):
-                            if 'Edge' in str(sel[0].SubObjects[0]):
-                                CPDockWidget.ui.DimensionP2.setEnabled(False)
+### ---------------------------- end radius ------------------------------------------ ###
+
+                        elif (CPDockWidget.ui.rbLength.isChecked() and not Vtx_sel):  ### Length
+                            if CPDockWidget.ui.DimensionP1.isEnabled():# and not CPDockWidget.ui.APlane.isEnabled(): #step #1                            
+                                if 'Edge' in str(sel[0].SubObjects[0]):
+                                    CPDockWidget.ui.DimensionP1.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP2.setEnabled(False)
+                                    P1=FreeCAD.Vector(bbC)
+                                    PC=Draft.makePoint(P1[0],P1[1],P1[2])
+                                    PE=Draft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    w=dist(P1, pnt)*5
+                                    P2=pnt
+                                    if CPDockWidget.ui.cbAPlane.isChecked():
+                                        CPDockWidget.ui.APlane.setEnabled(True)
+                                    FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.667,0.000)
+                                    FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
+
+                                    if not CPDockWidget.ui.cbAPlane.isChecked():
+                                        halfedge = (pnt.sub(P1)).multiply(.5)
+                                        mid=FreeCAD.Vector.add(P1,halfedge)
+                                        dim=Draft.makeDimension(pnt,P1,mid)
+                                        Draft.autogroup(dim)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
+                                        say("Distance : "+str(dim.Distance))
+                                        sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                        sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                        sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                        added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                    FreeCAD.ActiveDocument.recompute()
+                            elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
+                                CPDockWidget.ui.APlane.setEnabled(False)
+                                CPDockWidget.ui.DimensionP3.setEnabled(True)
+                                #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
+                                plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
+                                APName=makeAPlane(w,1.0,norm,plcmT,P1)
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+                            elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
+                                CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                P1=FreeCAD.Vector(bbC)
-                                halfedge = (pnt.sub(P1)).multiply(.5)
-                                mid=FreeCAD.Vector.add(P1,halfedge)
-                                dim=Draft.makeDimension(pnt,P1,mid)
+                                
+                                dim=Draft.makeDimension(P2,P1,posz)
                                 Draft.autogroup(dim)
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                #if int(dst/40)>0:
-                                #    fntsize = int(dst/40)
-                                #else:
-                                #    fntsize = (dst/40)
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = str(fntsize) #'1.0 mm'
-                                #FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = str(int(dst/400)) #'0.1 mm'
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
+                                dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
                                 say("Distance : "+str(dim.Distance))
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                FreeCAD.ActiveDocument.removeObject(PC.Name)
+                                FreeCAD.ActiveDocument.removeObject(APName)
+                                
                                 FreeCAD.ActiveDocument.recompute()
-                        elif (CPDockWidget.ui.rbAngle.isChecked() and not Vtx_sel):
+### -------------------------------------- end Length ---------------------------------------------------------- ###
+
+                        elif (CPDockWidget.ui.rbAngle.isChecked() and not Vtx_sel):   ### Angle
                             if ('Edge' in str(sel[0].SubObjects[0]) or 'Face' in str(sel[0].SubObjects[0])):
-                                if not CPDockWidget.ui.DimensionP2.isEnabled(): #step #1
+                                if CPDockWidget.ui.DimensionP1.isEnabled(): #step #1
                                     if 'Face' in str(sel[0].SubObjects[0]):
                                         P1=FreeCAD.Vector(bbC)
                                         midP=P1
-                                        P_T=Draft.makePoint(P1[0],P1[1],P1[2])
+                                        PC=Draft.makePoint(P1[0],P1[1],P1[2])
                                         vec1 = norm
                                         ornt_1 = orient
                                         sel1='face'
-                                        #print 'norm ', norm, norm[0],norm[1],norm[2]
-                                        #print 'bbC ', bbC[0], bbC[1], bbC[2]
                                         va=P1; 
                                         vb=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
-                                        #print va, vb
                                     else:
                                         P1=FreeCAD.Vector(bbC)
                                         halfedge = (pnt.sub(P1)).multiply(.5)
-                                        midP=FreeCAD.Vector.add(P1,halfedge)                                #P_2=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                        P_T=Draft.makePoint(midP[0],midP[1],midP[2])
-                                        #added_dim.append(FreeCAD.ActiveDocument.getObject(P_2.Name))
+                                        midP=FreeCAD.Vector.add(P1,halfedge)
+                                        PC=Draft.makePoint(midP[0],midP[1],midP[2])
                                         va=pnt; vb=P1
                                         vec1 = pnt - P1
                                         ornt_1 = orient
                                         sel1='edge'
-                                        # print orient
-                                        #normal = DraftVecUtils.toString((v1.cross(v2)).normalize())
-                                        #print normal
-                                        #stop
-                                        #for a in range(len(angles)):
-                                        #    if angles[a] > 2*math.pi:
-                                        #        angles[a] = angles[a]-(2*math.pi)
-                                    added_dim.append(FreeCAD.ActiveDocument.getObject(P_T.Name))
-                                    FreeCADGui.ActiveDocument.getObject(P_T.Name).PointSize = 10.000
-                                    FreeCADGui.ActiveDocument.getObject(P_T.Name).PointColor = (1.000,0.333,0.498)
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                    FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
+                                    FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.333,0.498)
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
                                     CPDockWidget.ui.DimensionP2.setEnabled(True)
-                                else:
-                                    ##ln=Draft.makeLine(pnt,P1)
-                                    ##print ln.Length
+
+                                elif CPDockWidget.ui.DimensionP2.isEnabled(): #step #2
                                     CPDockWidget.ui.DimensionP2.setEnabled(False)
-                                    CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                    FreeCAD.ActiveDocument.removeObject(P_T.Name)
                                     slct=sel[0].SubObjects[0]
-                                    #print 'P2 enabled'
-                                    P1=pnt
-                                    P2=FreeCAD.Vector(bbC)
+                                    P2=pnt
+                                    P1=FreeCAD.Vector(bbC)
                                     if 'Face' in str(slct):
-                                        v4=P2; 
+                                        v4=P1; 
                                         v3=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
                                         mid=FreeCAD.Vector(bbC)
                                         sel2='face'
                                     else:
-                                        v3 = pnt #e2.Vertexes[-1].Point
-                                        v4 = P2 #e2.Vertexes[0].Point
-                                        halfedge = (pnt.sub(P2)).multiply(.5)
-                                        mid=FreeCAD.Vector.add(P2,halfedge)   
+                                        v3 = P2 #e2.Vertexes[-1].Point
+                                        v4 = P1 #e2.Vertexes[0].Point
+                                        halfedge = (pnt.sub(P1)).multiply(.5)
+                                        mid=FreeCAD.Vector.add(P1,halfedge)   
                                         ##Px=Draft.makePoint(mid[0],mid[1],mid[2])
                                         sel2='edge'
                                     halfedge = (mid.sub(midP)).multiply(.5)
                                     mid2=FreeCAD.Vector.add(midP,halfedge)                                   
-                                    if mid!=midP: #non coincident points
-                                        dim=Draft.makeDimension(mid,midP,mid2)
+                                    PE=Draft.makePoint(mid[0],mid[1],mid[2])
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
+                                    FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.333,0.498)
+                                    w=dist(P1, P2)*5
+                                    vec2 = P2 - P1
+                                    v1 = va #e1.Vertexes[-1].Point
+                                    v2 = vb #e1.Vertexes[0].Point
+                                    ve1 = v1.sub(v2)
+                                    # Create the Vector for second edge
+                                    ve2 = v3.sub(v4)                                
+                                    if orient==ornt_1:
+                                        # print 'adjusting angle'
+                                        ve2 = v4.sub(v3)                                
+                                    angle = math.degrees(ve2.getAngle(ve1))
+                                    
+                                    if CPDockWidget.ui.cbAPlane.isChecked():
+                                        CPDockWidget.ui.APlane.setEnabled(True)
                                     else:
-                                        dim=Draft.makeDimension(pnt,mid,P2)                                
+                                        CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                        FreeCAD.ActiveDocument.removeObject(PC.Name)
+                                        FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                        if mid!=midP: #non coincident points
+                                            dim=Draft.makeDimension(mid,midP,mid2)
+                                        else:
+                                            dim=Draft.makeDimension(pnt,mid,P1)                                
+                                        Draft.autogroup(dim)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
+                                        added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                        vec2 = P2 - P1
+                                        v1 = va #e1.Vertexes[-1].Point
+                                        v2 = vb #e1.Vertexes[0].Point
+                                        ve1 = v1.sub(v2)
+                                        # Create the Vector for second edge
+                                        ve2 = v3.sub(v4)                                
+                                        if orient==ornt_1:
+                                            # print 'adjusting angle'
+                                            ve2 = v4.sub(v3)                                
+                                        angle = math.degrees(ve2.getAngle(ve1))
+                                        
+                                        sayw("Angle : "+'{0:.2f}'.format(angle))
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+
+                                elif CPDockWidget.ui.APlane.isEnabled(): ## step #3
+                                    CPDockWidget.ui.APlane.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP3.setEnabled(True)
+                                    #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
+                                    plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
+                                    APName=makeAPlane(w,1.0,norm,plcmT,P1)
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+
+                                elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #4
+                                    CPDockWidget.ui.DimensionP3.setEnabled(False)
+                                    CPDockWidget.ui.DimensionP1.setEnabled(True)
+                                
+                                    dim=Draft.makeDimension(mid,midP,posz)
                                     Draft.autogroup(dim)
-                                    #FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = '1.0 mm'
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                     dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
@@ -433,65 +700,16 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
-                                    vec2 = P1 - P2
-                                    #angle = vec1.getAngle(vec2)
-                                    #v1.cross(v2)).normalize()
-                                    #print 'dot ',str(dotproduct(normalized(vec2),normalized(vec1)))
-                                    v1 = va #e1.Vertexes[-1].Point
-                                    v2 = vb #e1.Vertexes[0].Point
-                                    ve1 = v1.sub(v2)
-                                    #print ve1.Orientation
-                                    # Create the Vector for second edge
-                                    ve2 = v3.sub(v4)                                
-                                                                    
-                                    # print orient, ornt_1
-                                    #if orient==ornt_1:
-                                    #    print 'adjusting angle'
-                                    #    angle = 180-angle
-                                    if orient==ornt_1:
-                                        # print 'adjusting angle'
-                                        ve2 = v4.sub(v3)                                
-                                    angle = math.degrees(ve2.getAngle(ve1))
-                                    #if sel1=='face' and sel2=='edge':
-                                    #    angle=angle-90
-                                    #if sel1=='edge' and sel2=='face':
-                                    #    angle=angle-90
-                                    #if sel1=='face' and sel2=='face':
-                                    #    angle=angle+90
-                                    #print("m_angle = " + str(angle))
-                                    ##ax, angle = rotation_required_to_rotate_a_vector_to_be_aligned_to_another_vector2c( ve1, ve2 )
-                                    ##angle = math.degrees(angle)
-                                    #if str(dotproduct(normalized(vec1),normalized(vec2))) == '-1.0':
-                                    #    angle = 0.0
-                                    #else:
-                                    #    angle = -(math.degrees(math.acos(dotproduct(normalized(vec1),normalized(vec2))))-180)
-                                    
                                     sayw("Angle : "+'{0:.2f}'.format(angle))
-                                    #sayerr(angle)
-                                    if 0: #abs(angle)<angle_tolerance or abs(angle)<180+angle_tolerance:
-                                        ### this must be checked more
-                                        #calculating Distance between // edges
-                                        a1=np.array([v1[0],v1[1],v1[2]])
-                                        a0=np.array([v2[0],v2[1],v2[2]])
-                                        b0=np.array([v3[0],v3[1],v3[2]])
-                                        b1=np.array([v4[0],v4[1],v4[2]])
-                                        dst=closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=True)[2]
-                                        dst_str='{0:.2f}'.format(dst)
-                                        say("Distance // vectors : "+'{0:.3f}'.format(dst))
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° '+dst_str+' mm'
-                                    else:
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
-                                    #sayw("Delta X  : "+str(abs(mid[0]-midP[0])))    
-                                    #sayw("Delta Y  : "+str(abs(mid[1]-midP[1])))    
-                                    #sayw("Delta Z  : "+str(abs(mid[2]-midP[2])))    
-                                    #if angle==0 or angle==180:
-                                    #    say("Distance // vectors : "+'{0:.2f}'.format(float(dst)))
-                                    FreeCAD.ActiveDocument.recompute()
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+                                    FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                    FreeCAD.ActiveDocument.removeObject(PC.Name)
+                                    FreeCAD.ActiveDocument.removeObject(APName)
+
+                                FreeCAD.ActiveDocument.recompute()
                                     
-                        #if CPDockWidget.ui.rbCenterFace.isChecked and ('Edge' in str(sel[0].SubObjects[0]) \
-                        #                                            or 'Face' in str(sel[0].SubObjects[0])):
-                        #    if sel[0].SubObjects[0].isClosed():
                                 
                             
                     else: #OLD Vertex not allowed in selection
@@ -665,6 +883,8 @@ def get_placement_hierarchy (sel0):
     
     global use_hierarchy, posz
     
+    remove_all_selection()
+    
     Obj=sel0.Object
     subObj=sel0.SubObjects[0]
     edge_op=0
@@ -676,11 +896,10 @@ def get_placement_hierarchy (sel0):
     
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
+        face=subObj
         if 'Face' in str(subObj):
             #say('Hierarchy obj Face')
             face=sel0.SubObjects[0]
-        if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
-            subObj=Obj.Shape #forcing object to evaluate center of BBox
         #say('Hierarchy obj')
         if 'Face' in str(subObj):
             #say('Hierarchy obj Face')
@@ -696,6 +915,7 @@ def get_placement_hierarchy (sel0):
             else:
                 #pV2=subObj.Vertex2.Point
                 subObj = wire
+                face=subObj
                 #print subObj.Vertex2.Point
                 edge_op=1
             pad=1 #edge
@@ -709,6 +929,8 @@ def get_placement_hierarchy (sel0):
             #wire = Part.Wire(nP)
             subObj = nP.Shape
             FreeCAD.ActiveDocument.removeObject(nP.Name)
+        if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
+            subObj=Obj.Shape #forcing object to evaluate center of BBox
         if 1: #use_hierarchy:
             nwshp = subObj.copy()
             pOriginal=subObj.Placement
@@ -749,6 +971,11 @@ def get_placement_hierarchy (sel0):
             if edge_op==1:
                 #nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
                 pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
+                ss=subObj.copy()#SubObjects[0] is the edge list
+                pointsDirection  = []
+                pointsDirection = ss.discretize(Number=5) # discretize the path line
+                nwnorm=pointsDirection[0].sub(pointsDirection[1]) 
+            #print edge_op
             if pad==0 and not Vtx:
                 face.Placement=nwshp.Placement
                 nwnorm = face.normalAt(0,0)
@@ -758,9 +985,18 @@ def get_placement_hierarchy (sel0):
             if CPDockWidget.ui.rbBbox.isChecked():
                 bbxCenter = nwshp.BoundBox.Center
             else:
-                if hasattr(nwshp,'CenterOfMass'):
-                    bbxCenter = nwshp.CenterOfMass
-                else:
+            #    if hasattr(nwshp,'CenterOfMass'):
+            #        bbxCenter = nwshp.CenterOfMass
+            #    else:
+            #        bbxCenter = nwshp.BoundBox.Center
+                try:
+                    if hasattr(nwshp,'Solids'):
+                        if hasattr(nwshp.Solids[0],'CenterOfMass'):
+                            bbxCenter = nwshp.Solids[0].CenterOfMass
+                            #print 'Mass 1'
+                    else:
+                        bbxCenter = nwshp.BoundBox.Center
+                except:
                     bbxCenter = nwshp.BoundBox.Center
         # else:
         #     nwshp = subObj.copy()
@@ -813,10 +1049,19 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
-                    if hasattr(nwshp,'CenterOfMass'):
-                        bbxCenter = nwshp.CenterOfMass
-                    else:
+                    try:
+                        if hasattr(nwshp,'Solids'):
+                            if hasattr(nwshp.Solids[0],'CenterOfMass'):
+                                bbxCenter = nwshp.Solids[0].CenterOfMass
+                                #print 'Mass 1'
+                        else:
+                            bbxCenter = nwshp.BoundBox.Center
+                    except:
                         bbxCenter = nwshp.BoundBox.Center
+                    #if hasattr(nwshp,'CenterOfMass'):
+                    #    bbxCenter = nwshp.CenterOfMass
+                    #else:
+                    #    bbxCenter = nwshp.BoundBox.Center
             if pad==1:
                 Pnt=nwshp.Vertex1.Point
             else:
@@ -835,10 +1080,19 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
-                    if hasattr(nwshp,'CenterOfMass'):
-                        bbxCenter = nwshp.CenterOfMass
-                    else:
+                    try:
+                        if hasattr(nwshp,'Solids'):
+                            if hasattr(nwshp.Solids[0],'CenterOfMass'):
+                                bbxCenter = nwshp.Solids[0].CenterOfMass
+                                #print 'Mass 1'
+                        else:
+                            bbxCenter = nwshp.BoundBox.Center
+                    except:
                         bbxCenter = nwshp.BoundBox.Center
+                    #if hasattr(nwshp,'CenterOfMass'):
+                    #    bbxCenter = nwshp.CenterOfMass
+                    #else:
+                    #    bbxCenter = nwshp.BoundBox.Center
             return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
         elif CPDockWidget.ui.rbAngle.isChecked():
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
@@ -851,10 +1105,19 @@ def get_placement_hierarchy (sel0):
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
-                    if hasattr(nwshp,'CenterOfMass'):
-                        bbxCenter = nwshp.CenterOfMass
-                    else:
-                        bbxCenter = nwshp.BoundBox.Center                    
+                    try:
+                        if hasattr(nwshp,'Solids'):
+                            if hasattr(nwshp.Solids[0],'CenterOfMass'):
+                                bbxCenter = nwshp.Solids[0].CenterOfMass
+                                #print 'Mass 1'
+                        else:
+                            bbxCenter = nwshp.BoundBox.Center
+                    except:
+                        bbxCenter = nwshp.BoundBox.Center
+                    #if hasattr(nwshp,'CenterOfMass'):
+                    #    bbxCenter = nwshp.CenterOfMass
+                    #else:
+                    #    bbxCenter = nwshp.BoundBox.Center                    
             return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
 
 
@@ -862,8 +1125,8 @@ def get_placement_hierarchy (sel0):
         #say('Part obj')
         pad=0 #face
         face=subObj
-        if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
-            subObj=Obj.Shape #forcing object to evaluate center of BBox
+        plcm=subObj.Placement
+        #sayerr(plcm)
         if 'Edge' in str(subObj):
             wire = Part.Wire(subObj)
             orient=subObj.Orientation
@@ -871,23 +1134,43 @@ def get_placement_hierarchy (sel0):
                 circ=subObj.copy()
                 subObj = Part.Face(wire)
                 face=subObj
+                nwnorm = face.normalAt(0,0)
+                plcm=subObj.Placement
                 #norm = subObj.normalAt(0,0)
             else:
                 edge_op=1
+                ss=subObj.copy()#SubObjects[0] is the edge list
+                pointsDirection  = []
+                pointsDirection = ss.discretize(Number=5) # discretize the path line
+                nwnorm=pointsDirection[0].sub(pointsDirection[1]) 
                 #norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
                 pV1=subObj.Vertex1.Point; pV2=subObj.Vertex2.Point
             pad=1 #edge
+        if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
+            subObj=Obj.Shape #forcing object to evaluate center of BBox
+            #print 'BBox or Mass'
         #else:
         #    norm = subObj.normalAt(0,0)
         if pad==0 and 'Vertex' not in str(subObj):
-            nwnorm = face.normalAt(0,0)
+            try:
+                nwnorm = face.normalAt(0,0)
+            except:
+                nwnorm = subObj.normalAt(0,0)
+                #nwnorm = face.normalAt(0,0)
         if CPDockWidget.ui.rbBbox.isChecked():
             bbxCenter = subObj.BoundBox.Center
+            #print 'BBox 1'
         else:
-            if hasattr(subObj,'CenterOfMass'):
-                bbxCenter = subObj.CenterOfMass
-            else:
+            try:
+                if hasattr(subObj,'Solids'):
+                    if hasattr(subObj.Solids[0],'CenterOfMass'):
+                        bbxCenter = subObj.Solids[0].CenterOfMass
+                        #print 'Mass 1'
+                else:
+                    bbxCenter = subObj.BoundBox.Center
+            except:
                 bbxCenter = subObj.BoundBox.Center
+                #print 'BBox 2'
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
         pCkd=FreeCAD.Vector(posz)
@@ -933,11 +1216,16 @@ def get_placement_hierarchy (sel0):
             else:
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
-                else:
-                    if hasattr(subObj,'CenterOfMass'):
-                        bbxCenter = subObj.CenterOfMass
+                    #print 'BBox 3'
+                try:
+                    if hasattr(subObj,'Solids'):
+                        if hasattr(subObj.Solids[0],'CenterOfMass'):
+                            bbxCenter = subObj.Solids[0].CenterOfMass
+                            #print 'Mass 1'
                     else:
                         bbxCenter = subObj.BoundBox.Center
+                except:
+                    bbxCenter = subObj.BoundBox.Center
             if pad==1:
                 Pnt=wire.Vertex1.Point
             else:
@@ -972,7 +1260,7 @@ def get_placement_hierarchy (sel0):
                         bbxCenter = subObj.CenterOfMass
                     else:
                         bbxCenter = subObj.BoundBox.Center
-        return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
+        return plcm, top_level_obj, bbxCenter, Pnt, orient, nwnorm
             
 ##
 
@@ -1004,6 +1292,14 @@ PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0g
 DimensionP2_b64=\
 """
 PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iCiAgIHhtbG5zOmNjPSJodHRwOi8vY3JlYXRpdmVjb21tb25zLm9yZy9ucyMiCiAgIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyIKICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgd2lkdGg9IjY0cHgiCiAgIGhlaWdodD0iNjRweCIKICAgaWQ9InN2ZzI2NzYiCiAgIHNvZGlwb2RpOnZlcnNpb249IjAuMzIiCiAgIGlua3NjYXBlOnZlcnNpb249IjAuOTIuMCByMTUyOTkiCiAgIHNvZGlwb2RpOmRvY25hbWU9IkRpbWVuc2lvblBCLnN2ZyIKICAgaW5rc2NhcGU6b3V0cHV0X2V4dGVuc2lvbj0ib3JnLmlua3NjYXBlLm91dHB1dC5zdmcuaW5rc2NhcGUiCiAgIHZlcnNpb249IjEuMSI+CiAgPGRlZnMKICAgICBpZD0iZGVmczI2NzgiPgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQ0MDc3Ij4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6Izg4OGE4NTtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3A0MDc5IiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMmUzNDM2O3N0b3Atb3BhY2l0eToxOyIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBpZD0ic3RvcDQwODEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGlua3NjYXBlOnBlcnNwZWN0aXZlCiAgICAgICBzb2RpcG9kaTp0eXBlPSJpbmtzY2FwZTpwZXJzcDNkIgogICAgICAgaW5rc2NhcGU6dnBfeD0iMCA6IDMyIDogMSIKICAgICAgIGlua3NjYXBlOnZwX3k9IjAgOiAxMDAwIDogMCIKICAgICAgIGlua3NjYXBlOnZwX3o9IjY0IDogMzIgOiAxIgogICAgICAgaW5rc2NhcGU6cGVyc3AzZC1vcmlnaW49IjMyIDogMjEuMzMzMzMzIDogMSIKICAgICAgIGlkPSJwZXJzcGVjdGl2ZTI2ODQiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSIzODM2LTAtNi01Ij4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2M0YTAwMDtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTIiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNmY2U5NGY7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01IiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgeGxpbms6aHJlZj0iI2xpbmVhckdyYWRpZW50MzgzNi0wLTYiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzMTA1LTMiCiAgICAgICBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIKICAgICAgIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMC44MzMwOTQ0NSwwLDAsMC44MzMwOTQ0NSwtMi40MTA4NDI2LDIuNzMxODY0NykiCiAgICAgICB4MT0iLTE4IgogICAgICAgeTE9IjE4IgogICAgICAgeDI9Ii0yMiIKICAgICAgIHkyPSI1IiAvPgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODM2LTAtNiI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNjNGEwMDA7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wMzgzOC0yLTciIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNmY2U5NGY7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTUiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQzODM2LTAtMiIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDMxMDUtMSIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgwLjgzMzA5NDQ1LDAsMCwwLjgzMzA5NDQ1LC0yLjQxMDg0MjYsMi43MzE4NjQ3KSIKICAgICAgIHgxPSItMTgiCiAgICAgICB5MT0iMTgiCiAgICAgICB4Mj0iLTIyIgogICAgICAgeTI9IjUiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MzYtMC0yIj4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2M0YTAwMDtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTItNzAiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNmY2U5NGY7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTkiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQzODM2LTAtMSIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDMxMDUtNiIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgwLjgzMzA5NDQ1LDAsMCwwLjgzMzA5NDQ1LC0yLjQxMDg0MjYsMi43MzE4NjQ3KSIKICAgICAgIHgxPSItMTgiCiAgICAgICB5MT0iMTgiCiAgICAgICB4Mj0iLTIyIgogICAgICAgeTI9IjUiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MzYtMC0xIj4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2M0YTAwMDtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTItOCIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2ZjZTk0ZjtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMSIKICAgICAgICAgaWQ9InN0b3AzODQwLTUtNyIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM4MzYtMC0zIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzEwNS0yIgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiCiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0ibWF0cml4KDAuODMzMDk0NDUsMCwwLDAuODMzMDk0NDUsLTIuNDEwODQyNiwyLjczMTg2NDcpIgogICAgICAgeDE9Ii0xOCIKICAgICAgIHkxPSIxOCIKICAgICAgIHgyPSItMjIiCiAgICAgICB5Mj0iNSIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgzNi0wLTMiPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojYzRhMDAwO3N0b3Atb3BhY2l0eToxOyIKICAgICAgICAgb2Zmc2V0PSIwIgogICAgICAgICBpZD0ic3RvcDM4MzgtMi03NSIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2ZjZTk0ZjtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMSIKICAgICAgICAgaWQ9InN0b3AzODQwLTUtOTIiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQ0MDc3LTkiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQ0MDkzLTgiCiAgICAgICBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIKICAgICAgIHgxPSI0NTguMjE0MiIKICAgICAgIHkxPSIzNC42MTM4MDgiCiAgICAgICB4Mj0iNDU5LjY5Mzk3IgogICAgICAgeTI9IjMwLjE3NDUxNSIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NDA3Ny05Ij4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6Izg4OGE4NTtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3A0MDc5LTYiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiMyZTM0MzY7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wNDA4MS0wIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgeGxpbms6aHJlZj0iI2xpbmVhckdyYWRpZW50NDA3Ny0wIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NDA5My00IgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiCiAgICAgICB4MT0iNDU4LjIxNDIiCiAgICAgICB5MT0iMzQuNjEzODA4IgogICAgICAgeDI9IjQ1OS42OTM5NyIKICAgICAgIHkyPSIzMC4xNzQ1MTUiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDQwNzctMCI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiM4ODhhODU7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wNDA3OS05IiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMmUzNDM2O3N0b3Atb3BhY2l0eToxOyIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBpZD0ic3RvcDQwODEtNCIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIHkyPSIzMC4xNzQ1MTUiCiAgICAgICB4Mj0iNDU5LjY5Mzk3IgogICAgICAgeTE9IjM0LjYxMzgwOCIKICAgICAgIHgxPSI0NTguMjE0MiIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NDE0NSIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDQwNzctMCIKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgeGxpbms6aHJlZj0iI2xpbmVhckdyYWRpZW50NDA3Ny0wLTIiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODE5LTEiCiAgICAgICB4MT0iMjMwLjAzMTY2IgogICAgICAgeTE9IjY3NS4wNDAzNCIKICAgICAgIHgyPSIxNTUuMDE4ODkiCiAgICAgICB5Mj0iNjQzLjI4Mjg0IgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDQwNzctMC0yIj4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6Izg4OGE4NTtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3A0MDc5LTktNyIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6IzJlMzQzNjtzdG9wLW9wYWNpdHk6MTsiCiAgICAgICAgIG9mZnNldD0iMSIKICAgICAgICAgaWQ9InN0b3A0MDgxLTQtNyIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MzYtMC02LTUiPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojNGU5YTA2O3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wMzgzOC0yLTctNCIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6IzhhZTIzNDtzdG9wLW9wYWNpdHk6MSIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBpZD0ic3RvcDM4NDAtNS01LTEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQzODM2LTAtNi02IgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgwMS0xLTMtMyIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgeDE9Ii0xOCIKICAgICAgIHkxPSIxOCIKICAgICAgIHgyPSItMjIiCiAgICAgICB5Mj0iNSIKICAgICAgIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMC41NzQ3MzUxLDAsMCwwLjU3NDczNTEsNDk0LjEwMjA3LDUyLjE0MTI1NCkiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MzYtMC02LTYiPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojYTQwMDAwO3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wMzgzOC0yLTctNyIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2VmMjkyOTtzdG9wLW9wYWNpdHk6MSIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBpZD0ic3RvcDM4NDAtNS01LTUiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQzODM2LTAtNi01IgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgwMS0xLTMtMSIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgeDE9Ii0xOCIKICAgICAgIHkxPSIxOCIKICAgICAgIHgyPSItMjIiCiAgICAgICB5Mj0iNSIKICAgICAgIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoLTAuNTczNTU5MjksMCwwLDAuNTczNTU5MjksNDQ2LjYzMTY4LDUyLjQyMTA5OSkiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDQwNzctMC0yIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NTI3MCIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgeDE9IjIzMC4wMzE2NiIKICAgICAgIHkxPSI2NzUuMDQwMzQiCiAgICAgICB4Mj0iMTU1LjAxODg5IgogICAgICAgeTI9IjY0My4yODI4NCIgLz4KICA8L2RlZnM+CiAgPHNvZGlwb2RpOm5hbWVkdmlldwogICAgIGlkPSJiYXNlIgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxLjAiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAuMCIKICAgICBpbmtzY2FwZTpwYWdlc2hhZG93PSIyIgogICAgIGlua3NjYXBlOnpvb209IjkuNjg3NSIKICAgICBpbmtzY2FwZTpjeD0iMzIiCiAgICAgaW5rc2NhcGU6Y3k9IjMyIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9ImczOTQ2IgogICAgIHNob3dncmlkPSJ0cnVlIgogICAgIGlua3NjYXBlOmRvY3VtZW50LXVuaXRzPSJweCIKICAgICBpbmtzY2FwZTpncmlkLWJib3g9InRydWUiCiAgICAgaW5rc2NhcGU6d2luZG93LXdpZHRoPSIxNTM2IgogICAgIGlua3NjYXBlOndpbmRvdy1oZWlnaHQ9IjgwMSIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iLTgiCiAgICAgaW5rc2NhcGU6d2luZG93LXk9Ii04IgogICAgIGlua3NjYXBlOnNuYXAtYmJveD0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLW5vZGVzPSJmYWxzZSIKICAgICBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIxIj4KICAgIDxpbmtzY2FwZTpncmlkCiAgICAgICB0eXBlPSJ4eWdyaWQiCiAgICAgICBpZD0iZ3JpZDMwNTQiCiAgICAgICB1bml0cz0icHgiCiAgICAgICBlbXBzcGFjaW5nPSIyIgogICAgICAgdmlzaWJsZT0idHJ1ZSIKICAgICAgIGVuYWJsZWQ9InRydWUiCiAgICAgICBzbmFwdmlzaWJsZWdyaWRsaW5lc29ubHk9InRydWUiCiAgICAgICBzcGFjaW5neD0iMSIKICAgICAgIHNwYWNpbmd5PSIxIgogICAgICAgb3JpZ2lueD0iMCIKICAgICAgIG9yaWdpbnk9IjAiIC8+CiAgPC9zb2RpcG9kaTpuYW1lZHZpZXc+CiAgPGcKICAgICBpZD0ibGF5ZXIxIgogICAgIGlua3NjYXBlOmxhYmVsPSJMYXllciAxIgogICAgIGlua3NjYXBlOmdyb3VwbW9kZT0ibGF5ZXIiPgogICAgPGcKICAgICAgIGlkPSJnMzk2NiIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuOTQ2MzA5NCwwLDAsMC45NDYzMDk0LC00MjMuOTQ5OTEsLTAuODcwNTM0MykiPgogICAgICA8ZwogICAgICAgICBpZD0iZzM5NDYiPgogICAgICAgIDxnCiAgICAgICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMC44OTUyODQyMiwwLDAsMS4xMTY5NjM2LC03LjIzOTAyMTZlLTQsNy4zODUzMDI4ZS03KSIKICAgICAgICAgICBzdHlsZT0iZm9udC1zdHlsZTpub3JtYWw7Zm9udC13ZWlnaHQ6bm9ybWFsO2ZvbnQtc2l6ZToyMi41MTUzNTc5N3B4O2ZvbnQtZmFtaWx5OidCaXRzdHJlYW0gVmVyYSBTYW5zJztmaWxsOiNmZmZmZmY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiMyZTM0MzY7c3Ryb2tlLXdpZHRoOjIuMTEzNDczNjU7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgICAgICBpZD0idGV4dDM3MzUiCiAgICAgICAgICAgaW5rc2NhcGU6ZXhwb3J0LXhkcGk9IjUxLjA4OTA5NiIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MDk2Ij4KICAgICAgICAgIDxwYXRoCiAgICAgICAgICAgICBkPSJtIDUxMi4yMDcwMSwxNi45MDY5NTIgaCAzLjU0MTAxIFYgNy40NDYxNTE4IGggLTIuMzYwNjcgViA1LjU1Mzk5MjEgbCAyLjM2MDY3LC0xLjg5MjE1OTYgaCA0LjcyMTM1IFYgMTYuOTA2OTUyIGggMi4zNjA2NyB2IDMuNzg0MzIgaCAtOS40NDI2OSB2IC0zLjc4NDMyIgogICAgICAgICAgICAgc3R5bGU9ImZvbnQtdmFyaWFudDpub3JtYWw7Zm9udC13ZWlnaHQ6Ym9sZDtmb250LXN0cmV0Y2g6bm9ybWFsO2ZvbnQtZmFtaWx5OidBcmlhbCBCbGFjayc7LWlua3NjYXBlLWZvbnQtc3BlY2lmaWNhdGlvbjonQXJpYWwgQmxhY2ssIEJvbGQnO2ZpbGw6I2ZmZmZmZjtzdHJva2U6IzJlMzQzNiIKICAgICAgICAgICAgIGlkPSJwYXRoMzA0OSIKICAgICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgICAgICBzb2RpcG9kaTpub2RldHlwZXM9ImNjY2NjY2NjY2NjYyIgLz4KICAgICAgICAgIDxwYXRoCiAgICAgICAgICAgICBkPSJtIDUyNi4zNzEwNSwxNi45MDY5NTIgaCA1LjkwMTY5IHYgMy43ODQzMiBoIC00LjcyMTM1IHYgLTMuNzg0MzIiCiAgICAgICAgICAgICBzdHlsZT0iZm9udC12YXJpYW50Om5vcm1hbDtmb250LXdlaWdodDpib2xkO2ZvbnQtc3RyZXRjaDpub3JtYWw7Zm9udC1mYW1pbHk6J0FyaWFsIEJsYWNrJzstaW5rc2NhcGUtZm9udC1zcGVjaWZpY2F0aW9uOidBcmlhbCBCbGFjaywgQm9sZCc7ZmlsbDojZmZmZmZmO3N0cm9rZTojMmUzNDM2IgogICAgICAgICAgICAgaWQ9InBhdGgzMDUxIgogICAgICAgICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgICAgICAgIHNvZGlwb2RpOm5vZGV0eXBlcz0iY2NjY2MiIC8+CiAgICAgICAgICA8cGF0aAogICAgICAgICAgICAgZD0ibSA1NDQuNTY0ODMsMTIuMTQ5MDcgYyAtMTBlLTYsLTIuMDUyMTcxIC0wLjE5NDIzLC0zLjQ5NjAyNzYgLTAuNTgyNjcsLTQuMzMxNTcwMiAtMC4zODExMywtMC44NDI4NDY3IC0xLjAyNjEsLTEuMjY0Mjc2MyAtMS45MzQ5MiwtMS4yNjQyOTAxIC0wLjkwODgzLDEuMzhlLTUgLTEuNTU3NDYsMC40MjE0NDM0IC0xLjk0NTksMS4yNjQyOTAxIC0wLjM4ODQ2LDAuODM1NTQyNiAtMC41ODI2OCwyLjI3OTM5OTIgLTAuNTgyNjgsNC4zMzE1NzAyIDAsMi4wNzQxNzUgMC4xOTQyMiwzLjUzNjM1MyAwLjU4MjY4LDQuMzg2NTM3IDAuMzg4NDQsMC44NTAxOTIgMS4wMzcwNywxLjI3NTI4NyAxLjk0NTksMS4yNzUyODQgMC45MDE0OSwzZS02IDEuNTQ2NDYsLTAuNDI1MDkyIDEuOTM0OTIsLTEuMjc1Mjg0IDAuMzg4NDQsLTAuODUwMTg0IDAuNTgyNjYsLTIuMzEyMzYyIDAuNTgyNjcsLTQuMzg2NTM3IG0gNC4yMzI2MiwwLjAzMjk4IGMgLTEwZS02LDIuNzE5MTQ1IC0wLjU4NjM1LDQuODE4OTY0IC0xLjc1OTAxLDYuMjk5NDYzIC0xLjE3MjY5LDEuNDczMTczIC0yLjgzNjQyLDIuMjA5NzU5IC00Ljk5MTIsMi4yMDk3NTkgLTIuMTYyMTIsMCAtMy44Mjk1MiwtMC43MzY1ODYgLTUuMDAyMTksLTIuMjA5NzU5IC0xLjE3MjY3LC0xLjQ4MDQ5OSAtMS43NTkwMSwtMy41ODAzMTggLTEuNzU5MDEsLTYuMjk5NDYzIDAsLTIuNzI2NDYxMSAwLjU4NjM0LC00LjgyNjI3OTkgMS43NTkwMSwtNi4yOTk0NjU4IDEuMTcyNjcsLTEuNDgwNDg2MSAyLjg0MDA3LC0yLjIyMDczNjQgNS4wMDIxOSwtMi4yMjA3NTMxIDIuMTU0NzgsMS42N2UtNSAzLjgxODUxLDAuNzQwMjY3IDQuOTkxMiwyLjIyMDc1MzEgMS4xNzI2NiwxLjQ3MzE4NTkgMS43NTksMy41NzMwMDQ3IDEuNzU5MDEsNi4yOTk0NjU4IgogICAgICAgICAgICAgc3R5bGU9ImZvbnQtdmFyaWFudDpub3JtYWw7Zm9udC13ZWlnaHQ6Ym9sZDtmb250LXN0cmV0Y2g6bm9ybWFsO2ZvbnQtZmFtaWx5OidBcmlhbCBCbGFjayc7LWlua3NjYXBlLWZvbnQtc3BlY2lmaWNhdGlvbjonQXJpYWwgQmxhY2ssIEJvbGQnO2ZpbGw6I2ZmZmZmZjtzdHJva2U6IzJlMzQzNiIKICAgICAgICAgICAgIGlkPSJwYXRoMzA1MyIKICAgICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiIC8+CiAgICAgICAgICA8cGF0aAogICAgICAgICAgICAgZD0ibSA1NjIuNzk3NTksMTIuMTQ5MDcgYyAtMTBlLTYsLTIuMDUyMTcxIC0wLjE5NDIzLC0zLjQ5NjAyNzggLTAuNTgyNjcsLTQuMzMxNTcwNCAtMC4zODExMywtMC44NDI4NDY3IC0xLjAyNjEsLTEuMjY0Mjc2MyAtMS45MzQ5MiwtMS4yNjQyOTAxIC0wLjkwODgzLDEuMzhlLTUgLTEuNTU3NDYsMC40MjE0NDM0IC0xLjk0NTksMS4yNjQyOTAxIC0wLjM4ODQ2LDAuODM1NTQyNiAtMC41ODI2OCwyLjI3OTM5OTQgLTAuNTgyNjgsNC4zMzE1NzA0IDAsMi4wNzQxNzUgMC4xOTQyMiwzLjUzNjM1MyAwLjU4MjY4LDQuMzg2NTM3IDAuMzg4NDQsMC44NTAxOTIgMS4wMzcwNywxLjI3NTI4NyAxLjk0NTksMS4yNzUyODQgMC45MDE0OSwzZS02IDEuNTQ2NDYsLTAuNDI1MDkyIDEuOTM0OTIsLTEuMjc1Mjg0IDAuMzg4NDQsLTAuODUwMTg0IDAuNTgyNjYsLTIuMzEyMzYyIDAuNTgyNjcsLTQuMzg2NTM3IG0gNC4yMzI2MiwwLjAzMjk4IGMgLTEwZS02LDIuNzE5MTQ1IC0wLjU4NjM1LDQuODE4OTY0IC0xLjc1OTAxLDYuMjk5NDYzIC0xLjE3MjY4LDEuNDczMTczIC0yLjgzNjQyLDIuMjA5NzU5IC00Ljk5MTIsMi4yMDk3NTkgLTIuMTYyMTIsMCAtMy44Mjk1MiwtMC43MzY1ODYgLTUuMDAyMTksLTIuMjA5NzU5IC0xLjE3MjY3LC0xLjQ4MDQ5OSAtMS43NTkwMSwtMy41ODAzMTggLTEuNzU5MDEsLTYuMjk5NDYzIDAsLTIuNzI2NDYxIDAuNTg2MzQsLTQuODI2MjgwMSAxLjc1OTAxLC02LjI5OTQ2NiAxLjE3MjY3LC0xLjQ4MDQ4NjEgMi44NDAwNywtMi4yMjA3MzY0IDUuMDAyMTksLTIuMjIwNzUzMSAyLjE1NDc4LDEuNjdlLTUgMy44MTg1MiwwLjc0MDI2NyA0Ljk5MTIsMi4yMjA3NTMxIDEuMTcyNjYsMS40NzMxODU5IDEuNzU5LDMuNTczMDA1IDEuNzU5MDEsNi4yOTk0NjYiCiAgICAgICAgICAgICBzdHlsZT0iZm9udC12YXJpYW50Om5vcm1hbDtmb250LXdlaWdodDpib2xkO2ZvbnQtc3RyZXRjaDpub3JtYWw7Zm9udC1mYW1pbHk6J0FyaWFsIEJsYWNrJzstaW5rc2NhcGUtZm9udC1zcGVjaWZpY2F0aW9uOidBcmlhbCBCbGFjaywgQm9sZCc7ZmlsbDojZmZmZmZmO3N0cm9rZTojMmUzNDM2IgogICAgICAgICAgICAgaWQ9InBhdGgzMDU1IgogICAgICAgICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIgLz4KICAgICAgICA8L2c+CiAgICAgICAgPHJlY3QKICAgICAgICAgICBzdHlsZT0iZmlsbDojZmZmZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojMmUzNDM2O3N0cm9rZS13aWR0aDoyLjExMzQ3MzY1O3N0cm9rZS1saW5lY2FwOmJ1dHQ7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICAgICAgaWQ9InJlY3QzMTUxIgogICAgICAgICAgIHdpZHRoPSI0LjIyNjk0NzMiCiAgICAgICAgICAgaGVpZ2h0PSIyMy4yNDgyMDUiCiAgICAgICAgICAgeD0iNDU1LjM5OTkiCiAgICAgICAgICAgeT0iMzUuNzkyMjQ0IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC14ZHBpPSI1MS4wODkwOTYiCiAgICAgICAgICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9IjUxLjA4OTA5NiIgLz4KICAgICAgICA8cGF0aAogICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgICAgc3R5bGU9ImZpbGw6IzhhZTIzNDtmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzJlMjkwMDtzdHJva2Utd2lkdGg6Mi4xMTM0NzM2NTtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIgogICAgICAgICAgIGlkPSJwYXRoNDI1MC03MS0yLTAiCiAgICAgICAgICAgZD0ibSA0NjIuMzQzNzQsNTQuOTA0NDI0IGEgNi4zNTg4NjE3LDYuMzU5MTUxNyA4OS45Nzk1NzIgMSAwIC05LjY2MDEyLDguMjcyMzA4IDYuMzU4ODYxNyw2LjM1OTE1MTcgODkuOTc5NTcyIDEgMCA5LjY2MDEyLC04LjI3MjMwOCB6IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC14ZHBpPSI1MS4wODkwOTYiCiAgICAgICAgICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9IjUxLjA4OTA5NiIgLz4KICAgICAgICA8cmVjdAogICAgICAgICAgIHN0eWxlPSJmaWxsOiNmZmZmZmY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiMyZTM0MzY7c3Ryb2tlLXdpZHRoOjIuMTEzNDczNjU7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgICAgICBpZD0icmVjdDMxNTEtMiIKICAgICAgICAgICB3aWR0aD0iNC4yMjY5NDczIgogICAgICAgICAgIGhlaWdodD0iMjMuMjQ4MjA1IgogICAgICAgICAgIHg9IjUwNC4wMDk4IgogICAgICAgICAgIHk9IjM1Ljc5MjI0NCIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MDk2IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkwOTYiIC8+CiAgICAgICAgPHJlY3QKICAgICAgICAgICBzdHlsZT0iZmlsbDojZmZmZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojMmUzNDM2O3N0cm9rZS13aWR0aDoyLjExMzQ3MzY1O3N0cm9rZS1saW5lY2FwOmJ1dHQ7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICAgICAgaWQ9InJlY3QzMTUxLTItOSIKICAgICAgICAgICB3aWR0aD0iNTAuNzIzNDE5IgogICAgICAgICAgIGhlaWdodD0iNC4yMjY5NDgzIgogICAgICAgICAgIHg9IjQ1Ni40NTY2IgogICAgICAgICAgIHk9IjMxLjU2NTI5NCIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MDk2IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkwOTYiIC8+CiAgICAgICAgPHBhdGgKICAgICAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgICAgIHN0eWxlPSJmaWxsOiNlZjI5Mjk7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiMyZTI5MDA7c3Ryb2tlLXdpZHRoOjIuMTEzNDczNjU7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgICAgICBpZD0icGF0aDQyNTAtNzEtMiIKICAgICAgICAgICBkPSJtIDUwMS4yOTMzMyw1NC45MDQyOTkgYSA2LjM1OTE1MTcsNi4zNTg4NjE3IDAuMDIwNDI4NDYgMSAxIDkuNjYwMTIsOC4yNzIzMDYgNi4zNTkxNTE3LDYuMzU4ODYxNyAwLjAyMDQyODQ2IDEgMSAtOS42NjAxMiwtOC4yNzIzMDYgeiIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MDk2IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkwOTYiIC8+CiAgICAgICAgPGcKICAgICAgICAgICBpZD0iZzM4MDUiCiAgICAgICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMC43MTQxMjU0NiwwLDAsMC43MTQxMjU0NiwxMjEuODM3MDcsOC45NjAxNjg1KSIKICAgICAgICAgICBzdHlsZT0iZmlsbDp1cmwoI2xpbmVhckdyYWRpZW50NDA5My04KTtmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzAwMDAwMDtzdHJva2Utd2lkdGg6Mi45NTk1MjcwMiIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MDk2IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkwOTYiPgogICAgICAgICAgPGNpcmNsZQogICAgICAgICAgICAgcj0iNDguNTcxNDMiCiAgICAgICAgICAgICBjeT0iNjU1LjIxOTMiCiAgICAgICAgICAgICBjeD0iMTk3LjE0Mjg1IgogICAgICAgICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoLTAuMDkyNjc4NjcsLTAuMDc5MTI0MzQsMC4wNzkxMjQzNCwtMC4wOTI2Nzg2Nyw0MzYuNDc5NDYsMTEwLjkzNzQ2KSIKICAgICAgICAgICAgIGlkPSJwYXRoMjkwMSIKICAgICAgICAgICAgIHN0eWxlPSJmaWxsOnVybCgjbGluZWFyR3JhZGllbnQ1MjcwKTtmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzAwMDAwMDtzdHJva2Utd2lkdGg6MjQuMjg2MTc0Nzc7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIgLz4KICAgICAgICAgIDxjaXJjbGUKICAgICAgICAgICAgIHI9IjQ4LjU3MTQzIgogICAgICAgICAgICAgY3k9IjY1NS4yMTkzIgogICAgICAgICAgICAgY3g9IjE5Ny4xNDI4NSIKICAgICAgICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KC0wLjA5MjY3ODY3LC0wLjA3OTEyNDMzLDAuMDc5MTI0MzMsLTAuMDkyNjc4NjcsNTA0LjU0ODU5LDExMC45Mzc0NSkiCiAgICAgICAgICAgICBpZD0icGF0aDI5MDEtOSIKICAgICAgICAgICAgIHN0eWxlPSJmaWxsOnVybCgjbGluZWFyR3JhZGllbnQzODE5LTEpO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojMDAwMDAwO3N0cm9rZS13aWR0aDoyNC4yODYxNzQ3NztzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIiAvPgogICAgICAgIDwvZz4KICAgICAgICA8ZwogICAgICAgICAgIGlkPSJnMTAwMiIKICAgICAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgtMSwwLDAsMSw5MTUuMDI4MDcsNy4zODUzMDI4ZS03KSIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MDk2IgogICAgICAgICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkwOTYiPgogICAgICAgICAgPHBhdGgKICAgICAgICAgICAgIGQ9Im0gNDYwLjc2MDUxLDU2LjM3NDk4MSBhIDQuMDE0OTE1LDQuMDE0OTE1MiAwIDEgMCAtNi4wOTg5OSw1LjIyMzA2NyA0LjAxNDkxNSw0LjAxNDkxNTIgMCAwIDAgNi4wOTg5OSwtNS4yMjMwNjcgeiIKICAgICAgICAgICAgIGlkPSJwYXRoNDI1MC03LTMtMi05IgogICAgICAgICAgICAgc3R5bGU9ImZpbGw6dXJsKCNsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTEpO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojOGFlMjM0O3N0cm9rZS13aWR0aDoyLjE4MDg4NzQ2O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIiAvPgogICAgICAgIDwvZz4KICAgICAgICA8ZwogICAgICAgICAgIGlkPSJnMTA0MCIKICAgICAgICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMy4xMTgwMTUsMC4zMjYzODYxNCkiCiAgICAgICAgICAgaW5rc2NhcGU6ZXhwb3J0LXhkcGk9IjUxLjA4OTA5NiIKICAgICAgICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MDk2Ij4KICAgICAgICAgIDxwYXRoCiAgICAgICAgICAgICBkPSJtIDQ3OS45NDQyNyw1Ni4xMDMyNCBhIDQuMDIzMTQ1Myw0LjAyMzE0NTYgMCAxIDEgNi4xMTE0OCw1LjIzMzc3NCA0LjAyMzE0NTMsNC4wMjMxNDU2IDAgMCAxIC02LjExMTQ4LC01LjIzMzc3NCB6IgogICAgICAgICAgICAgaWQ9InBhdGg0MjUwLTctMy0yLTIiCiAgICAgICAgICAgICBzdHlsZT0iZmlsbDp1cmwoI2xpbmVhckdyYWRpZW50MzgwMS0xLTMtMyk7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiNlZjI5Mjk7c3Ryb2tlLXdpZHRoOjIuMTY0MDkzOTc7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiIC8+CiAgICAgICAgPC9nPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTQwMzgiPgogICAgPHJkZjpSREY+CiAgICAgIDxjYzpXb3JrCiAgICAgICAgIHJkZjphYm91dD0iIj4KICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3N2Zyt4bWw8L2RjOmZvcm1hdD4KICAgICAgICA8ZGM6dHlwZQogICAgICAgICAgIHJkZjpyZXNvdXJjZT0iaHR0cDovL3B1cmwub3JnL2RjL2RjbWl0eXBlL1N0aWxsSW1hZ2UiIC8+CiAgICAgICAgPGRjOnRpdGxlPjwvZGM6dGl0bGU+CiAgICAgICAgPGNjOmxpY2Vuc2UKICAgICAgICAgICByZGY6cmVzb3VyY2U9IiIgLz4KICAgICAgICA8ZGM6ZGF0ZT5Nb24gT2N0IDEwIDEzOjQ0OjUyIDIwMTEgKzAwMDA8L2RjOmRhdGU+CiAgICAgICAgPGRjOmNyZWF0b3I+CiAgICAgICAgICA8Y2M6QWdlbnQ+CiAgICAgICAgICAgIDxkYzp0aXRsZT5bd21heWVyXTwvZGM6dGl0bGU+CiAgICAgICAgICA8L2NjOkFnZW50PgogICAgICAgIDwvZGM6Y3JlYXRvcj4KICAgICAgICA8ZGM6cmlnaHRzPgogICAgICAgICAgPGNjOkFnZW50PgogICAgICAgICAgICA8ZGM6dGl0bGU+RnJlZUNBRCBMR1BMMis8L2RjOnRpdGxlPgogICAgICAgICAgPC9jYzpBZ2VudD4KICAgICAgICA8L2RjOnJpZ2h0cz4KICAgICAgICA8ZGM6cHVibGlzaGVyPgogICAgICAgICAgPGNjOkFnZW50PgogICAgICAgICAgICA8ZGM6dGl0bGU+RnJlZUNBRDwvZGM6dGl0bGU+CiAgICAgICAgICA8L2NjOkFnZW50PgogICAgICAgIDwvZGM6cHVibGlzaGVyPgogICAgICAgIDxkYzppZGVudGlmaWVyPkZyZWVDQUQvc3JjL01vZC9EcmFmdC9SZXNvdXJjZXMvaWNvbnMvRHJhZnRfRGltZW5zaW9uLnN2ZzwvZGM6aWRlbnRpZmllcj4KICAgICAgICA8ZGM6cmVsYXRpb24+aHR0cDovL3d3dy5mcmVlY2Fkd2ViLm9yZy93aWtpL2luZGV4LnBocD90aXRsZT1BcnR3b3JrPC9kYzpyZWxhdGlvbj4KICAgICAgICA8ZGM6Y29udHJpYnV0b3I+CiAgICAgICAgICA8Y2M6QWdlbnQ+CiAgICAgICAgICAgIDxkYzp0aXRsZT5bYWdyeXNvbl0gQWxleGFuZGVyIEdyeXNvbjwvZGM6dGl0bGU+CiAgICAgICAgICA8L2NjOkFnZW50PgogICAgICAgIDwvZGM6Y29udHJpYnV0b3I+CiAgICAgICAgPGRjOnN1YmplY3Q+CiAgICAgICAgICA8cmRmOkJhZz4KICAgICAgICAgICAgPHJkZjpsaT5saW5lPC9yZGY6bGk+CiAgICAgICAgICAgIDxyZGY6bGk+ZG90PC9yZGY6bGk+CiAgICAgICAgICAgIDxyZGY6bGk+bnVtYmVyPC9yZGY6bGk+CiAgICAgICAgICA8L3JkZjpCYWc+CiAgICAgICAgPC9kYzpzdWJqZWN0PgogICAgICAgIDxkYzpkZXNjcmlwdGlvbj5BIG51bWJlciBmbG9hdGluZyBhYm92ZSBhIGxpbmUgY29ycmVzcG9uZGluZyB0byB0aGUgdXBwZXIgdGhyZWUgc2lkZXMgb2YgYSByZWN0YW5nbGUgd2l0aCBhIGRvdCBhdCBlYWNmIGVuZHBvaW50IGFuZCBjb3JuZXI8L2RjOmRlc2NyaXB0aW9uPgogICAgICA8L2NjOldvcms+CiAgICA8L3JkZjpSREY+CiAgPC9tZXRhZGF0YT4KPC9zdmc+Cg==
+"""
+DimensionP3_b64=\
+"""
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiCiAgIHhtbG5zOnNvZGlwb2RpPSJodHRwOi8vc29kaXBvZGkuc291cmNlZm9yZ2UubmV0L0RURC9zb2RpcG9kaS0wLmR0ZCIKICAgeG1sbnM6aW5rc2NhcGU9Imh0dHA6Ly93d3cuaW5rc2NhcGUub3JnL25hbWVzcGFjZXMvaW5rc2NhcGUiCiAgIHdpZHRoPSI2NCIKICAgaGVpZ2h0PSI2NCIKICAgdmVyc2lvbj0iMS4xIgogICBpZD0ic3ZnNTEiCiAgIHNvZGlwb2RpOmRvY25hbWU9IkRpbVAzLnN2ZyIKICAgaW5rc2NhcGU6dmVyc2lvbj0iMC45Mi4wIHIxNTI5OSI+CiAgPHNvZGlwb2RpOm5hbWVkdmlldwogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxIgogICAgIG9iamVjdHRvbGVyYW5jZT0iMTAiCiAgICAgZ3JpZHRvbGVyYW5jZT0iMTAiCiAgICAgZ3VpZGV0b2xlcmFuY2U9IjEwIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwIgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6d2luZG93LXdpZHRoPSIxNTM2IgogICAgIGlua3NjYXBlOndpbmRvdy1oZWlnaHQ9IjgwMSIKICAgICBpZD0ibmFtZWR2aWV3NTMiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGlua3NjYXBlOnpvb209IjMuNjg3NSIKICAgICBpbmtzY2FwZTpjeD0iLTE0LjIzNzI4OCIKICAgICBpbmtzY2FwZTpjeT0iMzIiCiAgICAgaW5rc2NhcGU6d2luZG93LXg9Ii04IgogICAgIGlua3NjYXBlOndpbmRvdy15PSItOCIKICAgICBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIxIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9InN2ZzUxIiAvPgogIDxkZWZzCiAgICAgaWQ9ImRlZnMxOSI+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDQ2NDAiPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojZDQwMDAwO3N0b3Atb3BhY2l0eToxOyIKICAgICAgICAgb2Zmc2V0PSIwIgogICAgICAgICBpZD0ic3RvcDQ2MzYiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNkNDAwMDA7c3RvcC1vcGFjaXR5OjA7IgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wNDYzOCIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIHkyPSI2OC44Mjk0OTYiCiAgICAgICB4Mj0iMTkzLjQ2ODM3IgogICAgICAgeTE9IjgxLjk1NDAyOSIKICAgICAgIHgxPSIxOTIuODIwMzgiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQ0MDkzLTgiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQ0MDc3LTkiCiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0ic2NhbGUoMi4zNjc2MjM0LDAuNDIyMzY0NDcpIgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDQwNzctOSI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0b3AtY29sb3I9IiM4ODhhODUiCiAgICAgICAgIGlkPSJzdG9wNDA3OS02IgogICAgICAgICBvZmZzZXQ9IjAiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0b3AtY29sb3I9IiMyZTM0MzYiCiAgICAgICAgIGlkPSJzdG9wNDA4MS0wIgogICAgICAgICBvZmZzZXQ9IjEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICB5Mj0iNjQwLjI5ODU5IgogICAgICAgeDI9IjE0NC40ODc3IgogICAgICAgeTE9IjY3OS45OTU2OCIKICAgICAgIHgxPSIyMzguMjUzOTkiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODE5LTEiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQ0MDc3LTAtMiIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgwLjA4MjM1MTM3LDAsMCwwLjA4MjM1MTM3LC03OC4xOTIwMDksLTQxLjgyMzQ3MikiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDQwNzctMC0yIj4KICAgICAgPHN0b3AKICAgICAgICAgc3RvcC1jb2xvcj0iIzg4OGE4NSIKICAgICAgICAgaWQ9InN0b3A0MDc5LTktNyIKICAgICAgICAgb2Zmc2V0PSIwIiAvPgogICAgICA8c3RvcAogICAgICAgICBzdG9wLWNvbG9yPSIjMmUzNDM2IgogICAgICAgICBpZD0ic3RvcDQwODEtNC03IgogICAgICAgICBvZmZzZXQ9IjEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODM2LTAtNi01Ij4KICAgICAgPHN0b3AKICAgICAgICAgc3RvcC1jb2xvcj0iIzRlOWEwNiIKICAgICAgICAgaWQ9InN0b3AzODM4LTItNy00IgogICAgICAgICBvZmZzZXQ9IjAiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0b3AtY29sb3I9IiM4YWUyMzQiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTUtMSIKICAgICAgICAgb2Zmc2V0PSIxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgeTI9IjU0LjI5OTY3OSIKICAgICAgIHgyPSI1MDMuOTcxOTUiCiAgICAgICB5MT0iNjMuOTE0ODkzIgogICAgICAgeDE9IjUwNi45MjkwNSIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQzODM2LTAtNi02IgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09InNjYWxlKDEuMDAwMzIzNSwwLjk5OTY3NjYzKSIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiAvPgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODM2LTAtNi02Ij4KICAgICAgPHN0b3AKICAgICAgICAgc3RvcC1jb2xvcj0iI2E0MDAwMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTItNy03IgogICAgICAgICBvZmZzZXQ9IjAiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0b3AtY29sb3I9IiNlZjI5MjkiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTUtNSIKICAgICAgICAgb2Zmc2V0PSIxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgeTI9IjU0LjIzNzkwOSIKICAgICAgIHgyPSI0NTkuNTQ3NyIKICAgICAgIHkxPSI2My44NTIxNDUiCiAgICAgICB4MT0iNDU2LjU5MDkxIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgwMS0xLTMtMSIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM4MzYtMC02LTUiCiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0ic2NhbGUoMS4wMDAzMjA5LDAuOTk5Njc5MjUpIgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIHkyPSI2NDAuMjk4NTkiCiAgICAgICB4Mj0iMTQ0LjQ4NzciCiAgICAgICB5MT0iNjc5Ljk5NTY4IgogICAgICAgeDE9IjIzOC4yNTM5OSIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDUyNzAiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQ0MDc3LTAtMiIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgwLjA4MjM1MTM3LDAsMCwwLjA4MjM1MTM3LC00My4yMDc2MDcsLTcxLjY5MTM4MykiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIHkyPSI1NC4yMzc5MDciCiAgICAgICB4Mj0iNDU5LjU0NzciCiAgICAgICB5MT0iNjMuODUyMTQ2IgogICAgICAgeDE9IjQ1Ni41OTA5MSIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTEtMSIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM4MzYtMC02LTUiCiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0ic2NhbGUoMS4wMDAzMjA5LDAuOTk5Njc5MjUpIgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDQ2NDAiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQ0NjQyIgogICAgICAgeDE9Ii0yNC45MTM0NDgiCiAgICAgICB5MT0iLTE2Ljg2MTQ0NCIKICAgICAgIHgyPSItMy43NjY4OTYiCiAgICAgICB5Mj0iLTE2Ljg3Mzg5MiIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiAvPgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQ0NjQwIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NDY0Mi01IgogICAgICAgeDE9Ii0yNC45MTM0NDgiCiAgICAgICB5MT0iLTE2Ljg2MTQ0NCIKICAgICAgIHgyPSItMy43NjY4OTYiCiAgICAgICB5Mj0iLTE2Ljg3Mzg5MiIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgtMzQuOTg0NDAzLDI5Ljg2Nzg5NSkiIC8+CiAgPC9kZWZzPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTQwMzgiPmltYWdlL3N2Zyt4bWxNb24gT2N0IDEwIDEzOjQ0OjUyIDIwMTEgKzAwMDBbd21heWVyXUZyZWVDQUQgTEdQTDIrRnJlZUNBREZyZWVDQUQvc3JjL01vZC9EcmFmdC9SZXNvdXJjZXMvaWNvbnMvRHJhZnRfRGltZW5zaW9uLnN2Z2h0dHA6Ly93d3cuZnJlZWNhZHdlYi5vcmcvd2lraS9pbmRleC5waHA/dGl0bGU9QXJ0d29ya1thZ3J5c29uXSBBbGV4YW5kZXIgR3J5c29ubGluZWRvdG51bWJlckEgbnVtYmVyIGZsb2F0aW5nIGFib3ZlIGEgbGluZSBjb3JyZXNwb25kaW5nIHRvIHRoZSB1cHBlciB0aHJlZSBzaWRlcyBvZiBhIHJlY3RhbmdsZSB3aXRoIGEgZG90IGF0IGVhY2YgZW5kcG9pbnQgYW5kIGNvcm5lcjxyZGY6UkRGPgogIDxjYzpXb3JrCiAgICAgcmRmOmFib3V0PSIiPgogICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICA8ZGM6dHlwZQogICAgICAgcmRmOnJlc291cmNlPSJodHRwOi8vcHVybC5vcmcvZGMvZGNtaXR5cGUvU3RpbGxJbWFnZSIgLz4KICAgIDxkYzp0aXRsZSAvPgogIDwvY2M6V29yaz4KPC9yZGY6UkRGPgo8L21ldGFkYXRhPgogIDxnCiAgICAgaWQ9ImcyNSI+CiAgICA8dGl0bGUKICAgICAgIGlkPSJ0aXRsZTIyIj5iYWNrZ3JvdW5kPC90aXRsZT4KICAgIDxyZWN0CiAgICAgICBmaWxsPSJub25lIgogICAgICAgaWQ9ImNhbnZhc19iYWNrZ3JvdW5kIgogICAgICAgaGVpZ2h0PSI0MDIiCiAgICAgICB3aWR0aD0iNTgyIgogICAgICAgeT0iLTEiCiAgICAgICB4PSItMSIgLz4KICA8L2c+CiAgPGcKICAgICBmb250LXN0eWxlPSJub3JtYWwiCiAgICAgZm9udC13ZWlnaHQ9Im5vcm1hbCIKICAgICBmb250LXNpemU9IjIyLjUxNTM1OHB4IgogICAgIGlkPSJ0ZXh0MzczNSIKICAgICB0cmFuc2Zvcm09Im1hdHJpeCgwLjg0NzIxNTg3LDAsMCwxLjA1Njk5MzIsLTQyMy45NTA2LC0wLjg3MDUzMzYpIgogICAgIHN0eWxlPSJmb250LXN0eWxlOm5vcm1hbDtmb250LXdlaWdodDpub3JtYWw7Zm9udC1zaXplOjIyLjUxNTM1Nzk3cHg7Zm9udC1mYW1pbHk6J0JpdHN0cmVhbSBWZXJhIFNhbnMnO2ZpbGw6I2ZmZmZmZjtzdHJva2U6IzJlMzQzNjtzdHJva2Utd2lkdGg6Mi4xMTM0NzM4OSIKICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MSIKICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MSI+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzMDQ5IgogICAgICAgZD0ibSA1MTIuMjA3MDMsMTYuOTA2OTUgaCAzLjU0MTAyIHYgLTkuNDYwOCBoIC0yLjM2MDY2IFYgNS41NTM5OSBsIDIuMzYwNjYsLTEuODkyMTYgaCA0LjcyMTMxIHYgMTMuMjQ1MTIgaCAyLjM2MDcyIHYgMy43ODQzMjEgaCAtOS40NDI2OSBWIDE2LjkwNjk1IgogICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgIHN0eWxlPSJmaWxsOiNmZmZmZmY7c3Ryb2tlOiMyZTM0MzYiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzMDUxIgogICAgICAgZD0ibSA1MjYuMzcxMDMsMTYuOTA2OTUgaCA1LjkwMTY3IHYgMy43ODQzMjEgaCAtNC43MjEzMSBWIDE2LjkwNjk1IgogICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgIHN0eWxlPSJmaWxsOiNmZmZmZmY7c3Ryb2tlOiMyZTM0MzYiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzMDUzIgogICAgICAgZD0ibSA1NDQuNTY0ODIsMTIuMTQ5MDcgYyAwLC0yLjA1MjE3IC0wLjE5NDIxLC0zLjQ5NjAzIC0wLjU4MjY0LC00LjMzMTU3IC0wLjM4MTE3LC0wLjg0Mjg1IC0xLjAyNjEzLC0xLjI2NDI4IC0xLjkzNDk0LC0xLjI2NDI5IC0wLjkwODgxLDEwZS02IC0xLjU1NzQ5LDAuNDIxNDQgLTEuOTQ1OTIsMS4yNjQyOSAtMC4zODg0MywwLjgzNTU0IC0wLjU4MjY0LDIuMjc5NCAtMC41ODI2NCw0LjMzMTU3IDAsMi4wNzQxNyAwLjE5NDIxLDMuNTM2MzUgMC41ODI2NCw0LjM4NjU0IDAuMzg4NDMsMC44NTAxODkgMS4wMzcxMSwxLjI3NTI4IDEuOTQ1OTIsMS4yNzUyOCAwLjkwMTQ5LDAgMS41NDY0NSwtMC40MjUwOTEgMS45MzQ5NCwtMS4yNzUyOCAwLjM4ODQzLC0wLjg1MDE5IDAuNTgyNjQsLTIuMzEyMzcgMC41ODI2NCwtNC4zODY1NCBtIDQuMjMyNiwwLjAzMjk4IGMgMCwyLjcxOTE0IC0wLjU4NjM2LDQuODE4OTYxIC0xLjc1ODk3LDYuMjk5NDYgLTEuMTcyNzMsMS40NzMxODEgLTIuODM2NDIsMi4yMDk3NjEgLTQuOTkxMjEsMi4yMDk3NjEgLTIuMTYyMTEsMCAtMy44Mjk1MywtMC43MzY1OCAtNS4wMDIyLC0yLjIwOTc2MSAtMS4xNzI2NiwtMS40ODA0OTkgLTEuNzU5MDMsLTMuNTgwMzIgLTEuNzU5MDMsLTYuMjk5NDYgMCwtMi43MjY0NiAwLjU4NjM3LC00LjgyNjI4IDEuNzU5MDMsLTYuMjk5NDcgMS4xNzI2NywtMS40ODA0OCAyLjg0MDA5LC0yLjIyMDczIDUuMDAyMiwtMi4yMjA3NSAyLjE1NDc5LDJlLTUgMy44MTg0OCwwLjc0MDI3IDQuOTkxMjEsMi4yMjA3NSAxLjE3MjYxLDEuNDczMTkgMS43NTg5NywzLjU3MzAxIDEuNzU4OTcsNi4yOTk0NyIKICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICBzdHlsZT0iZmlsbDojZmZmZmZmO3N0cm9rZTojMmUzNDM2IiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMzA1NSIKICAgICAgIGQ9Im0gNTYyLjc5NzYxLDEyLjE0OTA3IGMgMCwtMi4wNTIxNyAtMC4xOTQyMiwtMy40OTYwMyAtMC41ODI2NSwtNC4zMzE1NyAtMC4zODExNiwtMC44NDI4NSAtMS4wMjYxMiwtMS4yNjQyOCAtMS45MzQ5MywtMS4yNjQyOSAtMC45MDg4MiwxMGUtNiAtMS41NTc1LDAuNDIxNDQgLTEuOTQ1OTIsMS4yNjQyOSAtMC4zODg0MywwLjgzNTU0IC0wLjU4MjY1LDIuMjc5NCAtMC41ODI2NSw0LjMzMTU3IDAsMi4wNzQxNyAwLjE5NDIyLDMuNTM2MzUgMC41ODI2NSw0LjM4NjU0IDAuMzg4NDIsMC44NTAxODkgMS4wMzcxLDEuMjc1MjggMS45NDU5MiwxLjI3NTI4IDAuOTAxNDksMCAxLjU0NjQ1LC0wLjQyNTA5MSAxLjkzNDkzLC0xLjI3NTI4IDAuMzg4NDMsLTAuODUwMTkgMC41ODI2NSwtMi4zMTIzNyAwLjU4MjY1LC00LjM4NjU0IG0gNC4yMzI2LDAuMDMyOTggYyAwLDIuNzE5MTQgLTAuNTg2Myw0LjgxODk2MSAtMS43NTg5Nyw2LjI5OTQ2IC0xLjE3MjczLDEuNDczMTgxIC0yLjgzNjQzLDIuMjA5NzYxIC00Ljk5MTIxLDIuMjA5NzYxIC0yLjE2MjExLDAgLTMuODI5NTMsLTAuNzM2NTggLTUuMDAyMiwtMi4yMDk3NjEgLTEuMTcyNjcsLTEuNDgwNDk5IC0xLjc1OTAzLC0zLjU4MDMyIC0xLjc1OTAzLC02LjI5OTQ2IDAsLTIuNzI2NDYgMC41ODYzNiwtNC44MjYyOCAxLjc1OTAzLC02LjI5OTQ3IDEuMTcyNjcsLTEuNDgwNDggMi44NDAwOSwtMi4yMjA3MyA1LjAwMjIsLTIuMjIwNzUgMi4xNTQ3OCwyZS01IDMuODE4NDgsMC43NDAyNyA0Ljk5MTIxLDIuMjIwNzUgMS4xNzI2NywxLjQ3MzE5IDEuNzU4OTcsMy41NzMwMSAxLjc1ODk3LDYuMjk5NDciCiAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgc3R5bGU9ImZpbGw6I2ZmZmZmZjtzdHJva2U6IzJlMzQzNiIgLz4KICA8L2c+CiAgPHJlY3QKICAgICBzdHJva2UtbWl0ZXJsaW1pdD0iNCIKICAgICB5PSIzMy4wMDAwMDQiCiAgICAgeD0iNi45OTkyOTg2IgogICAgIGhlaWdodD0iMjEuOTk5OTk0IgogICAgIHdpZHRoPSIzLjk5OTk5OTUiCiAgICAgaWQ9InJlY3QzMTUxIgogICAgIHN0eWxlPSJmaWxsOiNmZmZmZmY7c3Ryb2tlOiMyZTM0MzY7c3Ryb2tlLXdpZHRoOjIuMDAwMDAwMjQ7c3Ryb2tlLW1pdGVybGltaXQ6NCIKICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MSIKICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MSIgLz4KICA8cGF0aAogICAgIHN0cm9rZS1taXRlcmxpbWl0PSI0IgogICAgIGQ9Ik0gMTMuNTcwMzI3LDUxLjA4NjAzNCBBIDYuMDE3NDU1Myw2LjAxNzcyOTggODkuOTc5NTY4IDEgMCA0LjQyODg1NDgsNTguOTE0MiA2LjAxNzQ1NTMsNi4wMTc3Mjk4IDg5Ljk3OTU2OCAxIDAgMTMuNTcwMzI3LDUxLjA4NjAzNCBaIgogICAgIGlkPSJwYXRoNDI1MC03MS0yLTAiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICBzdHlsZT0iZmlsbDojOGFlMjM0O3N0cm9rZTojMmUyOTAwO3N0cm9rZS13aWR0aDoyLjAwMDAwMDI0O3N0cm9rZS1taXRlcmxpbWl0OjQiCiAgICAgaW5rc2NhcGU6ZXhwb3J0LXhkcGk9IjUxLjA4OTEiCiAgICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9IjUxLjA4OTEiIC8+CiAgPHJlY3QKICAgICBzdHJva2UtbWl0ZXJsaW1pdD0iNCIKICAgICB5PSIzMy4wMDAwMDQiCiAgICAgeD0iNTIuOTk5Mjk4IgogICAgIGhlaWdodD0iMjEuOTk5OTk0IgogICAgIHdpZHRoPSIzLjk5OTk5OTUiCiAgICAgaWQ9InJlY3QzMTUxLTIiCiAgICAgc3R5bGU9ImZpbGw6I2ZmZmZmZjtzdHJva2U6IzJlMzQzNjtzdHJva2Utd2lkdGg6Mi4wMDAwMDAyNDtzdHJva2UtbWl0ZXJsaW1pdDo0IgogICAgIGlua3NjYXBlOmV4cG9ydC14ZHBpPSI1MS4wODkxIgogICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkxIiAvPgogIDxyZWN0CiAgICAgc3Ryb2tlLW1pdGVybGltaXQ9IjQiCiAgICAgeT0iMjkiCiAgICAgeD0iNy45OTkyNjUyIgogICAgIGhlaWdodD0iNC4wMDAwMDA1IgogICAgIHdpZHRoPSI0OC4wMDAwNSIKICAgICBpZD0icmVjdDMxNTEtMi05IgogICAgIHN0eWxlPSJmaWxsOiNmZjAwMDA7c3Ryb2tlOiMyZTM0MzY7c3Ryb2tlLXdpZHRoOjIuMDAwMDAwMjQ7c3Ryb2tlLW1pdGVybGltaXQ6NCIKICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MSIKICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MSIgLz4KICA8Y2lyY2xlCiAgICAgc3R5bGU9ImZpbGw6dXJsKCNsaW5lYXJHcmFkaWVudDQ2NDIpO3N0cm9rZTojMDAwMDAwO3N0cm9rZS13aWR0aDoxLjk5OTk5OTg4O3N0cm9rZS1taXRlcmxpbWl0OjQ7ZmlsbC1vcGFjaXR5OjEiCiAgICAgcj0iMy45OTk5MjM5IgogICAgIGN5PSItMTcuNzMzMTczIgogICAgIGN4PSItMjYuOTcyNjIyIgogICAgIHRyYW5zZm9ybT0icm90YXRlKC0xMzkuNTEwOTkpIgogICAgIGlkPSJwYXRoMjkwMSIKICAgICBzdHJva2UtbWl0ZXJsaW1pdD0iNCIKICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MSIKICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MSIgLz4KICA8ZwogICAgIHRyYW5zZm9ybT0ibWF0cml4KC0wLjk0NjMwOTQsMCwwLDAuOTQ2MzA5NCw0NDEuOTQ5NzUsLTAuODcwNTMzNikiCiAgICAgaWQ9ImcxMDAyIgogICAgIGlua3NjYXBlOmV4cG9ydC14ZHBpPSI1MS4wODkxIgogICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkxIj4KICAgIDxwYXRoCiAgICAgICBzdHJva2UtbWl0ZXJsaW1pdD0iNCIKICAgICAgIGlkPSJwYXRoNDI1MC03LTMtMi05IgogICAgICAgZD0ibSA0NjAuNzYwNSw1Ni4zNzQ5ODEgYSA0LjAxNDkxNzIsNC4wMTQ5MTcyIDAgMSAwIC02LjA5OSw1LjIyMzA2OCA0LjAxNDkxNzIsNC4wMTQ5MTcyIDAgMCAwIDYuMDk5LC01LjIyMzA2OCB6IgogICAgICAgc3R5bGU9ImZpbGw6dXJsKCNsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTEpO3N0cm9rZTojOGFlMjM0O3N0cm9rZS13aWR0aDoyLjE4MDg4Njk4O3N0cm9rZS1taXRlcmxpbWl0OjQiCiAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIiAvPgogIDwvZz4KICA8cGF0aAogICAgIHN0cm9rZS1taXRlcmxpbWl0PSI0IgogICAgIGQ9Im0gNTkuNTcwMzYsNTEuMDg1NTI2IGEgNi4wMTc0NTU1LDYuMDE3NzMgODkuOTc5NTY4IDEgMCAtOS4xNDE0NzIsNy44MjgxNjcgNi4wMTc0NTU1LDYuMDE3NzMgODkuOTc5NTY4IDEgMCA5LjE0MTQ3MiwtNy44MjgxNjcgeiIKICAgICBpZD0icGF0aDQyNTAtNzEtMi0wLTkiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICBzdHlsZT0iZmlsbDojOGFlMjM0O3N0cm9rZTojMmUyOTAwO3N0cm9rZS13aWR0aDoyLjAwMDAwMDI0O3N0cm9rZS1taXRlcmxpbWl0OjQiCiAgICAgaW5rc2NhcGU6ZXhwb3J0LXhkcGk9IjUxLjA4OTEiCiAgICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9IjUxLjA4OTEiIC8+CiAgPGcKICAgICB0cmFuc2Zvcm09Im1hdHJpeCgtMC45NDYzMDk0LDAsMCwwLjk0NjMwOTQsNDg3Ljk0OTc5LC0wLjg3MTA0MTMyKSIKICAgICBpZD0iZzEwMDItNCIKICAgICBpbmtzY2FwZTpleHBvcnQteGRwaT0iNTEuMDg5MSIKICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iNTEuMDg5MSI+CiAgICA8cGF0aAogICAgICAgc3Ryb2tlLW1pdGVybGltaXQ9IjQiCiAgICAgICBpZD0icGF0aDQyNTAtNy0zLTItOS0xIgogICAgICAgZD0ibSA0NjAuNzYwNSw1Ni4zNzQ5ODEgYSA0LjAxNDkxNzIsNC4wMTQ5MTcyIDAgMSAwIC02LjA5OSw1LjIyMzA2OCA0LjAxNDkxNzIsNC4wMTQ5MTcyIDAgMCAwIDYuMDk5LC01LjIyMzA2OCB6IgogICAgICAgc3R5bGU9ImZpbGw6dXJsKCNsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTEtMSk7c3Ryb2tlOiM4YWUyMzQ7c3Ryb2tlLXdpZHRoOjIuMTgwODg2OTg7c3Ryb2tlLW1pdGVybGltaXQ6NCIKICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiIC8+CiAgPC9nPgogIDxjaXJjbGUKICAgICBzdHlsZT0iZmlsbDp1cmwoI2xpbmVhckdyYWRpZW50NDY0Mi01KTtmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzAwMDAwMDtzdHJva2Utd2lkdGg6MS45OTk5OTk4ODtzdHJva2UtbWl0ZXJsaW1pdDo0IgogICAgIHI9IjMuOTk5OTIzOSIKICAgICBjeT0iMTIuMTM0NzI1IgogICAgIGN4PSItNjEuOTU3MDI0IgogICAgIHRyYW5zZm9ybT0icm90YXRlKC0xMzkuNTEwOTkpIgogICAgIGlkPSJwYXRoMjkwMS03IgogICAgIHN0cm9rZS1taXRlcmxpbWl0PSI0IgogICAgIGlua3NjYXBlOmV4cG9ydC14ZHBpPSI1MS4wODkxIgogICAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSI1MS4wODkxIiAvPgo8L3N2Zz4K
+"""
+AnnotationPlane_b64=\
+"""
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iCiAgIHhtbG5zOmNjPSJodHRwOi8vY3JlYXRpdmVjb21tb25zLm9yZy9ucyMiCiAgIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyIKICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgd2lkdGg9IjY0cHgiCiAgIGhlaWdodD0iNjRweCIKICAgaWQ9InN2ZzI5ODAiCiAgIHNvZGlwb2RpOnZlcnNpb249IjAuMzIiCiAgIGlua3NjYXBlOnZlcnNpb249IjAuOTIuMSByMTUzNzEiCiAgIHNvZGlwb2RpOmRvY25hbWU9IkFublBsYW5lT3JhbmdlMi5zdmciCiAgIGlua3NjYXBlOm91dHB1dF9leHRlbnNpb249Im9yZy5pbmtzY2FwZS5vdXRwdXQuc3ZnLmlua3NjYXBlIgogICB2ZXJzaW9uPSIxLjEiPgogIDxkZWZzCiAgICAgaWQ9ImRlZnMyOTgyIj4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NDY0NyI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNmZmE2MmM7c3RvcC1vcGFjaXR5OjE7IgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wNDY0MyIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2ZmYTYyYztzdG9wLW9wYWNpdHk6MDsiCiAgICAgICAgIG9mZnNldD0iMSIKICAgICAgICAgaWQ9InN0b3A0NjQ1IiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50NDAyOCI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiMyMDRhODc7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3A0MDMwIiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojNzI5ZmNmO3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wNDAzMiIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM3OTQiPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMDAwMDAwO3N0b3Atb3BhY2l0eToxOyIKICAgICAgICAgb2Zmc2V0PSIwIgogICAgICAgICBpZD0ic3RvcDM3OTYiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiMwMDAwMDA7c3RvcC1vcGFjaXR5OjA7IgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzc5OCIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4NjQiPgogICAgICA8c3RvcAogICAgICAgICBpZD0ic3RvcDM4NjYiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6IzcxYjJmODtzdG9wLW9wYWNpdHk6MTsiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIGlkPSJzdG9wMzg2OCIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMDAyNzk1O3N0b3Atb3BhY2l0eToxOyIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8aW5rc2NhcGU6cGVyc3BlY3RpdmUKICAgICAgIHNvZGlwb2RpOnR5cGU9Imlua3NjYXBlOnBlcnNwM2QiCiAgICAgICBpbmtzY2FwZTp2cF94PSIwIDogMzIgOiAxIgogICAgICAgaW5rc2NhcGU6dnBfeT0iMCA6IDEwMDAgOiAwIgogICAgICAgaW5rc2NhcGU6dnBfej0iNjQgOiAzMiA6IDEiCiAgICAgICBpbmtzY2FwZTpwZXJzcDNkLW9yaWdpbj0iMzIgOiAyMS4zMzMzMzMgOiAxIgogICAgICAgaWQ9InBlcnNwZWN0aXZlMjk4OCIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgwLC00KSIKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM3NjciCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzNzczIgogICAgICAgeDE9IjIyLjExNjUxNiIKICAgICAgIHkxPSI1NS43MTc1MTgiCiAgICAgICB4Mj0iMTcuMzI4NTQ3IgogICAgICAgeTI9IjIxLjMxMTM0IgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM3NjciPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMzQ2NWE0O3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wMzc2OSIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6IzcyOWZjZjtzdG9wLW9wYWNpdHk6MSIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBpZD0ic3RvcDM3NzEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDAsLTQpIgogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgeGxpbms6aHJlZj0iI2xpbmVhckdyYWRpZW50Mzc3NyIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM3ODMiCiAgICAgICB4MT0iNTMuODk2NzYzIgogICAgICAgeTE9IjUxLjE3OTc4NyIKICAgICAgIHgyPSI0Ny41MDIyMzUiCiAgICAgICB5Mj0iMjEuODM3NDIiCiAgICAgICBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50Mzc3NyI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiMyMDRhODc7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzNzc5IiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMzQ2NWE0O3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzc4MSIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM3OTQiCiAgICAgICBpZD0icmFkaWFsR3JhZGllbnQzODAwIgogICAgICAgY3g9IjEiCiAgICAgICBjeT0iNDUiCiAgICAgICBmeD0iMSIKICAgICAgIGZ5PSI0NSIKICAgICAgIHI9IjQxIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgwLjkzMzQ4MjEzLC0yLjI5MDUyNzZlLTgsMCwwLjI4Njg3NTczLDAuMDY2NTE3NTEsMzIuMDkwNTkyKSIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiAvPgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODM2LTAtNi05LTciPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojYTQwMDAwO3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wMzgzOC0yLTctMy04IiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojZWYyOTI5O3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTUtMS02IiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgzNi0wLTYtOTItNCI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNhNDAwMDA7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTItNy0wNi04IiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojZWYyOTI5O3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTUtOC03IiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgeGxpbms6aHJlZj0iI2xpbmVhckdyYWRpZW50MzgzNi0wLTYtOTItNC02IgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgwMS0xLTMtMTQtMC0zIgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiCiAgICAgICB4MT0iLTE4IgogICAgICAgeTE9IjE4IgogICAgICAgeDI9Ii0yMiIKICAgICAgIHkyPSI1IgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgwLjc2MzQyNDM5LDAsMCwwLjc1NzUwNDI1LC00LjU5NjM4OSwyLjc1MjU2MzcpIiAvPgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzODM2LTAtNi05Mi00LTYiPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojYTQwMDAwO3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIGlkPSJzdG9wMzgzOC0yLTctMDYtOC03IiAvPgogICAgICA8c3RvcAogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojZWYyOTI5O3N0b3Atb3BhY2l0eToxIgogICAgICAgICBvZmZzZXQ9IjEiCiAgICAgICAgIGlkPSJzdG9wMzg0MC01LTUtOC03LTUiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpbmtzY2FwZTpjb2xsZWN0PSJhbHdheXMiCiAgICAgICB4bGluazpocmVmPSIjbGluZWFyR3JhZGllbnQzODM2LTAtNi05Mi00LTYyIgogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgwMS0xLTMtMTQtMC0zNSIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgeDE9Ii0xOCIKICAgICAgIHkxPSIxOCIKICAgICAgIHgyPSItMjIiCiAgICAgICB5Mj0iNSIKICAgICAgIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMC43NjM0MjQzOSwwLDAsMC43NTc1MDQyNSwtNC41OTYzODksMi43NTI1NjM3KSIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgzNi0wLTYtOTItNC02MiI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNhNDAwMDA7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTItNy0wNi04LTkiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNlZjI5Mjk7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMSIKICAgICAgICAgaWQ9InN0b3AzODQwLTUtNS04LTctMSIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM4MzYtMC02LTkyLTQtMCIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTE0LTAtMzYiCiAgICAgICBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIKICAgICAgIHgxPSItMTgiCiAgICAgICB5MT0iMTgiCiAgICAgICB4Mj0iLTIyIgogICAgICAgeTI9IjUiCiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0ibWF0cml4KDAuNzYzNDI0MzksMCwwLDAuNzU3NTA0MjUsLTQuNTk2Mzg5LDIuNzUyNTYzNykiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MzYtMC02LTkyLTQtMCI+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNhNDAwMDA7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMCIKICAgICAgICAgaWQ9InN0b3AzODM4LTItNy0wNi04LTYiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiNlZjI5Mjk7c3RvcC1vcGFjaXR5OjEiCiAgICAgICAgIG9mZnNldD0iMSIKICAgICAgICAgaWQ9InN0b3AzODQwLTUtNS04LTctMiIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM4MzYtMC02LTkyLTQtMiIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTE0LTAtOSIKICAgICAgIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgeDE9Ii0xOCIKICAgICAgIHkxPSIxOCIKICAgICAgIHgyPSItMjIiCiAgICAgICB5Mj0iNSIKICAgICAgIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMC43NjM0MjQzOSwwLDAsMC43NTc1MDQyNSwtNC41OTYzODksMi43NTI1NjM3KSIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MzgzNi0wLTYtOTItNC0yIj4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2E0MDAwMDtzdG9wLW9wYWNpdHk6MSIKICAgICAgICAgb2Zmc2V0PSIwIgogICAgICAgICBpZD0ic3RvcDM4MzgtMi03LTA2LTgtMCIgLz4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2VmMjkyOTtzdG9wLW9wYWNpdHk6MSIKICAgICAgICAgb2Zmc2V0PSIxIgogICAgICAgICBpZD0ic3RvcDM4NDAtNS01LTgtNy0yMyIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDQwMjgiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQ0MDM0IgogICAgICAgeDE9IjM4IgogICAgICAgeTE9IjU3IgogICAgICAgeDI9IjI2IgogICAgICAgeTI9IjI2IgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDQ2NDciCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQ0NjQ5IgogICAgICAgeDE9IjI2IgogICAgICAgeTE9IjI5IgogICAgICAgeDI9IjUzIgogICAgICAgeTI9IjQ0IgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIC8+CiAgPC9kZWZzPgogIDxzb2RpcG9kaTpuYW1lZHZpZXcKICAgICBpZD0iYmFzZSIKICAgICBwYWdlY29sb3I9IiNmZmZmZmYiCiAgICAgYm9yZGVyY29sb3I9IiM2NjY2NjYiCiAgICAgYm9yZGVyb3BhY2l0eT0iMS4wIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwLjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTp6b29tPSIxMi44NDI1ODIiCiAgICAgaW5rc2NhcGU6Y3g9IjQwLjkxNTU5NSIKICAgICBpbmtzY2FwZTpjeT0iMjUuOTY5NDQzIgogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9ImxheWVyMSIKICAgICBzaG93Z3JpZD0idHJ1ZSIKICAgICBpbmtzY2FwZTpkb2N1bWVudC11bml0cz0icHgiCiAgICAgaW5rc2NhcGU6Z3JpZC1iYm94PSJ0cnVlIgogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMjU2MCIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSIxMzYxIgogICAgIGlua3NjYXBlOndpbmRvdy14PSItOSIKICAgICBpbmtzY2FwZTp3aW5kb3cteT0iLTkiCiAgICAgaW5rc2NhcGU6c25hcC1iYm94PSJmYWxzZSIKICAgICBpbmtzY2FwZTpzbmFwLW5vZGVzPSJ0cnVlIgogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjEiPgogICAgPGlua3NjYXBlOmdyaWQKICAgICAgIHR5cGU9Inh5Z3JpZCIKICAgICAgIGlkPSJncmlkMjk5MSIKICAgICAgIGVtcHNwYWNpbmc9IjIiCiAgICAgICB2aXNpYmxlPSJ0cnVlIgogICAgICAgZW5hYmxlZD0idHJ1ZSIKICAgICAgIHNuYXB2aXNpYmxlZ3JpZGxpbmVzb25seT0idHJ1ZSIgLz4KICA8L3NvZGlwb2RpOm5hbWVkdmlldz4KICA8bWV0YWRhdGEKICAgICBpZD0ibWV0YWRhdGEyOTg1Ij4KICAgIDxyZGY6UkRGPgogICAgICA8Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+CiAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICAgICAgPGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPgogICAgICAgIDxkYzp0aXRsZT48L2RjOnRpdGxlPgogICAgICAgIDxkYzpjcmVhdG9yPgogICAgICAgICAgPGNjOkFnZW50PgogICAgICAgICAgICA8ZGM6dGl0bGU+W2ptYXVzdHBjXTwvZGM6dGl0bGU+CiAgICAgICAgICA8L2NjOkFnZW50PgogICAgICAgIDwvZGM6Y3JlYXRvcj4KICAgICAgICA8ZGM6dGl0bGU+VHJlZV9QYXJ0X1BsYW5lX1BhcmFtZXRyaWM8L2RjOnRpdGxlPgogICAgICAgIDxkYzpkYXRlPjIwMTMtMDMtMTM8L2RjOmRhdGU+CiAgICAgICAgPGRjOnJlbGF0aW9uPmh0dHA6Ly93d3cuZnJlZWNhZHdlYi5vcmcvd2lraS9pbmRleC5waHA/dGl0bGU9QXJ0d29yazwvZGM6cmVsYXRpb24+CiAgICAgICAgPGRjOnB1Ymxpc2hlcj4KICAgICAgICAgIDxjYzpBZ2VudD4KICAgICAgICAgICAgPGRjOnRpdGxlPkZyZWVDQUQ8L2RjOnRpdGxlPgogICAgICAgICAgPC9jYzpBZ2VudD4KICAgICAgICA8L2RjOnB1Ymxpc2hlcj4KICAgICAgICA8ZGM6aWRlbnRpZmllcj5GcmVlQ0FEL3NyYy9Nb2QvUGFydC9HdWkvUmVzb3VyY2VzL2ljb25zL1RyZWVfUGFydF9QbGFuZV9QYXJhbWV0cmljLnN2ZzwvZGM6aWRlbnRpZmllcj4KICAgICAgICA8ZGM6cmlnaHRzPgogICAgICAgICAgPGNjOkFnZW50PgogICAgICAgICAgICA8ZGM6dGl0bGU+RnJlZUNBRCBMR1BMMis8L2RjOnRpdGxlPgogICAgICAgICAgPC9jYzpBZ2VudD4KICAgICAgICA8L2RjOnJpZ2h0cz4KICAgICAgICA8Y2M6bGljZW5zZT5odHRwczovL3d3dy5nbnUub3JnL2NvcHlsZWZ0L2xlc3Nlci5odG1sPC9jYzpsaWNlbnNlPgogICAgICAgIDxkYzpjb250cmlidXRvcj4KICAgICAgICAgIDxjYzpBZ2VudD4KICAgICAgICAgICAgPGRjOnRpdGxlPlthZ3J5c29uXSBBbGV4YW5kZXIgR3J5c29uPC9kYzp0aXRsZT4KICAgICAgICAgIDwvY2M6QWdlbnQ+CiAgICAgICAgPC9kYzpjb250cmlidXRvcj4KICAgICAgPC9jYzpXb3JrPgogICAgPC9yZGY6UkRGPgogIDwvbWV0YWRhdGE+CiAgPGcKICAgICBpZD0ibGF5ZXIxIgogICAgIGlua3NjYXBlOmxhYmVsPSJMYXllciAxIgogICAgIGlua3NjYXBlOmdyb3VwbW9kZT0ibGF5ZXIiPgogICAgPHBhdGgKICAgICAgIHN0eWxlPSJmaWxsOiM3MjlmY2Y7c3Ryb2tlOiMwYjE1MjE7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgIGQ9Ik0gOCw0MCAzNyw1MCA1NiwyMyAyNywxNSBaIgogICAgICAgaWQ9InBhdGgzMjQwIgogICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgIHNvZGlwb2RpOm5vZGV0eXBlcz0iY2NjY2MiIC8+CiAgICA8cGF0aAogICAgICAgc3R5bGU9Im9wYWNpdHk6MC43NjM7ZmlsbDp1cmwoI2xpbmVhckdyYWRpZW50NDY0OSk7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiNmMWJjMzg7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgIGQ9Im0gMTEuMywzOSAyNSw4LjcgMTYuNSwtMjMuNiAtMjUsLTYuOCB6IgogICAgICAgaWQ9InBhdGgzMjQwLTIiCiAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgc29kaXBvZGk6bm9kZXR5cGVzPSJjY2NjYyIgLz4KICAgIDxnCiAgICAgICBpZD0iZzMxNTAiCiAgICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLC02KSI+CiAgICAgIDxwYXRoCiAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgIGlkPSJwYXRoMzEzMCIKICAgICAgICAgZD0iTSA4LDQ2IDM3LDU2IgogICAgICAgICBzdHlsZT0iZmlsbDpub25lO3N0cm9rZTojMjgwMDAwO3N0cm9rZS13aWR0aDo2O3N0cm9rZS1saW5lY2FwOmJ1dHQ7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICAgIHNvZGlwb2RpOm5vZGV0eXBlcz0iY2MiIC8+CiAgICAgIDxwYXRoCiAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgIGlkPSJwYXRoMzEzMC0yIgogICAgICAgICBkPSJNIDgsNDYgMzcsNTYiCiAgICAgICAgIHN0eWxlPSJmaWxsOm5vbmU7c3Ryb2tlOiNlZjI5Mjk7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgICAgc29kaXBvZGk6bm9kZXR5cGVzPSJjYyIgLz4KICAgIDwvZz4KICAgIDxnCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLDAsMCwtMSwyNywxMDEpIgogICAgICAgaWQ9ImczMTUwLTgiPgogICAgICA8cGF0aAogICAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgICBpZD0icGF0aDMxMzAtOSIKICAgICAgICAgZD0iTSAxMCw1MSAyOSw3OCIKICAgICAgICAgc3R5bGU9ImZpbGw6bm9uZTtzdHJva2U6IzI4MDAwMDtzdHJva2Utd2lkdGg6NjtzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2Utb3BhY2l0eToxIgogICAgICAgICBzb2RpcG9kaTpub2RldHlwZXM9ImNjIiAvPgogICAgICA8cGF0aAogICAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgICBpZD0icGF0aDMxMzAtMi03IgogICAgICAgICBkPSJNIDEwLDUxIDI5LDc4IgogICAgICAgICBzdHlsZT0iZmlsbDpub25lO3N0cm9rZTojZWYyOTI5O3N0cm9rZS13aWR0aDoyO3N0cm9rZS1saW5lY2FwOmJ1dHQ7c3Ryb2tlLWxpbmVqb2luOm1pdGVyO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICAgIHNvZGlwb2RpOm5vZGV0eXBlcz0iY2MiIC8+CiAgICA8L2c+CiAgICA8ZwogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMC41NjEzNzg3LDEuNTY0MTgyM2UtOCwwLDAuNTY1NzY5NzIsMzAuMjQ4MTQzLDIwLjU1ODkxNikiCiAgICAgICBpZD0iZzM4MjctMS0zLTkyLTEiPgogICAgICA8ZwogICAgICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMS4zMjIxMzEsNDAuNTcwMjg5KSIKICAgICAgICAgaWQ9ImczNzk3LTktNS02Ni03Ij4KICAgICAgICA8cGF0aAogICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgICAgc3R5bGU9ImZpbGw6I2VmMjkyOTtzdHJva2U6IzI4MDAwMDtzdHJva2Utd2lkdGg6My41NDg4MDUyNDtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1vcGFjaXR5OjE7c3Ryb2tlLWRhc2hhcnJheTpub25lIgogICAgICAgICAgIGlkPSJwYXRoNDI1MC03MS02LTQ5LTIiCiAgICAgICAgICAgZD0iTSAtMjYuMTE4MjIxLDUuNjY0MzM0NyBBIDguOTM3OTc5Myw4Ljg2ODA3NzQgMCAxIDEgLTEyLjU0MDYzNCwxNy4yMDA5MDYgOC45Mzc5NzkzLDguODY4MDc3NCAwIDEgMSAtMjYuMTE4MjIxLDUuNjY0MzM0NyB6IiAvPgogICAgICAgIDxwYXRoCiAgICAgICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgICAgICBzdHlsZT0iZmlsbDp1cmwoI2xpbmVhckdyYWRpZW50MzgwMS0xLTMtMTQtMC0zKTtmaWxsLW9wYWNpdHk6MTtzdHJva2U6I2VmMjkyOTtzdHJva2Utd2lkdGg6My41NDg4MDQyODtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1vcGFjaXR5OjE7c3Ryb2tlLWRhc2hhcnJheTpub25lIgogICAgICAgICAgIGlkPSJwYXRoNDI1MC03LTMtMi01LTciCiAgICAgICAgICAgZD0ibSAtMjMuNDAyMjcsNy45NzQ0ODU4IGEgNS4zNDM5NzA2LDUuMzAyNTI5OCAwIDEgMSA4LjExNzk0LDYuODk4MTQ1MiA1LjM0Mzk3MDYsNS4zMDI1Mjk4IDAgMCAxIC04LjExNzk0LC02Ljg5ODE0NTIgeiIgLz4KICAgICAgPC9nPgogICAgPC9nPgogICAgPGcKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuNTYxMzc4NywxLjU2NDE4MjNlLTgsMCwwLjU2NTc2OTcyLDQ5LjI0ODE0MywtNi40NDEwODQpIgogICAgICAgaWQ9ImczODI3LTEtMy05Mi0xLTIiPgogICAgICA8ZwogICAgICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMS4zMjIxMzEsNDAuNTcwMjg5KSIKICAgICAgICAgaWQ9ImczNzk3LTktNS02Ni03LTciPgogICAgICAgIDxwYXRoCiAgICAgICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgICAgICBzdHlsZT0iZmlsbDojZWYyOTI5O3N0cm9rZTojMjgwMDAwO3N0cm9rZS13aWR0aDozLjU0ODgwNTI0O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLW9wYWNpdHk6MTtzdHJva2UtZGFzaGFycmF5Om5vbmUiCiAgICAgICAgICAgaWQ9InBhdGg0MjUwLTcxLTYtNDktMi0wIgogICAgICAgICAgIGQ9Ik0gLTI2LjExODIyMSw1LjY2NDMzNDcgQSA4LjkzNzk3OTMsOC44NjgwNzc0IDAgMSAxIC0xMi41NDA2MzQsMTcuMjAwOTA2IDguOTM3OTc5Myw4Ljg2ODA3NzQgMCAxIDEgLTI2LjExODIyMSw1LjY2NDMzNDcgeiIgLz4KICAgICAgICA8cGF0aAogICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgICAgc3R5bGU9ImZpbGw6dXJsKCNsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTE0LTAtMzUpO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojZWYyOTI5O3N0cm9rZS13aWR0aDozLjU0ODgwNDI4O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLW9wYWNpdHk6MTtzdHJva2UtZGFzaGFycmF5Om5vbmUiCiAgICAgICAgICAgaWQ9InBhdGg0MjUwLTctMy0yLTUtNy05IgogICAgICAgICAgIGQ9Im0gLTIzLjQwMjI3LDcuOTc0NDg1OCBhIDUuMzQzOTcwNiw1LjMwMjUyOTggMCAxIDEgOC4xMTc5NCw2Ljg5ODE0NTIgNS4zNDM5NzA2LDUuMzAyNTI5OCAwIDAgMSAtOC4xMTc5NCwtNi44OTgxNDUyIHoiIC8+CiAgICAgIDwvZz4KICAgIDwvZz4KICAgIDxnCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgwLjU2MTM3ODcsMS41NjQxODIzZS04LDAsMC41NjU3Njk3MiwxLjI0ODE0MywxMC41NTg5MTYpIgogICAgICAgaWQ9ImczODI3LTEtMy05Mi0xLTYiPgogICAgICA8ZwogICAgICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMS4zMjIxMzEsNDAuNTcwMjg5KSIKICAgICAgICAgaWQ9ImczNzk3LTktNS02Ni03LTEiPgogICAgICAgIDxwYXRoCiAgICAgICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgICAgICBzdHlsZT0iZmlsbDojZWYyOTI5O3N0cm9rZTojMjgwMDAwO3N0cm9rZS13aWR0aDozLjU0ODgwNTI0O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLW9wYWNpdHk6MTtzdHJva2UtZGFzaGFycmF5Om5vbmUiCiAgICAgICAgICAgaWQ9InBhdGg0MjUwLTcxLTYtNDktMi04IgogICAgICAgICAgIGQ9Ik0gLTI2LjExODIyMSw1LjY2NDMzNDcgQSA4LjkzNzk3OTMsOC44NjgwNzc0IDAgMSAxIC0xMi41NDA2MzQsMTcuMjAwOTA2IDguOTM3OTc5Myw4Ljg2ODA3NzQgMCAxIDEgLTI2LjExODIyMSw1LjY2NDMzNDcgeiIgLz4KICAgICAgICA8cGF0aAogICAgICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICAgICAgc3R5bGU9ImZpbGw6dXJsKCNsaW5lYXJHcmFkaWVudDM4MDEtMS0zLTE0LTAtMzYpO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojZWYyOTI5O3N0cm9rZS13aWR0aDozLjU0ODgwNDI4O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLW9wYWNpdHk6MTtzdHJva2UtZGFzaGFycmF5Om5vbmUiCiAgICAgICAgICAgaWQ9InBhdGg0MjUwLTctMy0yLTUtNy03IgogICAgICAgICAgIGQ9Im0gLTIzLjQwMjI3LDcuOTc0NDg1OCBhIDUuMzQzOTcwNiw1LjMwMjUyOTggMCAxIDEgOC4xMTc5NCw2Ljg5ODE0NTIgNS4zNDM5NzA2LDUuMzAyNTI5OCAwIDAgMSAtOC4xMTc5NCwtNi44OTgxNDUyIHoiIC8+CiAgICAgIDwvZz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPgo=
 """
 Measure_Delete_b64=\
 """
@@ -1212,32 +1508,33 @@ class Ui_DockWidget(object):
         self.Measure.setChecked(False)
         self.Measure.setObjectName("Measure")
         self.gridLayout_8.addWidget(self.Measure, 0, 0, 1, 1)
+        self.DimensionP3 = QtGui.QPushButton(self.gridLayoutWidget_6)
+        self.DimensionP3.setEnabled(False)
+        self.DimensionP3.setMinimumSize(QtCore.QSize(36, 36))
+        self.DimensionP3.setMaximumSize(QtCore.QSize(48, 48))
+        self.DimensionP3.setToolTip("Dimension position")
+        self.DimensionP3.setText("")
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap("DimensionP3.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.DimensionP3.setIcon(icon4)
+        self.DimensionP3.setIconSize(QtCore.QSize(32, 32))
+        self.DimensionP3.setCheckable(False)
+        self.DimensionP3.setChecked(False)
+        self.DimensionP3.setObjectName("DimensionP3")
+        self.gridLayout_8.addWidget(self.DimensionP3, 0, 4, 1, 1)
         self.CleanDist = QtGui.QPushButton(self.gridLayoutWidget_6)
         self.CleanDist.setMinimumSize(QtCore.QSize(36, 36))
         self.CleanDist.setMaximumSize(QtCore.QSize(48, 48))
         self.CleanDist.setToolTip("Clean Measures")
         self.CleanDist.setText("")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("Clean.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.CleanDist.setIcon(icon4)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap("Clean.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.CleanDist.setIcon(icon5)
         self.CleanDist.setIconSize(QtCore.QSize(32, 32))
         self.CleanDist.setCheckable(True)
         self.CleanDist.setChecked(False)
         self.CleanDist.setObjectName("CleanDist")
-        self.gridLayout_8.addWidget(self.CleanDist, 0, 3, 1, 1)
-        self.Help_Caliper = QtGui.QPushButton(self.gridLayoutWidget_6)
-        self.Help_Caliper.setMinimumSize(QtCore.QSize(36, 36))
-        self.Help_Caliper.setMaximumSize(QtCore.QSize(48, 48))
-        self.Help_Caliper.setToolTip("Help on Caliper")
-        self.Help_Caliper.setText("")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("help.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Help_Caliper.setIcon(icon5)
-        self.Help_Caliper.setIconSize(QtCore.QSize(24, 24))
-        self.Help_Caliper.setCheckable(False)
-        self.Help_Caliper.setChecked(False)
-        self.Help_Caliper.setObjectName("Help_Caliper")
-        self.gridLayout_8.addWidget(self.Help_Caliper, 0, 4, 1, 1)
+        self.gridLayout_8.addWidget(self.CleanDist, 0, 5, 1, 1)
         self.DimensionP1 = QtGui.QPushButton(self.gridLayoutWidget_6)
         self.DimensionP1.setEnabled(False)
         self.DimensionP1.setMinimumSize(QtCore.QSize(36, 36))
@@ -1252,28 +1549,55 @@ class Ui_DockWidget(object):
         self.DimensionP1.setChecked(False)
         self.DimensionP1.setObjectName("DimensionP1")
         self.gridLayout_8.addWidget(self.DimensionP1, 0, 1, 1, 1)
+        self.Help_Caliper = QtGui.QPushButton(self.gridLayoutWidget_6)
+        self.Help_Caliper.setMinimumSize(QtCore.QSize(36, 36))
+        self.Help_Caliper.setMaximumSize(QtCore.QSize(48, 48))
+        self.Help_Caliper.setToolTip("Help on Caliper")
+        self.Help_Caliper.setText("")
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("help.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Help_Caliper.setIcon(icon7)
+        self.Help_Caliper.setIconSize(QtCore.QSize(24, 24))
+        self.Help_Caliper.setCheckable(False)
+        self.Help_Caliper.setChecked(False)
+        self.Help_Caliper.setObjectName("Help_Caliper")
+        self.gridLayout_8.addWidget(self.Help_Caliper, 0, 6, 1, 1)
         self.DimensionP2 = QtGui.QPushButton(self.gridLayoutWidget_6)
         self.DimensionP2.setEnabled(False)
         self.DimensionP2.setMinimumSize(QtCore.QSize(36, 36))
         self.DimensionP2.setMaximumSize(QtCore.QSize(48, 48))
         self.DimensionP2.setToolTip("Second Element")
         self.DimensionP2.setText("")
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("DimensionP2.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.DimensionP2.setIcon(icon7)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap("DimensionP2.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.DimensionP2.setIcon(icon8)
         self.DimensionP2.setIconSize(QtCore.QSize(32, 32))
         self.DimensionP2.setCheckable(False)
         self.DimensionP2.setChecked(False)
         self.DimensionP2.setObjectName("DimensionP2")
         self.gridLayout_8.addWidget(self.DimensionP2, 0, 2, 1, 1)
+        self.APlane = QtGui.QPushButton(self.gridLayoutWidget_6)
+        self.APlane.setEnabled(False)
+        self.APlane.setMinimumSize(QtCore.QSize(36, 36))
+        self.APlane.setMaximumSize(QtCore.QSize(48, 48))
+        self.APlane.setToolTip("Annotation Plane")
+        self.APlane.setText("")
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap("AnnPlane.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.APlane.setIcon(icon9)
+        self.APlane.setIconSize(QtCore.QSize(32, 32))
+        self.APlane.setCheckable(False)
+        self.APlane.setChecked(False)
+        self.APlane.setObjectName("APlane")
+        self.gridLayout_8.addWidget(self.APlane, 0, 3, 1, 1)
         self.rbRadius = QtGui.QRadioButton(self.Controls_Group)
         self.rbRadius.setGeometry(QtCore.QRect(6, 120, 64, 32))
         self.rbRadius.setMinimumSize(QtCore.QSize(64, 32))
         self.rbRadius.setToolTip("Get Radius of Arc or Circle")
         self.rbRadius.setText("")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("Radius.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbRadius.setIcon(icon8)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap("Radius.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbRadius.setIcon(icon10)
         self.rbRadius.setIconSize(QtCore.QSize(28, 28))
         self.rbRadius.setChecked(False)
         self.rbRadius.setObjectName("rbRadius")
@@ -1282,9 +1606,9 @@ class Ui_DockWidget(object):
         self.rbAngle.setMinimumSize(QtCore.QSize(64, 32))
         self.rbAngle.setToolTip("Get Angle")
         self.rbAngle.setText("")
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap("Angle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbAngle.setIcon(icon9)
+        icon11 = QtGui.QIcon()
+        icon11.addPixmap(QtGui.QPixmap("Angle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbAngle.setIcon(icon11)
         self.rbAngle.setIconSize(QtCore.QSize(32, 32))
         self.rbAngle.setChecked(False)
         self.rbAngle.setObjectName("rbAngle")
@@ -1293,9 +1617,9 @@ class Ui_DockWidget(object):
         self.rbLength.setMinimumSize(QtCore.QSize(64, 32))
         self.rbLength.setToolTip("Get Length of Edge")
         self.rbLength.setText("")
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap("Length.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbLength.setIcon(icon10)
+        icon12 = QtGui.QIcon()
+        icon12.addPixmap(QtGui.QPixmap("Length.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbLength.setIcon(icon12)
         self.rbLength.setIconSize(QtCore.QSize(32, 32))
         self.rbLength.setChecked(False)
         self.rbLength.setObjectName("rbLength")
@@ -1304,9 +1628,9 @@ class Ui_DockWidget(object):
         self.rbSnap.setMinimumSize(QtCore.QSize(64, 32))
         self.rbSnap.setToolTip("Snap to EndPoint, MiddlePoint, Center")
         self.rbSnap.setText("")
-        icon11 = QtGui.QIcon()
-        icon11.addPixmap(QtGui.QPixmap("Snap_Opt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbSnap.setIcon(icon11)
+        icon13 = QtGui.QIcon()
+        icon13.addPixmap(QtGui.QPixmap("Snap_Opt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbSnap.setIcon(icon13)
         self.rbSnap.setIconSize(QtCore.QSize(78, 26))
         self.rbSnap.setChecked(True)
         self.rbSnap.setObjectName("rbSnap")
@@ -1315,9 +1639,9 @@ class Ui_DockWidget(object):
         self.rbBbox.setMinimumSize(QtCore.QSize(64, 32))
         self.rbBbox.setToolTip("Center of BoundingBox")
         self.rbBbox.setText("")
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("CenterBBox.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbBbox.setIcon(icon12)
+        icon14 = QtGui.QIcon()
+        icon14.addPixmap(QtGui.QPixmap("CenterBBox.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbBbox.setIcon(icon14)
         self.rbBbox.setIconSize(QtCore.QSize(28, 28))
         self.rbBbox.setChecked(False)
         self.rbBbox.setObjectName("rbBbox")
@@ -1326,21 +1650,28 @@ class Ui_DockWidget(object):
         self.rbMass.setMinimumSize(QtCore.QSize(64, 32))
         self.rbMass.setToolTip("Center of Mass")
         self.rbMass.setText("")
-        icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap("CenterOfMass.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbMass.setIcon(icon13)
+        icon15 = QtGui.QIcon()
+        icon15.addPixmap(QtGui.QPixmap("CenterOfMass.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbMass.setIcon(icon15)
         self.rbMass.setIconSize(QtCore.QSize(28, 28))
         self.rbMass.setChecked(False)
         self.rbMass.setObjectName("rbMass")
+        self.cbAPlane = QtGui.QCheckBox(self.Controls_Group)
+        self.cbAPlane.setGeometry(QtCore.QRect(230, 120, 64, 32))
+        self.cbAPlane.setToolTip("use Annotation Plane")
+        self.cbAPlane.setText("")
+        self.cbAPlane.setIcon(icon9)
+        self.cbAPlane.setIconSize(QtCore.QSize(32, 32))
+        self.cbAPlane.setObjectName("cbAPlane")
         self.rbParallel = QtGui.QRadioButton(self.dockWidgetContents)
         self.rbParallel.setGeometry(QtCore.QRect(340, 286, 64, 32))
         self.rbParallel.setMinimumSize(QtCore.QSize(64, 32))
         self.rbParallel.setToolTip("Get Distance\n"
 "between Parallel Edges")
         self.rbParallel.setText("")
-        icon14 = QtGui.QIcon()
-        icon14.addPixmap(QtGui.QPixmap("Distance_Parallel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbParallel.setIcon(icon14)
+        icon16 = QtGui.QIcon()
+        icon16.addPixmap(QtGui.QPixmap("Distance_Parallel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbParallel.setIcon(icon16)
         self.rbParallel.setIconSize(QtCore.QSize(32, 32))
         self.rbParallel.setChecked(False)
         self.rbParallel.setObjectName("rbParallel")
@@ -1377,6 +1708,20 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(DimensionP2_b64))
         self.DimensionP2.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.DimensionP2.setIcon(QtGui.QIcon(pm))
+        #self.DimensionP2.setEnabled(True)
+        pm = QtGui.QPixmap()
+        pm.loadFromData(base64.b64decode(DimensionP3_b64))
+        self.DimensionP3.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
+        self.DimensionP3.setIcon(QtGui.QIcon(pm))
+        #self.DimensionP2.setEnabled(True)
+        pm = QtGui.QPixmap()
+        pm.loadFromData(base64.b64decode(AnnotationPlane_b64))
+        self.cbAPlane.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
+        self.cbAPlane.setIcon(QtGui.QIcon(pm))
+        pm = QtGui.QPixmap()
+        pm.loadFromData(base64.b64decode(AnnotationPlane_b64))
+        self.APlane.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
+        self.APlane.setIcon(QtGui.QIcon(pm))
         #self.DimensionP2.setEnabled(True)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(help_b64))
@@ -1428,6 +1773,12 @@ class Ui_DockWidget(object):
         self.rbParallel.setIcon(QtGui.QIcon(pm))
         self.rbParallel.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
+        
+        #self.cbAPlane.setChecked(False)
+        #self.cbAPlane.setChecked(True)
+        #self.rbAngle.setChecked(True)
+        #self.rbRadius.setChecked(True)
+        
         ####
         
 ###############################################################################################################
@@ -1472,7 +1823,6 @@ class Ui_DockWidget(object):
             for ob in FreeCAD.ActiveDocument.Objects:
                 FreeCADGui.Selection.removeSelection(ob)
         added_dim=[]
-        
 ##
         
     def onMeasure_toggled(self,checked):
@@ -1494,6 +1844,9 @@ class Ui_DockWidget(object):
                 self.rowOverride = True
                 self.DimensionP1.setEnabled(True)
                 self.DimensionP2.setEnabled(False)
+                self.DimensionP3.setEnabled(False)
+                self.cbAPlane.setEnabled(False)
+                self.APlane.setEnabled(False)
                 self.CleanDist.setEnabled(False)
                 s1=SelObserverCaliper()
                 FreeCADGui.Selection.addObserver(s1) # install resident function
@@ -1502,6 +1855,9 @@ class Ui_DockWidget(object):
                 self.rowOverride = False
                 self.DimensionP1.setEnabled(False)
                 self.DimensionP2.setEnabled(False)
+                self.DimensionP3.setEnabled(False)
+                self.APlane.setEnabled(False)
+                self.cbAPlane.setEnabled(True)
                 self.CleanDist.setEnabled(True)
                 #FreeCADGui.Selection.removeObserver(s1)
                 try:
@@ -1518,6 +1874,7 @@ class Ui_DockWidget(object):
         Select the type of Snapping you need<br>
         and then Click on a Face, an Edge or a Vertex<br>
         to identify your measurement points.<br>
+        <b>Check Annotation Plane</b> to use an Annotation Plane to place a Dimension.
         <br><b>Caliper Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
         <font color = blue><b>Version:  
         """+__version__+"""</b></font>"""
