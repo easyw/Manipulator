@@ -546,7 +546,8 @@ class SelObserverCaliper:
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                     sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                     sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                    sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                    sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
+                                    FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(APName)
