@@ -26,6 +26,7 @@ Manipulator-WB
 **Caliper:**
 <img src="https://www.freecadweb.org/wiki/images/1/14/Manipulator-WB-Measure-Radius.gif">
 <img src="https://www.freecadweb.org/wiki/images/f/fe/Manipulator-WB-Measure-Angles.gif">
+<img src="https://www.freecadweb.org/wiki/images/c/cf/Manipulator-WB-Dimension.gif">
 
 Installing
 ----------
