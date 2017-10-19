@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.2.9" #Manipulator for Parts
+__version__ = "1.3.0" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -471,6 +471,8 @@ class SelObserverCaliper:
                                     w=dist(P1, pnt)*5
                                     if CPDockWidget.ui.cbAPlane.isChecked():
                                         CPDockWidget.ui.APlane.setEnabled(True)
+                                    else:
+                                        CPDockWidget.ui.DimensionP1.setEnabled(True)
                                         #APName,APEdgeName=makeAPlane(w,norm,plcm,P1)
                                         #added_dim.append(FreeCAD.ActiveDocument.getObject(APEdgeName))
                                         #added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
@@ -501,12 +503,15 @@ class SelObserverCaliper:
                                             say("Radius   : "+str(dim.Distance))
                                             FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
                                             sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
+                                            FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         else:
                                             say("Distance : "+str(dim.Distance))
                                             FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                             sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                             sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
                                             sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                            FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                            FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                     FreeCAD.ActiveDocument.recompute()
                                     #print 'step#1 norm ', norm, ' plcm ',plcm, ' P1 ',P1
@@ -561,6 +566,8 @@ class SelObserverCaliper:
                                     P2=pnt
                                     if CPDockWidget.ui.cbAPlane.isChecked():
                                         CPDockWidget.ui.APlane.setEnabled(True)
+                                    else:
+                                        CPDockWidget.ui.DimensionP1.setEnabled(True)
                                     FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.667,0.000)
                                     FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
@@ -580,6 +587,8 @@ class SelObserverCaliper:
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
+                                        FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                        FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         say("Distance : "+str(dim.Distance))
                                         sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
                                         sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
