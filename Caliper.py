@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.2.8" #Manipulator for Parts
+__version__ = "1.2.9" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -220,26 +220,63 @@ def makeAPlane(w, w_multipl,norm,plcm,PC):
     """ creating an Annotation Plane and reference for Dimension
         aligned to the selected Face and centered on its center"""
     
-    FreeCAD.ActiveDocument.addObject("Part::Plane","AnnotationPlane")
+    #FreeCAD.ActiveDocument.addObject("Part::Plane","AnnotationPlane")
+    #APT=FreeCAD.ActiveDocument.ActiveObject
+    #APTName=APT.Name
+    #lng=w*w_multipl
+    #FreeCAD.ActiveDocument.getObject(APTName).Length=lng
+    #FreeCAD.ActiveDocument.getObject(APTName).Width=lng
+    #FreeCAD.ActiveDocument.getObject(APTName).Placement=Base.Placement(Base.Vector(0.0,0.0,0.0),Base.Rotation(0.000,0.000,0.000,1.000))
+    #FreeCAD.ActiveDocument.getObject(APTName).Label='APlane'
+    #FreeCADGui.ActiveDocument.getObject(APTName).ShapeColor = (0.667,0.667,0.498)
+    #FreeCADGui.ActiveDocument.getObject(APTName).Transparency = 50 #99
+    #
+    #FreeCAD.ActiveDocument.recompute()
+    #
+    ##Draft.rotate(FreeCAD.ActiveDocument.getObject(APEdgeName),45,FreeCAD.Vector(0,0,0),FreeCAD.Vector(0,0,1))
+    #
+    #sh1=FreeCAD.ActiveDocument.getObject(APTName).Shape.copy()
+    ##print sh1.normalAt(0,0)
+    #sh1.Placement=plcm
+    ##print PC
+    #sh1.translate(FreeCAD.Vector(PC[0]-lng/2,PC[1]-lng/2,PC[2]))
+    #rot_angle = math.degrees(FreeCAD.Vector(0.0,0.0,1.0).getAngle(norm))
+    #rot_axis = FreeCAD.Vector(0.0,0.0,1.0).cross(norm)
+    #Origin = Base.Vector(0, 0, 0)
+    #if colinearVectors(norm, Origin, FreeCAD.Vector(0.0,0.0,1.0), info=0, tolerance=1e-12):
+    #    rot_axis = Base.Vector(0, 0, 1).cross(norm)
+    #    if rot_axis==FreeCAD.Vector (0.0, 0.0, 0.0):
+    #        rot_axis=Base.Vector(0, 1, 0).cross(norm)
+    #    #rot_angle = 180. # + m_angleAlignFaces
+    #    rot_angle=0.
+    ##print rot_axis
+    #sh1.rotate(DraftVecUtils.tup(PC), DraftVecUtils.tup(rot_axis), rot_angle)
+    #FreeCAD.ActiveDocument.getObject(APTName).Placement=sh1.Placement
+    #
+    #FreeCAD.ActiveDocument.recompute()
+
+    lng=w*w_multipl
+    FreeCAD.ActiveDocument.addObject("Part::RegularPolygon","AnnotationPlane")
+    APE=FreeCAD.ActiveDocument.ActiveObject
+    APEName=APE.Name
+    FreeCAD.ActiveDocument.getObject(APEName).Polygon=8
+    FreeCAD.ActiveDocument.getObject(APEName).Circumradius=lng*1.41421
+    FreeCAD.ActiveDocument.getObject(APEName).Placement=Base.Placement(Base.Vector(0.000,0.000,0.000),Base.Rotation(0.000,0.000,0.000,1.000))
+    FreeCAD.ActiveDocument.getObject(APEName).Label='APEdge'
+    FreeCAD.ActiveDocument.recompute()
+    Draft.upgrade(FreeCAD.ActiveDocument.getObject(APEName),delete=True)
     APT=FreeCAD.ActiveDocument.ActiveObject
     APTName=APT.Name
-    lng=w*w_multipl
-    FreeCAD.ActiveDocument.getObject(APTName).Length=lng
-    FreeCAD.ActiveDocument.getObject(APTName).Width=lng
-    FreeCAD.ActiveDocument.getObject(APTName).Placement=Base.Placement(Base.Vector(0.0,0.0,0.0),Base.Rotation(0.000,0.000,0.000,1.000))
-    FreeCAD.ActiveDocument.getObject(APTName).Label='APlane'
+    
+    FreeCAD.ActiveDocument.getObject(APTName).Label='APLane'
     FreeCADGui.ActiveDocument.getObject(APTName).ShapeColor = (0.667,0.667,0.498)
     FreeCADGui.ActiveDocument.getObject(APTName).Transparency = 50 #99
 
-    FreeCAD.ActiveDocument.recompute()
-
-    #Draft.rotate(FreeCAD.ActiveDocument.getObject(APEdgeName),45,FreeCAD.Vector(0,0,0),FreeCAD.Vector(0,0,1))
-    
     sh1=FreeCAD.ActiveDocument.getObject(APTName).Shape.copy()
     #print sh1.normalAt(0,0)
     sh1.Placement=plcm
     #print PC
-    sh1.translate(FreeCAD.Vector(PC[0]-lng/2,PC[1]-lng/2,PC[2]))
+    sh1.translate(FreeCAD.Vector(PC[0],PC[1],PC[2]))
     rot_angle = math.degrees(FreeCAD.Vector(0.0,0.0,1.0).getAngle(norm))
     rot_axis = FreeCAD.Vector(0.0,0.0,1.0).cross(norm)
     Origin = Base.Vector(0, 0, 0)
@@ -251,10 +288,10 @@ def makeAPlane(w, w_multipl,norm,plcm,PC):
         rot_angle=0.
     #print rot_axis
     sh1.rotate(DraftVecUtils.tup(PC), DraftVecUtils.tup(rot_axis), rot_angle)
+    sh1.rotate(DraftVecUtils.tup(PC), DraftVecUtils.tup(norm), 45)
+    
     FreeCAD.ActiveDocument.getObject(APTName).Placement=sh1.Placement
-
     FreeCAD.ActiveDocument.recompute()
-
     
     # PLN=FreeCAD.ActiveDocument.getObject(APT.Name)
     # AP=reset_prop_shapes(PLN)
@@ -389,7 +426,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(True)
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-                                APName=makeAPlane(w,1.,norm,plcmT,P1)
+                                APName=makeAPlane(w,0.5,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
@@ -554,7 +591,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(True)
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-                                APName=makeAPlane(w,1.0,norm,plcmT,P1)
+                                APName=makeAPlane(w,0.3,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
@@ -683,7 +720,7 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP3.setEnabled(True)
                                     #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                     plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-                                    APName=makeAPlane(w,1.0,norm,plcmT,P1)
+                                    APName=makeAPlane(w,0.3,norm,plcmT,P1)
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
 
                                 elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #4
