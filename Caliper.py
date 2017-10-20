@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.0" #Manipulator for Parts
+__version__ = "1.3.1" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -49,6 +49,8 @@ from pivy import coin
 import numpy as np
 
 angle_tolerance = 1e-5 #
+ninst = 0
+
 
 def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
 
@@ -310,7 +312,6 @@ def remove_all_selection():
         
 ##
 
-        
 ##--------------------------------------------------------------------------------------
 class SelObserverCaliper:
     def addSelection(self, document, object, element, position):  # Selection
@@ -764,6 +765,7 @@ class SelObserverCaliper:
         if 0:#except:
             sayerr('restarted')
 ##
+       
 def a_clear_console():
     #clearing previous messages
     mw=FreeCADGui.getMainWindow()
@@ -808,12 +810,22 @@ btn_md_sizeX=26;btn_md_sizeY=26;
 
 def close_caliper():
     global s1
+    sayerr('close called')
     #def closeEvent(self, e):
     try:
+        #FreeCADGui.Selection.removeObserver(SelObserverCaliper())
         FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
+        sayerr('observer removed')
+        CPDockWidget.deleteLater()
     except:
+        sayerr('error on removing observer')
         pass
+    #CPDockWidget.Measure.toggle()
+    #if CPDockWidget.Measure.isChecked():
+    #    print 'checked'
+    
     CPDockWidget.close()
+    
     #self.setWindowState(QtCore.Qt.WindowActive)
     doc=FreeCAD.ActiveDocument
     if doc is not None:
@@ -1908,8 +1920,10 @@ class Ui_DockWidget(object):
                 self.CleanDist.setEnabled(True)
                 #FreeCADGui.Selection.removeObserver(s1)
                 try:
+                    sayw('removing observer')
                     FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
                 except:
+                    sayerr('not able to remove observer')
                     pass
                 if FreeCAD.ActiveDocument is not None:
                     for obj in FreeCAD.ActiveDocument.Objects:
@@ -1945,31 +1959,50 @@ def Cp_centerOnScreen (widg):
 ##
 
 def Cp_singleInstance():
-    global s1
+    global s1, ninst
     app = QtGui.qApp
 
     for i in app.topLevelWidgets():
+        #print i.objectName()
         if i.objectName() == "Caliper":
-            try:
-                FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
-            except:
-                pass
-            i.deleteLater()
-        else:
-            pass
+            ninst=ninst+1
+            #print 'ni ',ninst
+            #i.show()
+            if ninst>1:
+                ninst=0
+                return False
+        #     #i.close()
+        #     try:
+        #         FreeCADGui.Selection.removeObserver(i.s1)
+        #         #FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
+        #     except:
+        #         sayerr('unable to remove observer')
+        #         pass
+        #     i.deleteLater()
+        # else:
+        #     pass
     t=FreeCADGui.getMainWindow()
     dw=t.findChildren(QtGui.QDockWidget)
     #print str(dw)
     for i in dw:
-        #say str(i.objectName())
+        #say (str(i.objectName()))
         if str(i.objectName()) == "Caliper": #"kicad StepUp 3D tools":
-            try:
-                FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
-            except:
-                pass
-            i.deleteLater()
-        else:
-            pass
+            ninst=ninst+1
+            #print 'ni ',ninst
+            i.show()
+            if ninst > 1:
+                ninst=0
+                return False
+        #    i.close()
+        #    try:
+        #        FreeCADGui.Selection.removeObserver(s1)   # desinstalle la fonction residente SelObserver
+        #    except:
+        #        sayerr('unable to remove observer (2)')
+        #        pass
+        #    i.deleteLater()
+        #else:
+        #    pass
+    return True
 ##
 
 def Cp_checkInstance():
@@ -1997,36 +2030,37 @@ def Cp_checkInstance():
 
 doc=FreeCAD.ActiveDocument
 
-Cp_singleInstance()
+if Cp_singleInstance():
 
-CPDockWidget = QtGui.QDockWidget()          # create a new dckwidget
-CPDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
-CPDockWidget.ui.setupUi(CPDockWidget) # setup the ui
-#ui = Ui_AlignDockWidget()
-#ui.setupUi(AlignDockWidget)
-#AlignDockWidget.show()
-
-CPDockWidget.setObjectName("Caliper")
-
-CPDockWidget.setFloating(True)  #undock
-CPDockWidget.resize(sizeX,sizeY)
-CPDockWidget.activateWindow()
-CPDockWidget.raise_()
-
-#MVDockWidget.show()
-
-CPDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
-
-if CPDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-    CPDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-
-CPmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
-CPmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,CPDockWidget)
-#MVDockWidget.show()
-Cp_undock()
-Cp_centerOnScreen(CPDockWidget)
-# use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
-
+    CPDockWidget = QtGui.QDockWidget()          # create a new dckwidget
+    CPDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
+    CPDockWidget.ui.setupUi(CPDockWidget) # setup the ui
+    #ui = Ui_AlignDockWidget()
+    #ui.setupUi(AlignDockWidget)
+    #AlignDockWidget.show()
+    
+    CPDockWidget.setObjectName("Caliper")
+    
+    CPDockWidget.setFloating(True)  #undock
+    CPDockWidget.resize(sizeX,sizeY)
+    CPDockWidget.activateWindow()
+    CPDockWidget.raise_()
+    
+    #MVDockWidget.show()
+    
+    CPDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
+    
+    if CPDockWidget.style().metaObject().className()== "QStyleSheetStyle":
+        CPDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
+    
+    CPmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
+    CPmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,CPDockWidget)
+    #MVDockWidget.show()
+    Cp_undock()
+    Cp_centerOnScreen(CPDockWidget)
+    # use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
+    
+    
 ### ------------------------------------------------------------------------------------ ###
 
 ##################################################################################################
