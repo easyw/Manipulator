@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.1" #Manipulator for Parts
+__version__ = "1.4.2" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -46,7 +46,7 @@ import sys, math
 from PySide import QtCore, QtGui
 from pivy import coin
 
-
+ninst = 0
 
 ##--------------------------------------------------------------------------------------
 
@@ -95,6 +95,8 @@ def close_mover():
     #def closeEvent(self, e):
     try:
         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+        sayw('observer removed')
+        MVDockWidget.deleteLater()
     except:
         sayerr('not able to remove observer')
         pass
@@ -1206,33 +1208,46 @@ def Mv_centerOnScreen (widg):
 ##
 
 def Mv_singleInstance():
-    global sO
+    global sO, ninst
     app = QtGui.qApp
 
     for i in app.topLevelWidgets():
         if i.objectName() == "Mover":
-            try:
-                FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
-            except:
-                sayerr('not able to remove observer')
-                pass
-            i.deleteLater()
-        else:
-            pass
+            ninst=ninst+1
+            #print 'ni ',ninst
+            #i.show()
+            if ninst>1:
+                ninst=0
+                return False
+        #     try:
+        #         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+        #     except:
+        #         sayerr('not able to remove observer')
+        #         pass
+        #     i.deleteLater()
+        # else:
+        #     pass
     t=FreeCADGui.getMainWindow()
     dw=t.findChildren(QtGui.QDockWidget)
     #print str(dw)
     for i in dw:
         #say str(i.objectName())
         if str(i.objectName()) == "Mover": #"kicad StepUp 3D tools":
-            try:
-                FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
-            except:
-                sayerr('not able to remove observer')
-                pass
-            i.deleteLater()
-        else:
-            pass
+            ninst=ninst+1
+            #print 'ni ',ninst
+            i.show()
+            if ninst > 1:
+                ninst=0
+                return False
+        #     try:
+        #         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
+        #     except:
+        #         sayerr('not able to remove observer')
+        #         pass
+        #     i.deleteLater()
+        # else:
+        #     pass
+    return True
 ##
 
 def Mv_checkInstance():
@@ -1260,35 +1275,36 @@ def Mv_checkInstance():
 
 doc=FreeCAD.ActiveDocument
 
-Mv_singleInstance()
 
-MVDockWidget = QtGui.QDockWidget()          # create a new dckwidget
-MVDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
-MVDockWidget.ui.setupUi(MVDockWidget) # setup the ui
-#ui = Ui_AlignDockWidget()
-#ui.setupUi(AlignDockWidget)
-#AlignDockWidget.show()
+if Mv_singleInstance():
 
-MVDockWidget.setObjectName("Mover")
-
-MVDockWidget.setFloating(True)  #undock
-MVDockWidget.resize(sizeX,sizeY)
-MVDockWidget.activateWindow()
-MVDockWidget.raise_()
-
-#MVDockWidget.show()
-
-MVDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
-
-if MVDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-    MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-
-MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
-MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
-#MVDockWidget.show()
-Mv_undock()
-Mv_centerOnScreen(MVDockWidget)
-use_hierarchy=MVDockWidget.ui.cbHierarchy.isChecked()
+    MVDockWidget = QtGui.QDockWidget()          # create a new dckwidget
+    MVDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
+    MVDockWidget.ui.setupUi(MVDockWidget) # setup the ui
+    #ui = Ui_AlignDockWidget()
+    #ui.setupUi(AlignDockWidget)
+    #AlignDockWidget.show()
+    
+    MVDockWidget.setObjectName("Mover")
+    
+    MVDockWidget.setFloating(True)  #undock
+    MVDockWidget.resize(sizeX,sizeY)
+    MVDockWidget.activateWindow()
+    MVDockWidget.raise_()
+    
+    #MVDockWidget.show()
+    
+    MVDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
+    
+    if MVDockWidget.style().metaObject().className()== "QStyleSheetStyle":
+        MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
+    
+    MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
+    MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
+    #MVDockWidget.show()
+    Mv_undock()
+    Mv_centerOnScreen(MVDockWidget)
+    use_hierarchy=MVDockWidget.ui.cbHierarchy.isChecked()
 
 ### ------------------------------------------------------------------------------------ ###
 
