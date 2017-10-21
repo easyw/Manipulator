@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.2" #Manipulator for Parts
+__version__ = "1.3.3" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -189,6 +189,13 @@ def colinearVectors(A, B, C, info=0, tolerance=1e-12):
         return False
     return 
 ###
+def point_plane_distance(point, plane_normal, plane_point):
+    """signed distance between plane and point"""
+    dist = float (dotproduct(plane_normal, (point.sub(plane_point))))
+    
+    return dist
+##    
+
 def reset_prop_shapes(obj):
 
     s=obj.Shape
@@ -694,8 +701,12 @@ class SelObserverCaliper:
                                     angle = math.degrees(ve2.getAngle(ve1))
                                     dstP=-1
                                     #print abs(angle)
+                                    
+                                    if (abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance) and sel1=='face' and sel2=='face':
+                                        ## distance between // planes
+                                        dstP = abs(point_plane_distance(P1, norm, midP))
                                     if (abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance) and sel1!='face' and sel2!='face':
-                                        ### this must be checked more
+                                        ## perpendicular distance between edges
                                         #calculating Distance between // edges
                                         a1=np.array([v1[0],v1[1],v1[2]])
                                         a0=np.array([v2[0],v2[1],v2[2]])
@@ -725,9 +736,10 @@ class SelObserverCaliper:
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                         #print dstP, ' ', angle
                                         if dstP != -1:
-                                            say("""Distance // vectors : """+'{0:.3f}'.format(dstP))
+                                            say("""Distance // vectors(planes) : """+'{0:.3f}'.format(dstP))
                                             dst_str='{0:.2f}'.format(dstP)
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° //d '+dst_str+' mm'
+                                            FreeCAD.ActiveDocument.getObject(dim.Name).Label = '//Planes Distance'
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.0f}'.format(angle)+'° //d '+dst_str+' mm'
                                         else:
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                         sayw("Angle : "+'{0:.2f}'.format(angle))
