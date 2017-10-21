@@ -694,7 +694,7 @@ class SelObserverCaliper:
                                     angle = math.degrees(ve2.getAngle(ve1))
                                     dstP=-1
                                     #print abs(angle)
-                                    if abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance:
+                                    if (abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance) and sel1!='face' and sel2!='face':
                                         ### this must be checked more
                                         #calculating Distance between // edges
                                         a1=np.array([v1[0],v1[1],v1[2]])
