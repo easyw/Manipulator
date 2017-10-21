@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.1" #Manipulator for Parts
+__version__ = "1.3.2" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -53,7 +53,7 @@ ninst = 0
 
 
 def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
-
+    ## https://stackoverflow.com/questions/2824478/shortest-distance-between-two-line-segments
     ''' Given two lines defined by numpy.array pairs (a0,a1,b0,b1)
         Return the closest points on each segment and their distance
     '''
@@ -319,11 +319,12 @@ class SelObserverCaliper:
         global selobject, sel, posz, P,P1,P2,PE,PC,APName
         global initial_placement, last_selection, objs
         global added_dim, in_hierarchy, vec1, mid, midP, va, vb, P_T
-        global ornt_1, sel1, has_radius, w, angle
+        global ornt_1, sel1, has_radius, w, angle, dstP
         
         fntsize='0.2mm'
         ticksize='0.1mm'
         Vtx_sel=False
+        #dstP=-1
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
         
         if 1:#try:
@@ -691,6 +692,16 @@ class SelObserverCaliper:
                                         # print 'adjusting angle'
                                         ve2 = v4.sub(v3)                                
                                     angle = math.degrees(ve2.getAngle(ve1))
+                                    dstP=-1
+                                    #print abs(angle)
+                                    if abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance:
+                                        ### this must be checked more
+                                        #calculating Distance between // edges
+                                        a1=np.array([v1[0],v1[1],v1[2]])
+                                        a0=np.array([v2[0],v2[1],v2[2]])
+                                        b0=np.array([v3[0],v3[1],v3[2]])
+                                        b1=np.array([v4[0],v4[1],v4[2]])
+                                        dstP=closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False)[2]
                                     
                                     if CPDockWidget.ui.cbAPlane.isChecked():
                                         CPDockWidget.ui.APlane.setEnabled(True)
@@ -712,19 +723,15 @@ class SelObserverCaliper:
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
-                                        vec2 = P2 - P1
-                                        v1 = va #e1.Vertexes[-1].Point
-                                        v2 = vb #e1.Vertexes[0].Point
-                                        ve1 = v1.sub(v2)
-                                        # Create the Vector for second edge
-                                        ve2 = v3.sub(v4)                                
-                                        if orient==ornt_1:
-                                            # print 'adjusting angle'
-                                            ve2 = v4.sub(v3)                                
-                                        angle = math.degrees(ve2.getAngle(ve1))
-                                        
+                                        #print dstP, ' ', angle
+                                        if dstP != -1:
+                                            say("""Distance // vectors : """+'{0:.3f}'.format(dstP))
+                                            dst_str='{0:.2f}'.format(dstP)
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° //d '+dst_str+' mm'
+                                        else:
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                         sayw("Angle : "+'{0:.2f}'.format(angle))
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+                                        #FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
 
                                 elif CPDockWidget.ui.APlane.isEnabled(): ## step #3
                                     CPDockWidget.ui.APlane.setEnabled(False)
@@ -751,7 +758,13 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                     sayw("Angle : "+'{0:.2f}'.format(angle))
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+                                    if dstP != -1:
+                                        say("Distance // vectors : "+'{0:.3f}'.format(dstP))
+                                        dst_str='{0:.2f}'.format(dstP)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:}'.format(angle)+'° //d '+dst_str+' mm'
+                                    else:
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+                                    sayw("Angle : "+'{0:.2f}'.format(angle))
                                     FreeCAD.ActiveDocument.removeObject(PE.Name)
                                     FreeCAD.ActiveDocument.removeObject(PC.Name)
                                     FreeCAD.ActiveDocument.removeObject(APName)
