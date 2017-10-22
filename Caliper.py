@@ -739,7 +739,7 @@ class SelObserverCaliper:
                                             say("""Distance // vectors(planes) : """+'{0:.3f}'.format(dstP))
                                             dst_str='{0:.2f}'.format(dstP)
                                             FreeCAD.ActiveDocument.getObject(dim.Name).Label = '//Planes Distance'
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.0f}'.format(angle)+'° //d '+dst_str+' mm'
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.1f}'.format(angle).rstrip('0').rstrip('.')+'° //d '+dst_str+' mm'
                                         else:
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                         sayw("Angle : "+'{0:.2f}'.format(angle))
@@ -805,7 +805,8 @@ a_clear_console()
 from sys import platform as _platform
 
 # window GUI dimensions parameters
-wdszX=304;wdszY=226
+wdszX=302 #304
+wdszY=228 #226
 ##Mover size
 wdszMX=304;wdszMY=256
 # window GUI dimensions parameters
