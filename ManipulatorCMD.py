@@ -66,7 +66,7 @@ class MoverTools:
     "manipulator Mover tools object"
  
     def GetResources(self):
-        return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg') , # the name of a svg file available in the resources
+        return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Manipulator-cmd.svg') , # the name of a svg file available in the resources
                      'MenuText': "Mover Tools" ,
                      'ToolTip' : "Mover Manipulator workbench"}
  
