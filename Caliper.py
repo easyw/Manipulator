@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.3" #Manipulator for Parts
+__version__ = "1.3.4" #Manipulator for Parts
 __date__    = "10.2017"
 
 testing=False #true for showing helpers
@@ -707,7 +707,7 @@ class SelObserverCaliper:
                                         dstP = abs(point_plane_distance(P1, norm, midP))
                                     if (abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance) and sel1!='face' and sel2!='face':
                                         ## perpendicular distance between edges
-                                        #calculating Distance between // edges
+                                        #sayerr('calculating Distance between // edges')
                                         a1=np.array([v1[0],v1[1],v1[2]])
                                         a0=np.array([v2[0],v2[1],v2[2]])
                                         b0=np.array([v3[0],v3[1],v3[2]])
@@ -738,7 +738,10 @@ class SelObserverCaliper:
                                         if dstP != -1:
                                             say("""Distance // vectors(planes) : """+'{0:.3f}'.format(dstP))
                                             dst_str='{0:.2f}'.format(dstP)
-                                            FreeCAD.ActiveDocument.getObject(dim.Name).Label = '//Planes Distance'
+                                            if sel1=='face':
+                                                FreeCAD.ActiveDocument.getObject(dim.Name).Label = '//Planes Distance'
+                                            else:
+                                                FreeCAD.ActiveDocument.getObject(dim.Name).Label = '//Edge Distance'
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.1f}'.format(angle).rstrip('0').rstrip('.')+'° //d '+dst_str+' mm'
                                         else:
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
