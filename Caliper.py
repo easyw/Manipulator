@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.4" #Manipulator for Parts
-__date__    = "10.2017"
+__version__ = "1.3.5" #Manipulator for Parts
+__date__    = "11.2017"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -367,7 +367,10 @@ class SelObserverCaliper:
                             top_level_obj_Name=sel[0].Object.Name
                             in_hierarchy=False
                         rot_center=bbC
-                        if in_hierarchy:
+                        has_Placement=False
+                        if hasattr(top_level_obj,'Placement'):
+                            has_Placement=True
+                        if in_hierarchy and has_Placement:
                             #say('in hierarchy and use hierarchy')
                             last_selection.append(top_level_obj) #(sel[0])
                             obj = top_level_obj #sel[0].Object
@@ -435,7 +438,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(True)
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-                                APName=makeAPlane(w,0.5,norm,plcmT,P1)
+                                APName=makeAPlane(w,0.7,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
@@ -610,7 +613,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(True)
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-                                APName=makeAPlane(w,0.3,norm,plcmT,P1)
+                                APName=makeAPlane(w,0.5,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
@@ -753,7 +756,7 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP3.setEnabled(True)
                                     #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                     plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-                                    APName=makeAPlane(w,0.3,norm,plcmT,P1)
+                                    APName=makeAPlane(w,0.5,norm,plcmT,P1)
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
 
                                 elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #4
