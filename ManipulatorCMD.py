@@ -20,6 +20,13 @@ import mvr_locator
 
 reload_Gui=False#True
 
+def reload_lib(lib):
+    if (sys.version_info > (3, 0)):
+        import importlib
+        importlib.reload(lib)
+    else:
+        reload (lib)
+
 ManipulatorWBpath = os.path.dirname(mvr_locator.__file__)
 #sys.path.append(ksuWB + '/Gui')
 ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons')
@@ -56,7 +63,7 @@ class AlignerTools:
     def Activated(self):
         # do something here...
         import Aligner
-        reload(Aligner)
+        reload_lib(Aligner)
         FreeCAD.Console.PrintWarning( 'Aligner active :)\n' )
         #import kicadStepUptools
  
@@ -82,9 +89,9 @@ class MoverTools:
     def Activated(self):
         # do something here...
         #import kicadStepUptools
-        #reload( kicadStepUptools )
+        #reload_lib( kicadStepUptools )
         import Mover
-        reload(Mover)
+        reload_lib(Mover)
         FreeCAD.Console.PrintWarning( 'Mover active :)\n' )
         #import kicadStepUptools
  
@@ -111,9 +118,9 @@ class CaliperTools:
     def Activated(self):
         # do something here...
         #import kicadStepUptools
-        #reload( kicadStepUptools )
+        #reload_lib( kicadStepUptools )
         import Caliper
-        reload(Caliper)
+        reload_lib(Caliper)
         FreeCAD.Console.PrintWarning( 'Caliper active :)\n' )
         #import kicadStepUptools
  

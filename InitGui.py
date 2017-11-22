@@ -1,6 +1,5 @@
-﻿# -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-#****************************************************************************
+#***************************************************************************
 #*                                                                          *
 #*  Copyright (c) 2017                                                      *
 #*  Maurice easyw@katamail.com                                              *
@@ -31,7 +30,7 @@ ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons
 global main_MWB_Icon
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
-MWB_wb_version='v 1.1.2'
+MWB_wb_version='v 1.1.3'
 #try:
 #    from FreeCADGui import Workbench
 #except ImportError as e:
