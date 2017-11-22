@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.5" #Manipulator for Parts
+__version__ = "1.3.6" #Manipulator for Parts
 __date__    = "11.2017"
 
 testing=False #true for showing helpers
@@ -417,12 +417,17 @@ class SelObserverCaliper:
                                     mid=FreeCAD.Vector.add(P1,halfedge)
                                     if mid!=P1: #non coincident points
                                         dim=Draft.makeDimension(pnt,P1,mid)
-                                        Draft.autogroup(dim)
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        try:
+                                            Draft.autogroup(dim)
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        except:
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                            pass
                                         dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
@@ -445,13 +450,18 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
                                 dim=Draft.makeDimension(P2,P1,posz)
-                                Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                try:
+                                    Draft.autogroup(dim)
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                except:
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                    pass
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
@@ -503,13 +513,18 @@ class SelObserverCaliper:
                                     
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
                                         dim=Draft.makeDimension(pnt,P1,mid)
-                                        Draft.autogroup(dim)
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        try:
+                                            Draft.autogroup(dim)
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        except:
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                            pass
                                         #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                         dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                         if has_radius:
                                             say("Radius   : "+str(dim.Distance))
@@ -540,13 +555,18 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
                                 dim=Draft.makeDimension(P2,P1,posz)
-                                Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                try:
+                                    Draft.autogroup(dim)
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                except:
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                    pass
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 if has_radius:
@@ -592,12 +612,17 @@ class SelObserverCaliper:
                                         halfedge = (pnt.sub(P1)).multiply(.5)
                                         mid=FreeCAD.Vector.add(P1,halfedge)
                                         dim=Draft.makeDimension(pnt,P1,mid)
-                                        Draft.autogroup(dim)
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        try:
+                                            Draft.autogroup(dim)
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        except:
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                            pass
                                         dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
@@ -620,13 +645,18 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
                                 dim=Draft.makeDimension(P2,P1,posz)
-                                Draft.autogroup(dim)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                try:
+                                    Draft.autogroup(dim)
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                except:
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                    pass
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
@@ -727,13 +757,18 @@ class SelObserverCaliper:
                                             dim=Draft.makeDimension(mid,midP,mid2)
                                         else:
                                             dim=Draft.makeDimension(pnt,mid,P1)                                
-                                        Draft.autogroup(dim)
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        try:
+                                            Draft.autogroup(dim)
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                        except:
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                            pass
                                         dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
@@ -764,13 +799,18 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
                                     dim=Draft.makeDimension(mid,midP,posz)
-                                    Draft.autogroup(dim)
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                    try:
+                                        Draft.autogroup(dim)
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
+                                    except:
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
+                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
+                                        pass
                                     dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
@@ -1061,7 +1101,9 @@ def get_placement_hierarchy (sel0):
             nwshp.Placement = acpy.Placement
             if edge_op==1:
                 #nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
-                pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
+                #pV1=nwshp.Vertex1.Point; pV2=nwshp.Vertex2.Point
+                pV1=nwshp.Vertexes[0].Point; pV2=nwshp.Vertexes[1].Point
+
                 ss=subObj.copy()#SubObjects[0] is the edge list
                 pointsDirection  = []
                 pointsDirection = ss.discretize(Number=5) # discretize the path line
@@ -1117,7 +1159,8 @@ def get_placement_hierarchy (sel0):
                     else:
                         Pnt=mid
                 else:
-                    Pnt=nwshp.Vertex1.Point
+                    #Pnt=nwshp.Vertex1.Point
+                    Pnt=nwshp.Vertexes[0].Point
             else: #edge_op=0
                 Pnt=FreeCAD.Vector(bbxCenter)
             return nwshp.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
@@ -1135,7 +1178,8 @@ def get_placement_hierarchy (sel0):
                     bbxCenter=circ.Center
                 else:
                     #bbxCenter=nwshp.BoundBox.Center
-                    bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+                    #bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+                    bbxCenter=(nwshp.Vertexes[1].Point[0],nwshp.Vertexes[1].Point[1],nwshp.Vertexes[1].Point[2])
             else:
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
@@ -1154,7 +1198,8 @@ def get_placement_hierarchy (sel0):
                     #else:
                     #    bbxCenter = nwshp.BoundBox.Center
             if pad==1:
-                Pnt=nwshp.Vertex1.Point
+                #Pnt=nwshp.Vertex1.Point
+                Pnt=nwshp.Vertexes[0].Point
             else:
                 Pnt=FreeCAD.Vector(bbxCenter)
             return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
@@ -1164,10 +1209,12 @@ def get_placement_hierarchy (sel0):
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
             if edge_op==1:
-                Pnt=nwshp.Vertex1.Point
-                bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+                #Pnt=nwshp.Vertex1.Point
+                Pnt=nwshp.Vertexes[0].Point
+                bbxCenter=(nwshp.Vertexes[1].Point[0],nwshp.Vertexes[1].Point[1],nwshp.Vertexes[1].Point[2])
             else:
-                Pnt=nwshp.Vertex1.Point
+                #Pnt=nwshp.Vertex1.Point
+                Pnt=nwshp.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
@@ -1189,10 +1236,13 @@ def get_placement_hierarchy (sel0):
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
             if edge_op==1:
-                Pnt=nwshp.Vertex1.Point
-                bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+                #Pnt=nwshp.Vertex1.Point
+                Pnt=nwshp.Vertexes[0].Point
+                #bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
+                bbxCenter=(nwshp.Vertexes[1].Point[0],nwshp.Vertexes[1].Point[1],nwshp.Vertexes[1].Point[2])
             else:
-                Pnt=nwshp.Vertex1.Point
+                #Pnt=nwshp.Vertex1.Point
+                Pnt=nwshp.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = nwshp.BoundBox.Center
                 else:
@@ -1235,7 +1285,11 @@ def get_placement_hierarchy (sel0):
                 pointsDirection = ss.discretize(Number=5) # discretize the path line
                 nwnorm=pointsDirection[0].sub(pointsDirection[1]) 
                 #norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
-                pV1=subObj.Vertex1.Point; pV2=subObj.Vertex2.Point
+                #pV1=subObj.Vertex1.Point; pV2=subObj.Vertex2.Point
+                if len(subObj.Vertexes)>=2:
+                    pV1=subObj.Vertexes[0].Point; pV2=subObj.Vertexes[1].Point
+                else:
+                    pV1=subObj.Vertexes[0].Point; pV2=subObj.Vertexes[0].Point
             pad=1 #edge
         if CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():
             subObj=Obj.Shape #forcing object to evaluate center of BBox
@@ -1285,7 +1339,8 @@ def get_placement_hierarchy (sel0):
                     else:
                         Pnt=mid
                 else:
-                    Pnt=subObj.Vertex1.Point
+                    #Pnt=subObj.Vertex1.Point
+                    Pnt=subObj.Vertexes[0].Point
             else: #edge_op=0
                 Pnt=FreeCAD.Vector(bbxCenter)
             #sayw(Pnt)
@@ -1303,7 +1358,8 @@ def get_placement_hierarchy (sel0):
                     bbxCenter=circ.Center
                 else:
                     #bbxCenter=subObj.BoundBox.Center
-                    bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+                    #bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+                    bbxCenter=(subObj.Vertexes[1].Point[0],subObj.Vertexes[1].Point[1],subObj.Vertexes[1].Point[2])
             else:
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
@@ -1318,7 +1374,8 @@ def get_placement_hierarchy (sel0):
                 except:
                     bbxCenter = subObj.BoundBox.Center
             if pad==1:
-                Pnt=wire.Vertex1.Point
+                #Pnt=wire.Vertex1.Point
+                Pnt=wire.Vertexes[0].Point
             else:
                 Pnt=FreeCAD.Vector(bbxCenter)
             #sayerr(bbxCenter)
@@ -1327,10 +1384,13 @@ def get_placement_hierarchy (sel0):
             #bbxCenter=DraftGeomUtils.findMidpoint(circ)
             #bbxCenter=subObj.BoundBox.Center
             if edge_op==1:
-                Pnt=subObj.Vertex1.Point
-                bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+                #Pnt=subObj.Vertex1.Point
+                Pnt=subObj.Vertexes[0].Point
+                #bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+                bbxCenter=(subObj.Vertexes[1].Point[0],subObj.Vertexes[1].Point[1],subObj.Vertexes[1].Point[2])
             else:
-                Pnt=subObj.Vertex1.Point
+                #Pnt=subObj.Vertex1.Point
+                Pnt=subObj.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
                 else:
@@ -1340,10 +1400,13 @@ def get_placement_hierarchy (sel0):
                         bbxCenter = subObj.BoundBox.Center
         elif CPDockWidget.ui.rbAngle.isChecked():
             if edge_op==1:
-                Pnt=subObj.Vertex1.Point
-                bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+                #Pnt=subObj.Vertex1.Point
+                Pnt=subObj.Vertexes[0].Point
+                #bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
+                bbxCenter=(subObj.Vertexes[1].Point[0],subObj.Vertexes[1].Point[1],subObj.Vertexes[1].Point[2])
             else:
-                Pnt=subObj.Vertex1.Point
+                #Pnt=subObj.Vertex1.Point
+                Pnt=subObj.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
                     bbxCenter = subObj.BoundBox.Center
                 else:
