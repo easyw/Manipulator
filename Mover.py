@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.2" #Manipulator for Parts
-__date__    = "10.2017"
+__version__ = "1.4.3" #Manipulator for Parts
+__date__    = "12.2017"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -89,6 +89,9 @@ btn_sizeX=32;btn_sizeY=32;
 chkb_sizeX=20;chkb_sizeY=20;
 btn_sm_sizeX=20;btn_sm_sizeY=20;
 btn_md_sizeX=26;btn_md_sizeY=26;
+
+Max_move=999.0
+Max_angle=360.0
 
 def close_mover():
     global sO
@@ -678,8 +681,8 @@ class Ui_DockWidget(object):
         self.DS_MoveInput.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.DS_MoveInput.setToolTip("translate (+/- mm)")
         self.DS_MoveInput.setDecimals(2)
-        self.DS_MoveInput.setMinimum(-999.0)
-        self.DS_MoveInput.setMaximum(999.0)
+        self.DS_MoveInput.setMinimum(-Max_move)
+        self.DS_MoveInput.setMaximum(Max_move)
         self.DS_MoveInput.setObjectName("DS_MoveInput")
         self.gridLayout_10.addWidget(self.DS_MoveInput, 0, 1, 1, 1)
         self.label_2 = QtGui.QLabel(self.gridLayoutWidget_6)
@@ -707,8 +710,8 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.setMinimumSize(QtCore.QSize(48, 0))
         self.DS_RotateInput.setToolTip("rotate (+/- deg)")
         self.DS_RotateInput.setDecimals(1)
-        self.DS_RotateInput.setMinimum(-180.0)
-        self.DS_RotateInput.setMaximum(180.0)
+        self.DS_RotateInput.setMinimum(-Max_angle)
+        self.DS_RotateInput.setMaximum(Max_angle)
         self.DS_RotateInput.setObjectName("DS_RotateInput")
         self.gridLayout_10.addWidget(self.DS_RotateInput, 1, 1, 1, 1)
         self.gridLayout_8.addLayout(self.gridLayout_10, 0, 1, 1, 1)
