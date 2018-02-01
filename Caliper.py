@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.6" #Manipulator for Parts
-__date__    = "11.2017"
+__version__ = "1.3.7" #Manipulator for Parts
+__date__    = "01.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -959,9 +959,10 @@ def get_top_level (obj):
     top=None
     if hasattr(obj,'InListRecursive'):
         for ap in obj.InListRecursive:
-            if len(ap.InListRecursive) < lvl:
-                top = ap
-                lvl = len(ap.InListRecursive)
+            if hasattr(ap,'Placement'):
+                if len(ap.InListRecursive) < lvl:
+                    top = ap
+                    lvl = len(ap.InListRecursive)
     return top
 ##
 
