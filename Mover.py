@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.3" #Manipulator for Parts
-__date__    = "12.2017"
+__version__ = "1.4.4" #Manipulator for Parts
+__date__    = "01.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -151,9 +151,13 @@ def get_top_level (obj):
     top=None
     if hasattr(obj,'InListRecursive'):
         for ap in obj.InListRecursive:
-            if len(ap.InListRecursive) < lvl:
-                top = ap
-                lvl = len(ap.InListRecursive)
+            if hasattr(ap,'Placement'):
+                if len(ap.InListRecursive) < lvl:
+                    top = ap
+                    lvl = len(ap.InListRecursive)
+            #else:
+            #    sayerr(obj.Label)
+        #top = obj
     return top
 ##
 
@@ -1405,6 +1409,7 @@ class SelObserver:
                             top_lvl=None
                             #if in_hierarchy:
                             top_lvl=get_top_level(o)
+                            #sayerr(top_lvl.Name)
                             if top_lvl is not None:
                                 say('object in App::Part hierarchy or Body')
                                 in_hierarchy=True
