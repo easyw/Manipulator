@@ -25,8 +25,8 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.4" #undo alignment for App::Part hierarchical objects
-__date__    = "10.2017"
+__version__ = "1.5.5" #undo alignment for App::Part hierarchical objects
+__date__    = "03.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -968,10 +968,12 @@ def recurse_node(obj,plcm,scl):
 
 def get_top_level (obj):
     lvl=10000
+    top=None
     for ap in obj.InListRecursive:
-        if len(ap.InListRecursive) < lvl:
-            top = ap
-            lvl = len(ap.InListRecursive)
+        if hasattr(ap,'Placement'):
+            if len(ap.InListRecursive) < lvl:
+                top = ap
+                lvl = len(ap.InListRecursive)
     return top
 
 def get_sorted_list (obj):
@@ -1269,6 +1271,7 @@ def Align(normal,type,mode,cx,cy,cz):
             say("len selEx "+str(len(selEx)))
             s=fc
             #selectedEdge = FreeCADGui.Selection.getSelectionEx()[j].SubObjects[0] # select one element SubObjects    
+            #sayerr(selEx[j].Object.TypeId)
             if (selEx[j].Object.TypeId == 'PartDesign::Plane'): #Datum plane with super Placement #(selEx[j].Object.TypeId == 'App::Plane') or :
                 ##print norm
                 pad=0
@@ -1595,7 +1598,7 @@ def Align(normal,type,mode,cx,cy,cz):
                     if rot_angle!=0: # and rot_axis!=FreeCAD.Vector (0.0, 0.0, 0.0):
                         if mode==0 or mode==2:
                             if rot_axis!=FreeCAD.Vector (0.0, 0.0, 0.0):
-                                if top_level_obj[j] != 'none':
+                                if top_level_obj[j] != 'none' and top_level_obj[j] is not None:
                                     o = top_level_obj[j]
                                 else:
                                     o = objs[j] 
@@ -1620,7 +1623,8 @@ def Align(normal,type,mode,cx,cy,cz):
                 if mode==0 or mode==1:
                     #objs[j].Placement.move(pos)
                     if object_added==0:
-                        if top_level_obj[j] != 'none':
+                        #print top_level_obj[j]
+                        if top_level_obj[j] != 'none' and top_level_obj[j] is not None:
                             o = top_level_obj[j]
                         else:
                             o = objs[j] 
