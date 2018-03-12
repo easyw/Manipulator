@@ -21,16 +21,24 @@
 #****************************************************************************
 
 import FreeCAD, FreeCADGui, Part, os, sys
+import urllib2, re
+from urllib2 import Request, urlopen, URLError, HTTPError
 import mvr_locator
 from ManipulatorCMD import *
 
 ManipulatorWBpath = os.path.dirname(mvr_locator.__file__)
 ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons')
 
-global main_MWB_Icon
+global main_MWB_Icon, wbm_activated
+wbm_activated=False
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
-MWB_wb_version='v 1.1.3'
+MWB_wb_version='v 1.1.4'
+global myurlMWB
+myurlMWB='https://github.com/easyw/Manipulator'
+global mycommitsMWB
+mycommitsMWB=73 #v 1.1.4
+
 #try:
 #    from FreeCADGui import Workbench
 #except ImportError as e:
@@ -67,6 +75,70 @@ class ManipulatorWB ( Workbench ):
     def Activated(self):
                 # do something here if needed...
         Msg ("Manipulator WB Activated("+MWB_wb_version+")\n")
+        from PySide import QtGui
+        pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+        if pg.IsEmpty():
+            pg.SetBool("checkUpdates",1)
+            upd=True
+        else:
+            upd=pg.GetBool("checkUpdates")
+        def check_updates(url, commit_nbr):
+            global wbm_activated
+            import urllib2, re
+            from urllib2 import Request, urlopen, URLError, HTTPError
+            wbm_activated=True
+            req = Request(url)
+            
+            try:
+                response = urlopen(req)
+            except HTTPError as e:
+                FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
+                FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
+            except URLError as e:
+                FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
+                FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
+            else:
+                # everything is fine
+                the_page = response.read()
+                # print the_page
+                str2='<li class=\"commits\">'
+                pos=the_page.find(str2)
+                str_commits=(the_page[pos:pos+600])
+                # print str_commits
+                pos=str_commits.find('<span class=\"num text-emphasized\">')
+                commits=(str_commits[pos:pos+200])
+                commits=commits.replace('<span class=\"num text-emphasized\">','')
+                #commits=commits.strip(" ")
+                #exp = re.compile("\s-[^\S\r\n]")
+                #print exp
+                #nbr_commits=''
+                my_commits=re.sub('[\s+]', '', commits)
+                pos=my_commits.find('</span>')
+                #print my_commits
+                nbr_commits=my_commits[:pos]
+                nbr_commits=nbr_commits.replace(',','')
+                nbr_commits=nbr_commits.replace('.','')
+                
+                FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
+                if commit_nbr < int(nbr_commits):
+                    FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB!!!\n')
+                    msg="""
+                    <font color=red>PLEASE UPDATE "Manipulator" WB!!!</font>
+                    <br>through \"Tools\" \"Addon manager\" Menu
+                    <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
+                    <br>
+                    <br>set \'checkUpdates\' to \'False\' to avoid this checking
+                    <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
+                    """
+                    QtGui.qApp.restoreOverrideCursor()
+                    reply = QtGui.QMessageBox.information(None,"Warning", msg)
+                else:
+                    FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
+                #<li class="commits">
+        ##
+        if not wbm_activated and upd:
+            check_updates(myurlMWB, mycommitsMWB)
+ 
  
     def Deactivated(self):
                 # do something here if needed...
