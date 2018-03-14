@@ -33,11 +33,11 @@ global main_MWB_Icon, wbm_activated
 wbm_activated=False
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
-MWB_wb_version='v 1.1.4'
+MWB_wb_version='v 1.1.5'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=73 #v 1.1.4
+mycommitsMWB=74 #v 1.1.5
 
 #try:
 #    from FreeCADGui import Workbench
@@ -80,6 +80,15 @@ class ManipulatorWB ( Workbench ):
         if pg.IsEmpty():
             pg.SetBool("checkUpdates",1)
             upd=True
+            FreeCAD.Console.PrintError('new \'check for updates\' feature added!!!\n')
+            msg="""
+            <font color=red>new \'check for updates\' feature added!!!</font>
+            <br>
+            <br>set \'checkUpdates\' to \'False\' to avoid this checking
+            <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
+            """
+            QtGui.qApp.restoreOverrideCursor()
+            reply = QtGui.QMessageBox.information(None,"Warning", msg)
         else:
             upd=pg.GetBool("checkUpdates")
         def check_updates(url, commit_nbr):
