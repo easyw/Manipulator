@@ -21,7 +21,7 @@
 #****************************************************************************
 
 import FreeCAD, FreeCADGui, Part, os, sys
-import urllib2, re
+import urllib2, re, time
 from urllib2 import Request, urlopen, URLError, HTTPError
 import mvr_locator
 from ManipulatorCMD import *
@@ -29,8 +29,7 @@ from ManipulatorCMD import *
 ManipulatorWBpath = os.path.dirname(mvr_locator.__file__)
 ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons')
 
-global main_MWB_Icon, wbm_activated
-wbm_activated=False
+global main_MWB_Icon
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
 MWB_wb_version='v 1.1.5'
@@ -76,10 +75,17 @@ class ManipulatorWB ( Workbench ):
                 # do something here if needed...
         Msg ("Manipulator WB Activated("+MWB_wb_version+")\n")
         from PySide import QtGui
+        import time
+        
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+        tnow = int(time.time())
+        oneday = 86400
         if pg.IsEmpty():
             pg.SetBool("checkUpdates",1)
             upd=True
+            pg.SetInt("updateDaysInterval",1)
+            pg.SetInt("lastCheck",tnow-2*oneday)
+            interval=True
             FreeCAD.Console.PrintError('new \'check for updates\' feature added!!!\n')
             msg="""
             <font color=red>new \'check for updates\' feature added!!!</font>
@@ -91,11 +97,21 @@ class ManipulatorWB ( Workbench ):
             reply = QtGui.QMessageBox.information(None,"Warning", msg)
         else:
             upd=pg.GetBool("checkUpdates")
+        time_interval = pg.GetInt("updateDaysInterval")
+        if time_interval <= 0:
+            time_interval = 1
+            pg.SetInt("updateDaysInterval",1)
+        nowTimeCheck = int(time.time())
+        lastTimeCheck = pg.GetInt("lastCheck")
+        #print (nowTimeCheck - lastTimeCheck)/(oneday*time_interval)
+        if time_interval <= 0 or ((nowTimeCheck - lastTimeCheck)/(oneday*time_interval) >= 1):
+            interval = True
+            pg.SetInt("lastCheck",tnow)
+        else:
+            interval = False
         def check_updates(url, commit_nbr):
-            global wbm_activated
             import urllib2, re
             from urllib2 import Request, urlopen, URLError, HTTPError
-            wbm_activated=True
             req = Request(url)
             
             try:
@@ -145,7 +161,7 @@ class ManipulatorWB ( Workbench ):
                     FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
                 #<li class="commits">
         ##
-        if not wbm_activated and upd:
+        if upd and interval:
             check_updates(myurlMWB, mycommitsMWB)
  
  
