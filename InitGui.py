@@ -32,11 +32,11 @@ ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons
 global main_MWB_Icon
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
-MWB_wb_version='v 1.1.5'
+MWB_wb_version='v 1.1.6'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=74 #v 1.1.5
+mycommitsMWB=76 #v 1.1.6
 
 #try:
 #    from FreeCADGui import Workbench
