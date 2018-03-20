@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.1.7'
+MWB_wb_version='v 1.1.8'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=77 #v 1.1.7
+mycommitsMWB=78 #v 1.1.8
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -35,8 +35,8 @@ if (sys.version_info > (3, 0)):  #py3
     from urllib import request, error #URLError, HTTPError
 else:  #py2
     import urllib2
-    from urllib2 import Request, URLError, HTTPError
-
+    from urllib2 import Request, urlopen, URLError, HTTPError
+    
 import mvr_locator
 from ManipulatorCMD import *
 
@@ -136,7 +136,7 @@ class ManipulatorWB ( Workbench ):
                     FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
             else:  #py2
                 import urllib2
-                from urllib2 import Request, URLError, HTTPError
+                from urllib2 import Request, urlopen, URLError, HTTPError
                 try:
                     response = urlopen(req)
                     resp_ok = True
