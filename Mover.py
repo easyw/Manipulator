@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.4" #Manipulator for Parts
-__date__    = "01.2018"
+__version__ = "1.4.5" #Manipulator for Parts
+__date__    = "03.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1195,9 +1195,9 @@ class Ui_DockWidget(object):
         <br><b>Mover Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
         <font color = blue><b>Version:  
         """+__version__+"""</b></font>"""
-        QtGui.qApp.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
         res=''
-        QtGui.qApp.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
         res = QtGui.QMessageBox.question(None,"Help",msg,QtGui.QMessageBox.Ok)
 ##
 
@@ -1216,7 +1216,7 @@ def Mv_centerOnScreen (widg):
 
 def Mv_singleInstance():
     global sO, ninst
-    app = QtGui.qApp
+    app = QtGui.QApplication #QtGui.qApp
 
     for i in app.topLevelWidgets():
         if i.objectName() == "Mover":
@@ -1258,7 +1258,7 @@ def Mv_singleInstance():
 ##
 
 def Mv_checkInstance():
-    app = QtGui.qApp
+    app = QtGui.QApplication
 
     foundAlg=False
     for i in app.topLevelWidgets():
@@ -1303,9 +1303,12 @@ if Mv_singleInstance():
     
     MVDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
     
-    if MVDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-        MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-    
+    try:
+        if MVDockWidget.style().metaObject().className()== "QStyleSheetStyle":
+            MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
+    except:
+        pass
+        
     MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
     #MVDockWidget.show()

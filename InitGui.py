@@ -20,9 +20,23 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
+MWB_wb_version='v 1.1.7'
+global myurlMWB
+myurlMWB='https://github.com/easyw/Manipulator'
+global mycommitsMWB
+mycommitsMWB=77 #v 1.1.7
+
+
 import FreeCAD, FreeCADGui, Part, os, sys
-import urllib2, re, time
-from urllib2 import Request, urlopen, URLError, HTTPError
+import re, time
+
+if (sys.version_info > (3, 0)):  #py3
+    import urllib
+    from urllib import request, error #URLError, HTTPError
+else:  #py2
+    import urllib2
+    from urllib2 import Request, URLError, HTTPError
+
 import mvr_locator
 from ManipulatorCMD import *
 
@@ -32,11 +46,6 @@ ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons
 global main_MWB_Icon
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 
-MWB_wb_version='v 1.1.6'
-global myurlMWB
-myurlMWB='https://github.com/easyw/Manipulator'
-global mycommitsMWB
-mycommitsMWB=76 #v 1.1.6
 
 #try:
 #    from FreeCADGui import Workbench
@@ -93,7 +102,7 @@ class ManipulatorWB ( Workbench ):
             <br>set \'checkUpdates\' to \'False\' to avoid this checking
             <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
             """
-            QtGui.qApp.restoreOverrideCursor()
+            QtGui.QApplication.restoreOverrideCursor()
             reply = QtGui.QMessageBox.information(None,"Warning", msg)
         else:
             upd=pg.GetBool("checkUpdates")
@@ -110,19 +119,34 @@ class ManipulatorWB ( Workbench ):
         else:
             interval = False
         def check_updates(url, commit_nbr):
-            import urllib2, re
-            from urllib2 import Request, urlopen, URLError, HTTPError
-            req = Request(url)
-            
-            try:
-                response = urlopen(req)
-            except HTTPError as e:
-                FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
-                FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
-            except URLError as e:
-                FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
-                FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
-            else:
+            import re, sys
+            resp_ok = False
+            if (sys.version_info > (3, 0)):  #py3
+                import urllib
+                from urllib import request, error #URLError, HTTPError
+                req = request.Request(url)
+                try:
+                    response = request.urlopen(req)
+                    resp_ok = True
+                except error.HTTPError as e:
+                    FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
+                    FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
+                except error.URLError as e:
+                    FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
+                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
+            else:  #py2
+                import urllib2
+                from urllib2 import Request, URLError, HTTPError
+                try:
+                    response = urlopen(req)
+                    resp_ok = True
+                except HTTPError as e:
+                    FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
+                    FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
+                except URLError as e:
+                    FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
+                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')                
+            if resp_ok:
                 # everything is fine
                 the_page = response.read()
                 # print the_page
@@ -155,7 +179,7 @@ class ManipulatorWB ( Workbench ):
                     <br>set \'checkUpdates\' to \'False\' to avoid this checking
                     <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
                     """
-                    QtGui.qApp.restoreOverrideCursor()
+                    QtGui.QApplication.restoreOverrideCursor()
                     reply = QtGui.QMessageBox.information(None,"Warning", msg)
                 else:
                     FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
