@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.1.9'
+MWB_wb_version='v 1.2.0'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=79 #v 1.1.9
+mycommitsMWB=80 #v 1.2.0
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -134,6 +134,8 @@ class ManipulatorWB ( Workbench ):
                 except error.URLError as e:
                     FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
                     FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
+                the_page = response.read().decode("utf-8") 
+                
             else:  #py2
                 import urllib2
                 from urllib2 import Request, urlopen, URLError, HTTPError
@@ -146,10 +148,12 @@ class ManipulatorWB ( Workbench ):
                     FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
                 except URLError as e:
                     FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
-                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')                
+                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')          
+                the_page = response.read()
+                
             if resp_ok:
                 # everything is fine
-                the_page = response.read()
+                #the_page = response.read()
                 # print the_page
                 str2='<li class=\"commits\">'
                 pos=the_page.find(str2)
