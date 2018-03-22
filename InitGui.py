@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.1.8'
+MWB_wb_version='v 1.1.9'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=78 #v 1.1.8
+mycommitsMWB=79 #v 1.1.9
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -137,6 +137,7 @@ class ManipulatorWB ( Workbench ):
             else:  #py2
                 import urllib2
                 from urllib2 import Request, urlopen, URLError, HTTPError
+                req = Request(url)
                 try:
                     response = urlopen(req)
                     resp_ok = True
