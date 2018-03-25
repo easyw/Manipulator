@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.2.0'
+MWB_wb_version='v 1.2.1'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=80 #v 1.2.0
+mycommitsMWB=81 #v 1.2.1
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -128,13 +128,13 @@ class ManipulatorWB ( Workbench ):
                 try:
                     response = request.urlopen(req)
                     resp_ok = True
+                    the_page = response.read().decode("utf-8") 
                 except error.HTTPError as e:
                     FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
                     FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
                 except error.URLError as e:
                     FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
                     FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
-                the_page = response.read().decode("utf-8") 
                 
             else:  #py2
                 import urllib2
@@ -143,13 +143,13 @@ class ManipulatorWB ( Workbench ):
                 try:
                     response = urlopen(req)
                     resp_ok = True
+                    the_page = response.read()
                 except HTTPError as e:
                     FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
                     FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
                 except URLError as e:
                     FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
                     FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')          
-                the_page = response.read()
                 
             if resp_ok:
                 # everything is fine
