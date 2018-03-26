@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.2.1'
+MWB_wb_version='v 1.2.2'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=81 #v 1.2.1
+mycommitsMWB=82 #v 1.2.2
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -174,11 +174,16 @@ class ManipulatorWB ( Workbench ):
                 nbr_commits=nbr_commits.replace('.','')
                 
                 FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
-                if commit_nbr < int(nbr_commits):
+                delta = int(nbr_commits) - commit_nbr
+                if delta > 0:
+                    s = ""
+                    if delta >1:
+                        s="s"
                     FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB!!!\n')
                     msg="""
                     <font color=red>PLEASE UPDATE "Manipulator" WB!!!</font>
                     <br>through \"Tools\" \"Addon manager\" Menu
+                    <br><br><b>your release is """+str(delta)+""" commit"""+s+""" behind</b><br>
                     <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
                     <br>
                     <br>set \'checkUpdates\' to \'False\' to avoid this checking
