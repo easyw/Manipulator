@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.5" #Manipulator for Parts
+__version__ = "1.4.6" #Manipulator for Parts
 __date__    = "03.2018"
 
 testing=False #true for showing helpers
@@ -1012,7 +1012,7 @@ class Ui_DockWidget(object):
         #objs[0].Placement = FreeCAD.Vector(pointsDirection[int(val)])
         #self.label_1.setText("Position (" + str(float(val)/10) + " mm)")
         #self.DS_horizontalSlider.setValue(float(val))
-        FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
+        # FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
         
 ##
     def on_RotateDS(self, val):
@@ -1108,7 +1108,7 @@ class Ui_DockWidget(object):
         # #shape.Placement = o.Placement
         #newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
         #o.Placement = newshape.Placement
-        FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
+        # FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
 ##
 
     def setReference(self):
@@ -1336,7 +1336,7 @@ def Undo():
         obj.Placement = initial_placement[lip-1]
         initial_placement.pop(lip-1)
         last_selection.pop(lls-1)
-        FreeCAD.ActiveDocument.recompute()
+        # FreeCAD.ActiveDocument.recompute()
     if len(last_selection) == 0:
         objs = []
         last_selection = []
