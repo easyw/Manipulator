@@ -24,7 +24,7 @@ MWB_wb_version='v 1.2.3'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=83 #v 1.2.3
+mycommitsMWB=84 #v 1.2.3
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -179,9 +179,9 @@ class ManipulatorWB ( Workbench ):
                     s = ""
                     if delta >1:
                         s="s"
-                    FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB!!!\n')
+                    FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB.\n')
                     msg="""
-                    <font color=red>PLEASE UPDATE "Manipulator" WB!!!</font>
+                    <font color=red>PLEASE UPDATE "Manipulator" WB.</font>
                     <br>through \"Tools\" \"Addon manager\" Menu
                     <br><br><b>your release is """+str(delta)+""" commit"""+s+""" behind</b><br>
                     <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
