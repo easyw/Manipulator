@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.6" #Manipulator for Parts
+__version__ = "1.4.7" #Manipulator for Parts
 __date__    = "03.2018"
 
 testing=False #true for showing helpers
@@ -472,7 +472,7 @@ class Ui_DockWidget(object):
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName("dockWidgetContents")
         self.horizontalLayoutWidget = QtGui.QWidget(self.dockWidgetContents)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(5, 0, 100, 36))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(5, 0, 120, 36))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setSpacing(2)
@@ -498,22 +498,35 @@ class Ui_DockWidget(object):
         self.dock_minimize.setIconSize(QtCore.QSize(24, 24))
         self.dock_minimize.setObjectName("dock_minimize")
         self.horizontalLayout.addWidget(self.dock_minimize)
+        self.Help_Mover = QtGui.QPushButton(self.horizontalLayoutWidget)
+        self.Help_Mover.setMinimumSize(QtCore.QSize(28, 28))
+        self.Help_Mover.setMaximumSize(QtCore.QSize(28, 28))
+        self.Help_Mover.setToolTip("Help on Mover Manipulator")
+        self.Help_Mover.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap("help.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Help_Mover.setIcon(icon3)
+        self.Help_Mover.setIconSize(QtCore.QSize(24, 24))
+        self.Help_Mover.setCheckable(False)
+        self.Help_Mover.setChecked(False)
+        self.Help_Mover.setObjectName("Help_Mover")
+        self.horizontalLayout.addWidget(self.Help_Mover)
         self.close = QtGui.QPushButton(self.horizontalLayoutWidget)
         self.close.setMaximumSize(QtCore.QSize(28, 28))
         self.close.setToolTip("close")
         self.close.setText("")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("closeW.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.close.setIcon(icon3)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap("closeW.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.close.setIcon(icon4)
         self.close.setIconSize(QtCore.QSize(24, 24))
         self.close.setObjectName("close")
         self.horizontalLayout.addWidget(self.close)
         self.Label = QtGui.QLabel(self.dockWidgetContents)
-        self.Label.setGeometry(QtCore.QRect(110, -4, 186, 56))
+        self.Label.setGeometry(QtCore.QRect(128, 2, 171, 37))
         self.Label.setToolTip("Mover Tools\n"
 "Click on Mover button\n"
 "to enable object Manipulation")
-        self.Label.setText("<b>Mover Tools</b><br/><b>Click on Mover button</b><br>to enable object Manipulation")
+        self.Label.setText("<b>Mover Tools</b><br/><b>Click on Mover button</b>")
         self.Label.setObjectName("Label")
         self.ReferenceGroup = QtGui.QGroupBox(self.dockWidgetContents)
         self.ReferenceGroup.setGeometry(QtCore.QRect(4, 56, 296, 90))
@@ -531,9 +544,9 @@ class Ui_DockWidget(object):
         self.rbZ.setMinimumSize(QtCore.QSize(64, 32))
         self.rbZ.setToolTip("move/rotate on Z Axis")
         self.rbZ.setText("")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("Z-axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbZ.setIcon(icon4)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap("Z-axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbZ.setIcon(icon5)
         self.rbZ.setIconSize(QtCore.QSize(26, 26))
         self.rbZ.setObjectName("rbZ")
         self.gridLayout_9.addWidget(self.rbZ, 0, 3, 1, 1)
@@ -541,9 +554,9 @@ class Ui_DockWidget(object):
         self.rbY.setMinimumSize(QtCore.QSize(64, 32))
         self.rbY.setToolTip("move/rotate on Y Axis")
         self.rbY.setText("")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("Y-axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbY.setIcon(icon5)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap("Y-axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbY.setIcon(icon6)
         self.rbY.setIconSize(QtCore.QSize(26, 26))
         self.rbY.setObjectName("rbY")
         self.gridLayout_9.addWidget(self.rbY, 0, 2, 1, 1)
@@ -551,20 +564,20 @@ class Ui_DockWidget(object):
         self.rbX.setMinimumSize(QtCore.QSize(64, 32))
         self.rbX.setToolTip("move/rotate on X Axis")
         self.rbX.setText("")
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("X-axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbX.setIcon(icon6)
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("X-axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbX.setIcon(icon7)
         self.rbX.setIconSize(QtCore.QSize(26, 26))
         self.rbX.setChecked(False)
         self.rbX.setObjectName("rbX")
         self.gridLayout_9.addWidget(self.rbX, 0, 1, 1, 1)
         self.rbAxis = QtGui.QRadioButton(self.gridLayoutWidget_7)
         self.rbAxis.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbAxis.setToolTip("move/rotate on Selected Edge Axis")
+        self.rbAxis.setToolTip("move/rotate on Selected Axis")
         self.rbAxis.setText("")
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("Rotate-Axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbAxis.setIcon(icon7)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap("Rotate-Axis.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbAxis.setIcon(icon8)
         self.rbAxis.setIconSize(QtCore.QSize(26, 26))
         self.rbAxis.setChecked(True)
         self.rbAxis.setObjectName("rbAxis")
@@ -581,27 +594,13 @@ class Ui_DockWidget(object):
         self.rbOneObj.setToolTip("Single Object\n"
 "select Face or Edge to Move/Rotate object")
         self.rbOneObj.setText("")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("one_obj.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbOneObj.setIcon(icon8)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap("one_obj.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.rbOneObj.setIcon(icon9)
         self.rbOneObj.setIconSize(QtCore.QSize(26, 26))
         self.rbOneObj.setChecked(True)
         self.rbOneObj.setObjectName("rbOneObj")
         self.gridLayout_14.addWidget(self.rbOneObj, 0, 0, 1, 1)
-        self.rbTwoObjs = QtGui.QRadioButton(self.gridLayoutWidget_12)
-        self.rbTwoObjs.setMinimumSize(QtCore.QSize(64, 32))
-        self.rbTwoObjs.setToolTip("Two Objects\n"
-"select First an Edge\n"
-"then an object to Move/Rotate\n"
-"this object on Edge path")
-        self.rbTwoObjs.setText("")
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap("two_objs.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rbTwoObjs.setIcon(icon9)
-        self.rbTwoObjs.setIconSize(QtCore.QSize(26, 26))
-        self.rbTwoObjs.setChecked(False)
-        self.rbTwoObjs.setObjectName("rbTwoObjs")
-        self.gridLayout_14.addWidget(self.rbTwoObjs, 0, 1, 1, 1)
         self.gridLayoutWidget_13 = QtGui.QWidget(self.ReferenceGroup)
         self.gridLayoutWidget_13.setGeometry(QtCore.QRect(196, 48, 93, 38))
         self.gridLayoutWidget_13.setObjectName("gridLayoutWidget_13")
@@ -649,20 +648,6 @@ class Ui_DockWidget(object):
         self.gridLayout_8.setSpacing(2)
         self.gridLayout_8.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_8.setObjectName("gridLayout_8")
-        self.Undo_Move = QtGui.QPushButton(self.gridLayoutWidget_6)
-        self.Undo_Move.setEnabled(False)
-        self.Undo_Move.setMinimumSize(QtCore.QSize(48, 36))
-        self.Undo_Move.setMaximumSize(QtCore.QSize(60, 48))
-        self.Undo_Move.setToolTip("Undo last action")
-        self.Undo_Move.setText("")
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("Undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Undo_Move.setIcon(icon12)
-        self.Undo_Move.setIconSize(QtCore.QSize(24, 24))
-        self.Undo_Move.setCheckable(False)
-        self.Undo_Move.setChecked(False)
-        self.Undo_Move.setObjectName("Undo_Move")
-        self.gridLayout_8.addWidget(self.Undo_Move, 0, 2, 1, 1)
         self.Confirm_Move = QtGui.QPushButton(self.gridLayoutWidget_6)
         self.Confirm_Move.setMinimumSize(QtCore.QSize(48, 36))
         self.Confirm_Move.setMaximumSize(QtCore.QSize(60, 48))
@@ -685,8 +670,8 @@ class Ui_DockWidget(object):
         self.DS_MoveInput.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.DS_MoveInput.setToolTip("translate (+/- mm)")
         self.DS_MoveInput.setDecimals(2)
-        self.DS_MoveInput.setMinimum(-Max_move)
-        self.DS_MoveInput.setMaximum(Max_move)
+        self.DS_MoveInput.setMinimum(-999.0)
+        self.DS_MoveInput.setMaximum(999.0)
         self.DS_MoveInput.setObjectName("DS_MoveInput")
         self.gridLayout_10.addWidget(self.DS_MoveInput, 0, 1, 1, 1)
         self.label_2 = QtGui.QLabel(self.gridLayoutWidget_6)
@@ -714,24 +699,83 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.setMinimumSize(QtCore.QSize(48, 0))
         self.DS_RotateInput.setToolTip("rotate (+/- deg)")
         self.DS_RotateInput.setDecimals(1)
-        self.DS_RotateInput.setMinimum(-Max_angle)
-        self.DS_RotateInput.setMaximum(Max_angle)
+        self.DS_RotateInput.setMinimum(-180.0)
+        self.DS_RotateInput.setMaximum(180.0)
         self.DS_RotateInput.setObjectName("DS_RotateInput")
         self.gridLayout_10.addWidget(self.DS_RotateInput, 1, 1, 1, 1)
         self.gridLayout_8.addLayout(self.gridLayout_10, 0, 1, 1, 1)
-        self.Help_Mover = QtGui.QPushButton(self.gridLayoutWidget_6)
-        self.Help_Mover.setMinimumSize(QtCore.QSize(32, 36))
-        self.Help_Mover.setMaximumSize(QtCore.QSize(60, 48))
-        self.Help_Mover.setToolTip("Help on Mover Manipulator")
-        self.Help_Mover.setText("")
-        icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap("help.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Help_Mover.setIcon(icon13)
-        self.Help_Mover.setIconSize(QtCore.QSize(24, 24))
-        self.Help_Mover.setCheckable(False)
-        self.Help_Mover.setChecked(False)
-        self.Help_Mover.setObjectName("Help_Mover")
-        self.gridLayout_8.addWidget(self.Help_Mover, 0, 3, 1, 1)
+        self.Undo_Move = QtGui.QPushButton(self.gridLayoutWidget_6)
+        self.Undo_Move.setEnabled(False)
+        self.Undo_Move.setMinimumSize(QtCore.QSize(48, 36))
+        self.Undo_Move.setMaximumSize(QtCore.QSize(60, 48))
+        self.Undo_Move.setToolTip("Undo last action")
+        self.Undo_Move.setText("")
+        icon12 = QtGui.QIcon()
+        icon12.addPixmap(QtGui.QPixmap("Undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Undo_Move.setIcon(icon12)
+        self.Undo_Move.setIconSize(QtCore.QSize(24, 24))
+        self.Undo_Move.setCheckable(False)
+        self.Undo_Move.setChecked(False)
+        self.Undo_Move.setObjectName("Undo_Move")
+        self.gridLayout_8.addWidget(self.Undo_Move, 0, 3, 1, 1)
+        self.gridLayout_11 = QtGui.QGridLayout()
+        self.gridLayout_11.setSpacing(2)
+        self.gridLayout_11.setObjectName("gridLayout_11")
+        self.DS_MoveInput_Delta = QtGui.QDoubleSpinBox(self.gridLayoutWidget_6)
+        self.DS_MoveInput_Delta.setEnabled(False)
+        self.DS_MoveInput_Delta.setMinimumSize(QtCore.QSize(64, 0))
+        self.DS_MoveInput_Delta.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.DS_MoveInput_Delta.setToolTip("translation\n"
+"increment")
+        self.DS_MoveInput_Delta.setDecimals(2)
+        self.DS_MoveInput_Delta.setMinimum(0.01)
+        self.DS_MoveInput_Delta.setMaximum(500.0)
+        self.DS_MoveInput_Delta.setProperty("value", 1.0)
+        self.DS_MoveInput_Delta.setObjectName("DS_MoveInput_Delta")
+        self.gridLayout_11.addWidget(self.DS_MoveInput_Delta, 0, 1, 1, 1)
+        self.label_3 = QtGui.QLabel(self.gridLayoutWidget_6)
+        font = QtGui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.label_3.setFont(font)
+        self.label_3.setToolTip("rotation\n"
+"increment")
+        self.label_3.setText("+/-")
+        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout_11.addWidget(self.label_3, 1, 0, 1, 1)
+        self.label_4 = QtGui.QLabel(self.gridLayoutWidget_6)
+        font = QtGui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.label_4.setFont(font)
+        self.label_4.setToolTip("translation\n"
+"increment")
+        self.label_4.setStatusTip("")
+        self.label_4.setWhatsThis("")
+        self.label_4.setText("+/-")
+        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_4.setObjectName("label_4")
+        self.gridLayout_11.addWidget(self.label_4, 0, 0, 1, 1)
+        self.DS_RotateInput_Delta = QtGui.QDoubleSpinBox(self.gridLayoutWidget_6)
+        self.DS_RotateInput_Delta.setEnabled(False)
+        self.DS_RotateInput_Delta.setMinimumSize(QtCore.QSize(48, 0))
+        self.DS_RotateInput_Delta.setToolTip("rotation\n"
+"increment")
+        self.DS_RotateInput_Delta.setDecimals(1)
+        self.DS_RotateInput_Delta.setMinimum(0.1)
+        self.DS_RotateInput_Delta.setMaximum(180.0)
+        self.DS_RotateInput_Delta.setProperty("value", 1.0)
+        self.DS_RotateInput_Delta.setObjectName("DS_RotateInput_Delta")
+        self.gridLayout_11.addWidget(self.DS_RotateInput_Delta, 1, 1, 1, 1)
+        self.gridLayout_8.addLayout(self.gridLayout_11, 0, 2, 1, 1)
+        self.Label_2 = QtGui.QLabel(self.dockWidgetContents)
+        self.Label_2.setGeometry(QtCore.QRect(102, 30, 186, 33))
+        self.Label_2.setToolTip("Mover Tools\n"
+"Click on Mover button\n"
+"to enable object Manipulation")
+        self.Label_2.setText("to enable object Manipulation")
+        self.Label_2.setObjectName("Label_2")
         DockWidget.setWidget(self.dockWidgetContents)
 
 ###############################################################################################################
@@ -792,11 +836,11 @@ class Ui_DockWidget(object):
         self.rbOneObj.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbOneObj.setIcon(QtGui.QIcon(pm))
         # self.rbNormal_Inv.clicked.connect(self.setNormal)
-        pm = QtGui.QPixmap()
-        pm.loadFromData(base64.b64decode(Two_Objs_b64))
-        self.rbTwoObjs.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
-        self.rbTwoObjs.setIcon(QtGui.QIcon(pm))
-        self.rbTwoObjs.setEnabled(False)
+        # pm = QtGui.QPixmap()
+        # pm.loadFromData(base64.b64decode(Two_Objs_b64))
+        # self.rbTwoObjs.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
+        # self.rbTwoObjs.setIcon(QtGui.QIcon(pm))
+        # self.rbTwoObjs.setEnabled(False)
         # self.rbNormal_Inv.clicked.connect(self.setNormal)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Hierarchy_b64))
@@ -811,10 +855,18 @@ class Ui_DockWidget(object):
         self.ViewAlign.setIcon(QtGui.QIcon(pm))
         self.ViewAlign.clicked.connect(self.onViewAlign)
         ####
+        self.DS_RotateInput.setMinimum(-Max_angle)
+        self.DS_RotateInput.setMaximum(Max_angle)
+        self.DS_MoveInput.setMinimum(-Max_move)
+        self.DS_MoveInput.setMaximum(Max_move)
+        
+        ####
         #self.MoveDial.valueChanged.connect(self.on_MoveDial)       # connection
         #self.RotateDial.valueChanged.connect(self.on_RotateDial)       # connection
         self.DS_MoveInput.valueChanged.connect(self.on_MoveDS)
         self.DS_RotateInput.valueChanged.connect(self.on_RotateDS)
+        self.DS_MoveInput_Delta.valueChanged.connect(self.on_MoveDS_Delta)
+        self.DS_RotateInput_Delta.valueChanged.connect(self.on_RotateDS_Delta)
         
 ###############################################################################################################
         self.retranslateUi(DockWidget)
@@ -924,6 +976,16 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.setValue(0.0)
 ##
         
+    def on_MoveDS_Delta(self, val):
+        self.DS_MoveInput.setSingleStep(self.DS_MoveInput_Delta.value())
+        # print self.DS_MoveInput_Delta.value()
+        # print self.DS_MoveInput.singleStep
+##
+        
+    def on_RotateDS_Delta(self, val):
+        self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
+##
+        
     #def on_MoveDial(self, val):
     def on_MoveDS(self, val):
         global selobject, sel
@@ -934,6 +996,9 @@ class Ui_DockWidget(object):
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
         
+        #print val
+        self.DS_MoveInput.setSingleStep(self.DS_MoveInput_Delta.value())
+        #print self.DS_MoveInput.singleStep
         delta=self.DS_MoveInput.value()-DSMove_prev_Val
         DSMove_prev_Val=self.DS_MoveInput.value()
         #delta=sign
@@ -1023,6 +1088,7 @@ class Ui_DockWidget(object):
         #x=self.DS_MoveInput.value()
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
+        self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
         delta=self.DS_RotateInput.value()-DSRotate_prev_Val
         DSRotate_prev_Val=self.DS_RotateInput.value()
         #delta=sign
@@ -1165,6 +1231,8 @@ class Ui_DockWidget(object):
                 self.rowOverride = False
                 self.DS_MoveInput.setEnabled(False)
                 self.DS_RotateInput.setEnabled(False)
+                self.DS_MoveInput_Delta.setEnabled(False)
+                self.DS_RotateInput_Delta.setEnabled(False)
                 self.Undo_Move.setEnabled(True)
                 self.cbHierarchy.setEnabled(True)
                 DSMove_prev_Val=0
@@ -1401,6 +1469,8 @@ class SelObserver:
                         if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
                             MVDockWidget.ui.DS_MoveInput.setEnabled(True)
                             MVDockWidget.ui.DS_RotateInput.setEnabled(True)
+                            MVDockWidget.ui.DS_MoveInput_Delta.setEnabled(True)
+                            MVDockWidget.ui.DS_RotateInput_Delta.setEnabled(True)
                             sayw('starting')
                             objs = []
                             if len (last_selection)>0:
