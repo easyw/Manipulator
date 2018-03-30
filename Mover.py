@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.7" #Manipulator for Parts
+__version__ = "1.4.8" #Manipulator for Parts
 __date__    = "03.2018"
 
 testing=False #true for showing helpers
@@ -71,11 +71,11 @@ wdzX=342;wdzY=256
 if _platform == "linux" or _platform == "linux2":
    # linux
    pt_lnx=True
-   sizeXmin=110;sizeYmin=34+34
+   sizeXmin=128;sizeYmin=34+34
    sizeX=wdszX;sizeY=wdszY-22+34 #516 #536
    sizeXright=172;sizeYright=536 #556
 else:
-    sizeXmin=110;sizeYmin=34
+    sizeXmin=128;sizeYmin=34
     sizeX=wdszX;sizeY=wdszY-22 #482#502
     sizeXright=172;sizeYright=502#522
 if _platform == "darwin":

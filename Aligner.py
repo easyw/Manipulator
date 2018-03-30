@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.5" #undo alignment for App::Part hierarchical objects
+__version__ = "1.5.6" #undo alignment for App::Part hierarchical objects
 __date__    = "03.2018"
 
 testing=False #true for showing helpers
@@ -62,15 +62,15 @@ a_clear_console()
 from sys import platform as _platform
 
 # window GUI dimensions parameters
-wdzX=342;wdzY=256
+wdzX=302;wdzY=256
 if _platform == "linux" or _platform == "linux2":
    # linux
    pt_lnx=True
-   sizeXmin=110;sizeYmin=34+34
+   sizeXmin=108;sizeYmin=34+34
    sizeX=wdzX;sizeY=wdzY-22+34 #516 #536
    sizeXright=172;sizeYright=536 #556
 else:
-    sizeXmin=110;sizeYmin=34
+    sizeXmin=108;sizeYmin=34
     sizeX=wdzX;sizeY=wdzY-22 #482#502
     sizeXright=172;sizeYright=502#522
 if _platform == "darwin":
@@ -269,7 +269,7 @@ sayw("Aligner version "+str(__version__))
 class Ui_DockWidget(object):
     def setupUi(self, DockWidget):
         DockWidget.setObjectName("DockWidget")
-        DockWidget.resize(354, 253)
+        DockWidget.resize(301, 253)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("Center-Align.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         DockWidget.setWindowIcon(icon)
@@ -313,11 +313,11 @@ class Ui_DockWidget(object):
         self.close.setObjectName("close")
         self.horizontalLayout_2.addWidget(self.close)
         self.ReferenceGroup = QtGui.QGroupBox(self.dockWidgetContents)
-        self.ReferenceGroup.setGeometry(QtCore.QRect(4, 40, 185, 125))
+        self.ReferenceGroup.setGeometry(QtCore.QRect(4, 40, 149, 125))
         self.ReferenceGroup.setTitle("Reference")
         self.ReferenceGroup.setObjectName("ReferenceGroup")
         self.gridLayoutWidget_8 = QtGui.QWidget(self.ReferenceGroup)
-        self.gridLayoutWidget_8.setGeometry(QtCore.QRect(8, 25, 172, 36))
+        self.gridLayoutWidget_8.setGeometry(QtCore.QRect(8, 25, 133, 36))
         self.gridLayoutWidget_8.setObjectName("gridLayoutWidget_8")
         self.gridLayout_10 = QtGui.QGridLayout(self.gridLayoutWidget_8)
         self.gridLayout_10.setSpacing(2)
@@ -349,7 +349,7 @@ class Ui_DockWidget(object):
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.gridLayout_10.addItem(spacerItem, 0, 1, 1, 1)
         self.gridLayoutWidget_13 = QtGui.QWidget(self.ReferenceGroup)
-        self.gridLayoutWidget_13.setGeometry(QtCore.QRect(8, 80, 172, 36))
+        self.gridLayoutWidget_13.setGeometry(QtCore.QRect(8, 80, 133, 36))
         self.gridLayoutWidget_13.setObjectName("gridLayoutWidget_13")
         self.gridLayout_15 = QtGui.QGridLayout(self.gridLayoutWidget_13)
         self.gridLayout_15.setSpacing(2)
@@ -381,11 +381,11 @@ class Ui_DockWidget(object):
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.gridLayout_15.addItem(spacerItem1, 0, 2, 1, 1)
         self.AlignGroup = QtGui.QGroupBox(self.dockWidgetContents)
-        self.AlignGroup.setGeometry(QtCore.QRect(188, 40, 151, 125))
+        self.AlignGroup.setGeometry(QtCore.QRect(156, 40, 141, 125))
         self.AlignGroup.setTitle("Align on")
         self.AlignGroup.setObjectName("AlignGroup")
         self.gridLayoutWidget_10 = QtGui.QWidget(self.AlignGroup)
-        self.gridLayoutWidget_10.setGeometry(QtCore.QRect(10, 20, 137, 102))
+        self.gridLayoutWidget_10.setGeometry(QtCore.QRect(10, 20, 121, 102))
         self.gridLayoutWidget_10.setObjectName("gridLayoutWidget_10")
         self.gridLayout_12 = QtGui.QGridLayout(self.gridLayoutWidget_10)
         self.gridLayout_12.setSpacing(2)
@@ -411,7 +411,7 @@ class Ui_DockWidget(object):
         icon9.addPixmap(QtGui.QPixmap("Centers.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.rbCenters.setIcon(icon9)
         self.rbCenters.setIconSize(QtCore.QSize(26, 26))
-        self.rbCenters.setChecked(True)
+        self.rbCenters.setChecked(False)
         self.rbCenters.setObjectName("rbCenters")
         self.gridLayout_12.addWidget(self.rbCenters, 0, 0, 1, 1)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -435,7 +435,7 @@ class Ui_DockWidget(object):
         icon11.addPixmap(QtGui.QPixmap("Planes-Centers.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.rbPlanesCenters.setIcon(icon11)
         self.rbPlanesCenters.setIconSize(QtCore.QSize(26, 26))
-        self.rbPlanesCenters.setChecked(False)
+        self.rbPlanesCenters.setChecked(True)
         self.rbPlanesCenters.setObjectName("rbPlanesCenters")
         self.gridLayout_12.addWidget(self.rbPlanesCenters, 2, 0, 1, 1)
         self.cbY = QtGui.QCheckBox(self.gridLayoutWidget_10)
@@ -467,16 +467,16 @@ class Ui_DockWidget(object):
         spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.gridLayout_12.addItem(spacerItem4, 2, 1, 1, 1)
         self.Label_Align_Gui = QtGui.QLabel(self.dockWidgetContents)
-        self.Label_Align_Gui.setGeometry(QtCore.QRect(115, 0, 231, 41))
+        self.Label_Align_Gui.setGeometry(QtCore.QRect(108, 0, 231, 41))
         self.Label_Align_Gui.setToolTip("Ctrl+Click to select\n"
 "Faces/Planes or Edges/Axis")
         self.Label_Align_Gui.setObjectName("Label_Align_Gui")
         self.ControlsGroup = QtGui.QGroupBox(self.dockWidgetContents)
-        self.ControlsGroup.setGeometry(QtCore.QRect(4, 164, 335, 69))
+        self.ControlsGroup.setGeometry(QtCore.QRect(4, 164, 293, 69))
         self.ControlsGroup.setTitle("Controls")
         self.ControlsGroup.setObjectName("ControlsGroup")
         self.gridLayoutWidget_6 = QtGui.QWidget(self.ControlsGroup)
-        self.gridLayoutWidget_6.setGeometry(QtCore.QRect(40, 16, 248, 46))
+        self.gridLayoutWidget_6.setGeometry(QtCore.QRect(24, 16, 248, 46))
         self.gridLayoutWidget_6.setObjectName("gridLayoutWidget_6")
         self.gridLayout_13 = QtGui.QGridLayout(self.gridLayoutWidget_6)
         self.gridLayout_13.setSpacing(2)
@@ -634,7 +634,7 @@ class Ui_DockWidget(object):
         self.Align.setToolTip("Align objects\nFirst object is the Reference")
         self.Help_Align.setToolTip("Help tips")
         self.Undo_Align.setToolTip("Undo last Alignment")
-        self.Label_Align_Gui.setText("<b>Ctrl+Click to add selection:<br>Planes/Faces and Edges/Axis</b>")
+        self.Label_Align_Gui.setText("<b>Ctrl+Click</b> to add selection:<br>Planes/Faces, Edges/Axis")
         self.ReferenceGroup.setTitle("Reference")
         self.AlignGroup.setTitle("Align on")
 
@@ -705,7 +705,7 @@ class Ui_DockWidget(object):
         then click the <i>'Align'</i> button<br>
         <i>Note:</i><br>The <b>first Selection</b> is the
         Reference for Aligning<br>
-        <br>Use <i>'Move'</i> button to move a signle object<br>
+        <br>Use <i>'Move'</i> button to move a single object<br>
         <br><b>Align Tools</b> work with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects
         <b>Version:</b> 
         """+__version__
