@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.7" #undo alignment for App::Part hierarchical objects
+__version__ = "1.5.8" #undo alignment for App::Part hierarchical objects
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -45,6 +45,7 @@ from FreeCAD import Base
 import sys
 from PySide import QtCore, QtGui
 
+_recompute = False
 
 ##--------------------------------------------------------------------------------------
 
@@ -815,14 +816,15 @@ def Undo_old():
     global initial_placement, last_selection
     global moving, rotating
     global objs, objs_plc
-    global objs_moved, plc_moved
+    global objs_moved, plc_moved, _recompute
 
     if len(last_selection) == 1:
         obj = last_selection[0].Object
         say ('last selection: ' + obj.Name)
         obj.Placement.Base =initial_placement
         #obj.Placement = initial_placement
-        FreeCAD.ActiveDocument.recompute()
+        if _recompute:
+            FreeCAD.ActiveDocument.recompute()
         objs = []
         last_selection = []
     elif len (objs) > 1:
@@ -840,21 +842,23 @@ def Undo_old():
         last_selection = []
         objs_moved = []
         plc_moved = []
-        FreeCAD.ActiveDocument.recompute()
+        if _recompute:
+            FreeCAD.ActiveDocument.recompute()
 ##
 def Undo():
     say('Undo')
     global initial_placement, last_selection
     global moving, rotating
     global objs, objs_plc
-    global objs_moved, plc_moved
+    global objs_moved, plc_moved, _recompute
 
     sayw(len(last_selection));sayw(len (objs)); sayw(len(objs_moved))
     if 0: #len(last_selection) > 0:# and len (objs) == 1:
         say ('last selection: ' + obj.Name)
         obj.Placement.Base =initial_placement
         #obj.Placement = initial_placement
-        FreeCAD.ActiveDocument.recompute()
+        if _recompute:
+            FreeCAD.ActiveDocument.recompute()
         objs = []
         last_selection = []
         lls = len(last_selection)
@@ -889,7 +893,8 @@ def Undo():
         objs_moved = []
         plc_moved = []
         ALGDockWidget.ui.Undo_Align.setEnabled(False)
-        FreeCAD.ActiveDocument.recompute()
+        if _recompute:
+            FreeCAD.ActiveDocument.recompute()
 ##    
     
 def Move():
@@ -935,7 +940,8 @@ class PartMover:
         if info['Button'] == 'BUTTON1' and info['State'] == 'DOWN':
             if not info['ShiftDown'] and not info['CtrlDown']:
                 say('releasing obj')
-                FreeCAD.ActiveDocument.recompute()
+                if _recompute:
+                    FreeCAD.ActiveDocument.recompute()
                 #sayw('releasing\ninitial p: '+ str( initial_placement ))
                 #sayw('final p: '+str(self.obj.Placement.Base))
                 self.removeCallbacks()
@@ -1307,6 +1313,7 @@ def Align(normal,type,mode,cx,cy,cz):
             return False
         return 
     
+    global _recompute
     coords = []
     normals = []
     coordPs = []
@@ -1343,7 +1350,8 @@ def Align(normal,type,mode,cx,cy,cz):
                 fName= FreeCAD.ActiveDocument.ActiveObject.Name
                 s = FreeCAD.ActiveDocument.getObject(fName)
                 FreeCAD.ActiveDocument.removeObject(FreeCAD.ActiveDocument.testCircle.Name)
-                FreeCAD.ActiveDocument.recompute()
+                if _recompute:
+                    FreeCAD.ActiveDocument.recompute()
                 #stop
                 sayerr(str(s.Placement))
                 s.Label = 'single-copy-absolute-placement'
@@ -1371,7 +1379,8 @@ def Align(normal,type,mode,cx,cy,cz):
                 #f.Placement=FreeCAD.ActiveDocument.testCircle.Placement
                 sayerr(f.Placement)
                 FreeCAD.ActiveDocument.removeObject(FreeCAD.ActiveDocument.testCircle.Name)
-                FreeCAD.ActiveDocument.recompute()
+                if _recompute:
+                    FreeCAD.ActiveDocument.recompute()
                 fName= FreeCAD.ActiveDocument.ActiveObject.Name
                 s = FreeCAD.ActiveDocument.getObject(fName)
                 #f.Placement=shape.Placement
@@ -1391,7 +1400,8 @@ def Align(normal,type,mode,cx,cy,cz):
                 FreeCAD.ActiveDocument.TempAxis.Width=5.000
                 FreeCAD.ActiveDocument.TempAxis.Placement=selEx[j].Object.Placement
                 FreeCAD.ActiveDocument.TempAxis.Label='TempAxis'
-                FreeCAD.ActiveDocument.recompute()
+                if _recompute:
+                    FreeCAD.ActiveDocument.recompute()
                 fp = FreeCAD.ActiveDocument.TempAxis.Shape.Faces[0].Edges[1]
                 pad=0
                 edge_op=2
@@ -1399,7 +1409,8 @@ def Align(normal,type,mode,cx,cy,cz):
                 Part.show(f)
                 #stop
                 FreeCAD.ActiveDocument.removeObject("TempAxis")
-                FreeCAD.ActiveDocument.recompute()
+                if _recompute:
+                    FreeCAD.ActiveDocument.recompute()
                 fName= FreeCAD.ActiveDocument.ActiveObject.Name
                 s = FreeCAD.ActiveDocument.getObject(fName)
                 s.Placement = f.Placement
@@ -1737,7 +1748,8 @@ def Align(normal,type,mode,cx,cy,cz):
             object_added=0
             j=j+1
     
-    FreeCAD.ActiveDocument.recompute()
+    if _recompute:
+        FreeCAD.ActiveDocument.recompute()
     #for obj in objs:
     for obj in FreeCAD.ActiveDocument.Objects:
         FreeCADGui.Selection.removeSelection(obj)
