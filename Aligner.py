@@ -1452,7 +1452,7 @@ def Align(normal,type,mode,cx,cy,cz):
                             Part.show(ccircle)
                             ccircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
                             FreeCAD.ActiveDocument.getObject(ccircle_name).Label='ccircle'
-                            f=Part.Face(Part.Wire((App.ActiveDocument.getObject(ccircle_name).Shape.Edges[0])))
+                            f=Part.Face(Part.Wire((FreeCAD.ActiveDocument.getObject(ccircle_name).Shape.Edges[0])))
                             # Part.show(f)
                             # f_name=FreeCAD.ActiveDocument.ActiveObject.Name
                             FreeCAD.ActiveDocument.removeObject(ccircle_name)
