@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.8" #Manipulator for Parts
-__date__    = "03.2018"
+__version__ = "1.4.9" #Manipulator for Parts
+__date__    = "04.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -92,6 +92,7 @@ btn_md_sizeX=26;btn_md_sizeY=26;
 
 Max_move=999.0
 Max_angle=360.0
+Step_initial_angle=15.0
 
 def close_mover():
     global sO
@@ -209,6 +210,9 @@ def get_normal_placement_hierarchy (sel0):
        return normal, placement, topObj, bbox center absolute"""
     
     global use_hierarchy
+    import Draft
+    from FreeCAD import Base 
+
     
     Obj=sel0.Object
     subObj=sel0.SubObjects[0]
@@ -219,6 +223,7 @@ def get_normal_placement_hierarchy (sel0):
         say('Hierarchy obj')
         
         pad=0
+        open_circle=False
         if 'Face' in str(subObj):
             say('Hierarchy obj Face')
             pad=0 #face
@@ -227,7 +232,44 @@ def get_normal_placement_hierarchy (sel0):
             if subObj.isClosed():
                 subObj = Part.Face(wire)
             else:
-                subObj = wire
+                sayerr(str(subObj.Curve))
+                if 'Circle' in str(subObj.Curve):
+                    sayerr('Circle radius '+str(subObj.Curve.Radius)) 
+                    #f1=subObj.Shape.Faces[0]
+                    
+                    wf = Part.Face(Part.Wire(subObj))
+                    Part.show(wf)
+                    wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    
+                    dir=wf.normalAt(0,0)
+                    # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dir))
+                    #ccircle_face = Part.Face(ccircle)
+                    #Part.show(ccircle_face)
+                    #ccircle_face_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    #FreeCAD.ActiveDocument.getObject(ccircle_face_name).Label='ccircle_face'
+                    Part.show(ccircle)
+                    ccircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    FreeCAD.ActiveDocument.getObject(ccircle_name).Label='ccircle'
+                    f2=Part.Face(Part.Wire((App.ActiveDocument.getObject(ccircle_name).Shape.Edges[0])))
+                    Part.show(f2)
+                    f2_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    FreeCAD.ActiveDocument.removeObject(ccircle_name)
+                    FreeCAD.ActiveDocument.removeObject(wf_name)
+                    # ccircle.Curve
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    bbxCenter = subObj.Curve.Center
+                    
+                    norm = f2.normalAt(0,0)
+                    subObj = f2
+                    FreeCAD.ActiveDocument.removeObject(f2_name)
+                    #PC1=Draft.makePoint(subObj.Curve.Center)
+                    #w.close
+                    open_circle=True
+                else:
+                    subObj = wire
+                #subObj = wire
                 edge_op=1
             pad=1 #edge
         if use_hierarchy:
@@ -267,14 +309,18 @@ def get_normal_placement_hierarchy (sel0):
             if pad == 0: #note making wire from edge already resets the original placement
                 acpy.Placement=acpy.Placement.multiply(pOriginal)
             nwshp.Placement = acpy.Placement
-            if edge_op==1:
+            if open_circle==True:
+                nwnorm = nwshp.normalAt(0,0)
+            elif edge_op==1:
                 nwnorm = (nwshp.Vertex2.Point - nwshp.Vertex1.Point).normalize()
             else:
                 nwnorm = nwshp.normalAt(0,0)
             bbxCenter = nwshp.BoundBox.Center
         else:
             nwshp = subObj.copy()
-            if edge_op==1:
+            if open_circle==True:
+                nwnorm = nwshp.normalAt(0,0)
+            elif edge_op==1:
                 nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
             else:
                 nwnorm = nwshp.normalAt(0,0)
@@ -285,17 +331,55 @@ def get_normal_placement_hierarchy (sel0):
     elif 'Face' in str(subObj) or 'Edge' in str(subObj): # not in hierarchy
         say('Part obj')
         pad=0 #face
+        open_circle=False
         if 'Edge' in str(subObj):
             wire = Part.Wire(subObj)
             if subObj.isClosed():
                 subObj = Part.Face(wire)
                 norm = subObj.normalAt(0,0)
+                bbxCenter = subObj.BoundBox.Center
             else:
-                norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+                sayerr(str(subObj.Curve))
+                if 'Circle' in str(subObj.Curve):
+                    sayerr('Circle radius '+str(subObj.Curve.Radius)) 
+                    #f1=subObj.Shape.Faces[0]
+                    
+                    wf = Part.Face(Part.Wire(subObj))
+                    Part.show(wf)
+                    wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    
+                    dir=wf.normalAt(0,0)
+                    # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dir))
+                    #ccircle_face = Part.Face(ccircle)
+                    #Part.show(ccircle_face)
+                    #ccircle_face_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    #FreeCAD.ActiveDocument.getObject(ccircle_face_name).Label='ccircle_face'
+                    Part.show(ccircle)
+                    ccircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    FreeCAD.ActiveDocument.getObject(ccircle_name).Label='ccircle'
+                    f2=Part.Face(Part.Wire((App.ActiveDocument.getObject(ccircle_name).Shape.Edges[0])))
+                    Part.show(f2)
+                    f2_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                    FreeCAD.ActiveDocument.removeObject(ccircle_name)
+                    FreeCAD.ActiveDocument.removeObject(wf_name)
+                    # ccircle.Curve
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    bbxCenter = subObj.Curve.Center
+                    
+                    norm = f2.normalAt(0,0)
+                    #subObj = f2
+                    FreeCAD.ActiveDocument.removeObject(f2_name)
+                    #PC1=Draft.makePoint(subObj.Curve.Center)
+                    #w.close
+                else:
+                    norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
+                    bbxCenter = subObj.BoundBox.Center
             pad=1 #edge
         else:
             norm = subObj.normalAt(0,0)
-        bbxCenter = subObj.BoundBox.Center
+            bbxCenter = subObj.BoundBox.Center
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
         
@@ -765,7 +849,7 @@ class Ui_DockWidget(object):
         self.DS_RotateInput_Delta.setDecimals(1)
         self.DS_RotateInput_Delta.setMinimum(0.1)
         self.DS_RotateInput_Delta.setMaximum(180.0)
-        self.DS_RotateInput_Delta.setProperty("value", 1.0)
+        self.DS_RotateInput_Delta.setProperty("value", 15.0)
         self.DS_RotateInput_Delta.setObjectName("DS_RotateInput_Delta")
         self.gridLayout_11.addWidget(self.DS_RotateInput_Delta, 1, 1, 1, 1)
         self.gridLayout_8.addLayout(self.gridLayout_11, 0, 2, 1, 1)
@@ -859,6 +943,8 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.setMaximum(Max_angle)
         self.DS_MoveInput.setMinimum(-Max_move)
         self.DS_MoveInput.setMaximum(Max_move)
+        self.DS_RotateInput_Delta.setProperty("value", Step_initial_angle)
+        self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
         
         ####
         #self.MoveDial.valueChanged.connect(self.on_MoveDial)       # connection
@@ -1467,6 +1553,21 @@ class SelObserver:
                 if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
                     if len(sel[0].SubObjects)>0: #Faces or Edges
                         if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
+                            # if 'Edge' in str(sel[0].SubObjects[0]):
+                            #     try:
+                            #         sayerr(sel[0].SubObjects[0].Curve)
+                            #         if 'Circle' in str(sel[0].SubObjects[0].Curve):
+                            #             sayerr('Circle radius '+str(sel[0].SubObjects[0].Curve.Radius)) 
+                            #             f1=sel[0].Object.Shape.Faces[0]
+                            #             FreeCAD.ActiveDocument.addObject("Part::Circle","testCircle")
+                            #             FreeCAD.ActiveDocument.testCircle.Radius=2.000
+                            #             FreeCAD.ActiveDocument.testCircle.Angle0=0.000
+                            #             FreeCAD.ActiveDocument.testCircle.Angle1=360.000
+                            #             FreeCAD.ActiveDocument.testCircle.Placement=f1.Placement
+                            #             f=Part.Face(Part.Wire(FreeCAD.ActiveDocument.testCircle.Shape.Edges[0]))
+                            #             Part.show(f)
+                            #     except:
+                            #         pass
                             MVDockWidget.ui.DS_MoveInput.setEnabled(True)
                             MVDockWidget.ui.DS_RotateInput.setEnabled(True)
                             MVDockWidget.ui.DS_MoveInput_Delta.setEnabled(True)

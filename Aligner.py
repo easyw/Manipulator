@@ -25,8 +25,8 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.6" #undo alignment for App::Part hierarchical objects
-__date__    = "03.2018"
+__version__ = "1.5.7" #undo alignment for App::Part hierarchical objects
+__date__    = "04.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -199,14 +199,14 @@ PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0g
 global initial_placement, last_selection
 global moving, rotating
 global objs_moved, plc_moved
-
+global objs, objs_plc
 
 #init
 initial_placement = FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0)) #Placement [Pos=(0,0,0), Yaw-Pitch-Roll=(0,0,0)]
 moving = [] #[FreeCAD.Vector(0,0,0)]
 rotating = [] #[0, FreeCAD.Vector(0,0,0), FreeCAD.Vector(0,0,0)]
-objs_moved = []
-plc_moved = []
+objs = [] ; objs_plc = []
+objs_moved = [] ; plc_moved = []
 #Draft.rotate(objs[j],-rot_angle,rot_center,rot_axis)
 #rotating=[rot_angle,rot_center,rot_axis]
 
@@ -611,13 +611,14 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(Undo_b64))
         self.Undo_Align.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.Undo_Align.setIcon(QtGui.QIcon(pm))
+        self.Undo_Align.setEnabled(False)
         self.Undo_Align.clicked.connect(self.onUndo)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(help_b64))
         self.Help_Align.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.Help_Align.setIcon(QtGui.QIcon(pm))
         self.Help_Align.clicked.connect(self.onHelp)
-
+        
 ###############################################################################################################
         self.retranslateUi(DockWidget)
         QtCore.QMetaObject.connectSlotsByName(DockWidget)
@@ -662,6 +663,7 @@ class Ui_DockWidget(object):
             normal=1
 ##
     def onAlign(self):
+        global objs_moved
         say("Align clicked")
         normal=0;type=0;mode=0
         if self.rbNormal_Inv.isChecked():
@@ -688,6 +690,10 @@ class Ui_DockWidget(object):
         if self.cbZ.isChecked():
             cz=1
         Align(normal,type,mode,cx,cy,cz)
+        if len (objs_moved) > 0:
+            self.Undo_Align.setEnabled(True)
+        else:
+            self.Undo_Align.setEnabled(False)        
 ##
 
     def onMove(self):
@@ -804,7 +810,7 @@ Alg_centerOnScreen (ALGDockWidget)
 ### ------------------------------------------------------------------------------------ ###
 
 
-def Undo():
+def Undo_old():
     say('Undo')
     global initial_placement, last_selection
     global moving, rotating
@@ -835,6 +841,56 @@ def Undo():
         objs_moved = []
         plc_moved = []
         FreeCAD.ActiveDocument.recompute()
+##
+def Undo():
+    say('Undo')
+    global initial_placement, last_selection
+    global moving, rotating
+    global objs, objs_plc
+    global objs_moved, plc_moved
+
+    sayw(len(last_selection));sayw(len (objs)); sayw(len(objs_moved))
+    if 0: #len(last_selection) > 0:# and len (objs) == 1:
+        say ('last selection: ' + obj.Name)
+        obj.Placement.Base =initial_placement
+        #obj.Placement = initial_placement
+        FreeCAD.ActiveDocument.recompute()
+        objs = []
+        last_selection = []
+        lls = len(last_selection)
+        obj = last_selection[lls-1] #.Object
+        say ('last selection: ' + obj.Name)
+        #obj.Placement.Base =initial_placement
+        lip = len (initial_placement)
+        obj.Placement = initial_placement[lip-1]
+        initial_placement.pop(lip-1)
+        last_selection.pop(lls-1)
+        # FreeCAD.ActiveDocument.recompute()
+    elif len (objs_moved) > 0:
+        say ('Moving: ' + str(moving))
+        say ('Rotating: ' + str(rotating))
+        #sayerr(len(objs_moved))
+        i=0
+        lls = len(objs_moved)
+        lip = len (plc_moved)
+        obj = objs_moved[lls-1] #.Object
+        obj.Placement = plc_moved[lip-1]
+        plc_moved.pop(lip-1)
+        objs_moved.pop(lls-1)
+        #for o in objs_moved:
+        #    #sayerr (o.Name)
+        #    #sayerr (plc_moved[i])
+        #    o.Placement = plc_moved[i]
+        #    i=i+1
+
+    if len (objs_moved) == 0:
+        objs = []
+        last_selection = []
+        objs_moved = []
+        plc_moved = []
+        ALGDockWidget.ui.Undo_Align.setEnabled(False)
+        FreeCAD.ActiveDocument.recompute()
+##    
     
 def Move():
     global initial_placement, last_selection
@@ -1057,8 +1113,8 @@ def Align(normal,type,mode,cx,cy,cz):
     global objs, objs_plc
     global moving, rotating
     global objs_moved, plc_moved
-    objs = [] ; objs_plc = []
-    objs_moved = [] ; plc_moved = []
+    #objs = [] ; objs_plc = []
+    #objs_moved = [] ; plc_moved = []
     
     
     #cx = 1  # center x -> 1  
@@ -1368,20 +1424,57 @@ def Align(normal,type,mode,cx,cy,cz):
                     #     Edge_Point = centerLinePoint(selectedEdge,info=1)
                     # except:
                     #     stop
-                    try:
+                    if selectedEdge.isClosed():
+                    #try:
                         sayerr(str(selectedEdge.Placement))
                         wire = Part.Wire(selectedEdge)
                         #sayw(str(wire.Placement))
                         e = selectedEdge
                         f = Part.Face(wire)
-                    except: # edge not closed
-                        wire = Part.Wire(selectedEdge)
-                        f = wire
-                        edge_op=1
-                        #sayerr('edge not closed to be managed')
-                        Edge_Point = centerLinePoint(selectedEdge,info=0)
-                        #reply = QtGui.QMessageBox.information(None,"info", "edge(s) non closed are not managed atm\n")
-                        #stop
+                    #except: # edge not closed
+                    else:  # edge not closed
+                        if 'Circle' in str(selectedEdge.Curve):
+                            sayerr('Circle radius '+str(selectedEdge.Curve.Radius)) 
+                            #f1=subObj.Shape.Faces[0]
+                            
+                            wf = Part.Face(Part.Wire(selectedEdge))
+                            Part.show(wf)
+                            wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                            
+                            dir=wf.normalAt(0,0)
+                            # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
+                            # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                            ccircle = Part.makeCircle(selectedEdge.Curve.Radius, Base.Vector(selectedEdge.Curve.Center), Base.Vector(dir))
+                            #ccircle_face = Part.Face(ccircle)
+                            #Part.show(ccircle_face)
+                            #ccircle_face_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                            #FreeCAD.ActiveDocument.getObject(ccircle_face_name).Label='ccircle_face'
+                            Part.show(ccircle)
+                            ccircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                            FreeCAD.ActiveDocument.getObject(ccircle_name).Label='ccircle'
+                            f=Part.Face(Part.Wire((App.ActiveDocument.getObject(ccircle_name).Shape.Edges[0])))
+                            # Part.show(f)
+                            # f_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                            FreeCAD.ActiveDocument.removeObject(ccircle_name)
+                            FreeCAD.ActiveDocument.removeObject(wf_name)
+                            # ccircle.Curve
+                            # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                            #bbxCenter = selectedEdge.Curve.Center
+                            Edge_Point = selectedEdge.Curve.Center
+                            # norm = f.normalAt(0,0)
+                            #subObj = f
+                            #FreeCAD.ActiveDocument.removeObject(f_name)
+                            #PC1=Draft.makePoint(subObj.Curve.Center)
+                            #w.close
+                            open_circle=True
+                        else:
+                            wire = Part.Wire(selectedEdge)
+                            f = wire
+                            edge_op=1
+                            #sayerr('edge not closed to be managed')
+                            Edge_Point = centerLinePoint(selectedEdge,info=0)
+                            #reply = QtGui.QMessageBox.information(None,"info", "edge(s) non closed are not managed atm\n")
+                            #stop
                     #Part.show(fw)
                     Part.show(f)
                     #stop

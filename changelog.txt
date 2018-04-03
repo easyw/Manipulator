@@ -1,3 +1,4 @@
+- v1.2.4 WB improved Moving and Aligning Parts (semi-circles axis)
 - v1.1.4 WB added checking updates
 - v1.3.8 Mover & Aligner Tools working with Part, App::Part and Body objects
 - v1.2.8 Caliper Tools: measuring Length, Radius, Distance for Part, App::Part and Body objects with Annotation Plane option
