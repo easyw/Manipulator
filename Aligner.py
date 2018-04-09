@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.8" #undo alignment for App::Part hierarchical objects
+__version__ = "1.5.9" #undo alignment for App::Part hierarchical objects
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -1322,6 +1322,7 @@ def Align(normal,type,mode,cx,cy,cz):
     p0 =  FreeCAD.Placement (FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
     # .BoundBox.Center
     #align faces
+    points=False
     if (len(selEx) > 1) and (len(selEx)==len(sel)):
         #s = obj.Shape
         last_selection = [] #removing old Move object
@@ -1435,7 +1436,21 @@ def Align(normal,type,mode,cx,cy,cz):
                     #     Edge_Point = centerLinePoint(selectedEdge,info=1)
                     # except:
                     #     stop
-                    if selectedEdge.isClosed():
+                    for o in fc.SubObjects:
+                        if 'Vertex' in str(o):
+                            points = True
+                    if 'Vertex' in str(selectedEdge):
+                        dir = (0,0,1)
+                        #print(Base.Vector(selectedEdge.Point))
+                        ccircle = Part.makeCircle(1.0, Base.Vector(selectedEdge.Point), Base.Vector(dir))
+                        Part.show(ccircle)
+                        ccircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
+                        FreeCAD.ActiveDocument.getObject(ccircle_name).Label='ccircle'
+                        f=Part.Face(Part.Wire((FreeCAD.ActiveDocument.getObject(ccircle_name).Shape.Edges[0])))
+                        FreeCAD.ActiveDocument.removeObject(ccircle_name)
+                        #stop
+                    elif selectedEdge.isClosed():
+                    #if selectedEdge.isClosed():
                     #try:
                         sayerr(str(selectedEdge.Placement))
                         wire = Part.Wire(selectedEdge)
@@ -1453,6 +1468,7 @@ def Align(normal,type,mode,cx,cy,cz):
                             wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
                             
                             dir=wf.normalAt(0,0)
+                            #sayw(dir)
                             # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
                             # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
                             ccircle = Part.makeCircle(selectedEdge.Curve.Radius, Base.Vector(selectedEdge.Curve.Center), Base.Vector(dir))
@@ -1664,7 +1680,7 @@ def Align(normal,type,mode,cx,cy,cz):
             else:
                 say('testing')
                 #stop
-            if j>0:
+            if j>0 and not points:  #rotation only if points not in selection
                 pos=FreeCAD.Vector(-coords[j][0]+coords[0][0],-coords[j][1]+coords[0][1],-coords[j][2]+coords[0][2])
                 ## objs[j].Placement.move(pos)
                 m_angle, m_angle_rad = angleBetween(normals[0],normals[j])
