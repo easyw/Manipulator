@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.0" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.1" #undo alignment for App::Part hierarchical objects
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -88,7 +88,8 @@ btn_md_sizeX=26;btn_md_sizeY=26;
 
 def close_aligner():
     #def closeEvent(self, e):
-    ALGDockWidget.close()
+    ALGDockWidget.deleteLater()
+    ##ALGDockWidget.close()
     #self.setWindowState(QtCore.Qt.WindowActive)
     doc=FreeCAD.ActiveDocument
     if doc is not None:
@@ -737,79 +738,59 @@ def Alg_centerOnScreen (widg):
 
 def Alg_singleInstance():
     app = QtGui.QApplication #QtGui.qApp
-
     for i in app.topLevelWidgets():
+        #say (str(i.objectName()))
         if i.objectName() == "Aligner":
-            i.deleteLater()
-        else:
-            pass
+            say (str(i.objectName()))
+            #i.close()
+            #i.deleteLater()
+            say ('closed')
+            return False
     t=FreeCADGui.getMainWindow()
     dw=t.findChildren(QtGui.QDockWidget)
-    #print str(dw)
+    #say( str(dw) )
     for i in dw:
-        #say str(i.objectName())
+        #say (str(i.objectName()))
         if str(i.objectName()) == "Aligner": #"kicad StepUp 3D tools":
-            i.deleteLater()
-        else:
-            pass
-##
-
-def Alg_checkInstance():
-    app = QtGui.QApplication #QtGui.qApp
-
-    foundAlg=False
-    for i in app.topLevelWidgets():
-        if i.objectName() == "Aligner":
-            foundAlg=True
-        else:
-            pass
-    t=FreeCADGui.getMainWindow()
-    dw=t.findChildren(QtGui.QDockWidget)
-    #print str(dw)
-    for i in dw:
-        #say str(i.objectName())
-        if str(i.objectName()) == "Aligner": #"kicad StepUp 3Dss":
-            foundAlg=True
-        else:
-            pass
-    return foundAlg
+            say (str(i.objectName())+' docked')
+            #i.deleteLater()
+            return False
+    return True
 ##
 
 ##############################################################
 
 doc=FreeCAD.ActiveDocument
+# 
+if Alg_singleInstance():
+    
+    ALGDockWidget = QtGui.QDockWidget()          # create a new dckwidget
+    ALGDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
+    ALGDockWidget.ui.setupUi(ALGDockWidget) # setup the ui
+    #ui = Ui_AlignDockWidget()
+    #ui.setupUi(AlignDockWidget)
+    #AlignDockWidget.show()
+    
+    ALGDockWidget.setObjectName("Aligner")
+    
+    ALGDockWidget.setFloating(True)  #undock
+    ALGDockWidget.resize(sizeX,sizeY)
+    ALGDockWidget.activateWindow()
+    ALGDockWidget.raise_()
+    
+    #ALGDockWidget.show()
+    
+    ALGDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
 
-Alg_singleInstance()
+    paramGet = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/MainWindow")
+    if len(paramGet.GetString("StyleSheet"))>0: #we are using a StyleSheet
+        ALGDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')    
 
-ALGDockWidget = QtGui.QDockWidget()          # create a new dckwidget
-ALGDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
-ALGDockWidget.ui.setupUi(ALGDockWidget) # setup the ui
-#ui = Ui_AlignDockWidget()
-#ui.setupUi(AlignDockWidget)
-#AlignDockWidget.show()
-
-ALGDockWidget.setObjectName("Aligner")
-
-ALGDockWidget.setFloating(True)  #undock
-ALGDockWidget.resize(sizeX,sizeY)
-ALGDockWidget.activateWindow()
-ALGDockWidget.raise_()
-
-#ALGDockWidget.show()
-
-ALGDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
-
-try:
-    if ALGDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-        ALGDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-except:
-    pass
-        
-ALGmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
-ALGmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,ALGDockWidget)
-#ALGDockWidget.show()
-Alg_undock()
-Alg_centerOnScreen (ALGDockWidget)
+    ALGmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
+    ALGmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,ALGDockWidget)
+    #ALGDockWidget.show()
+    Alg_undock()
+    Alg_centerOnScreen (ALGDockWidget)
 
 ### ------------------------------------------------------------------------------------ ###
 

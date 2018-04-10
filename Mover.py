@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.9" #Manipulator for Parts
+__version__ = "1.5.0" #Manipulator for Parts
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -103,8 +103,9 @@ def close_mover():
         MVDockWidget.deleteLater()
     except:
         sayerr('not able to remove observer')
+        MVDockWidget.deleteLater()
         pass
-    MVDockWidget.close()
+    #MVDockWidget.close()
     #self.setWindowState(QtCore.Qt.WindowActive)
     doc=FreeCAD.ActiveDocument
     if doc is not None:
@@ -1367,75 +1368,31 @@ def Mv_centerOnScreen (widg):
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
     widg.setGeometry(xp, yp, sizeX, sizeY)
 ##
-
 def Mv_singleInstance():
-    global sO, ninst
     app = QtGui.QApplication #QtGui.qApp
-
     for i in app.topLevelWidgets():
+        #say (str(i.objectName()))
         if i.objectName() == "Mover":
-            ninst=ninst+1
-            #print 'ni ',ninst
-            #i.show()
-            if ninst>1:
-                ninst=0
-                return False
-        #     try:
-        #         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
-        #     except:
-        #         sayerr('not able to remove observer')
-        #         pass
-        #     i.deleteLater()
-        # else:
-        #     pass
+            say (str(i.objectName()))
+            #i.close()
+            #i.deleteLater()
+            say ('closed')
+            return False
     t=FreeCADGui.getMainWindow()
     dw=t.findChildren(QtGui.QDockWidget)
-    #print str(dw)
+    #say( str(dw) )
     for i in dw:
-        #say str(i.objectName())
+        #say (str(i.objectName()))
         if str(i.objectName()) == "Mover": #"kicad StepUp 3D tools":
-            ninst=ninst+1
-            #print 'ni ',ninst
-            i.show()
-            if ninst > 1:
-                ninst=0
-                return False
-        #     try:
-        #         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
-        #     except:
-        #         sayerr('not able to remove observer')
-        #         pass
-        #     i.deleteLater()
-        # else:
-        #     pass
+            say (str(i.objectName())+' docked')
+            #i.deleteLater()
+            return False
     return True
-##
-
-def Mv_checkInstance():
-    app = QtGui.QApplication
-
-    foundAlg=False
-    for i in app.topLevelWidgets():
-        if i.objectName() == "Mover":
-            foundAlg=True
-        else:
-            pass
-    t=FreeCADGui.getMainWindow()
-    dw=t.findChildren(QtGui.QDockWidget)
-    #print str(dw)
-    for i in dw:
-        #say str(i.objectName())
-        if str(i.objectName()) == "Mover": #"kicad StepUp 3D tools":
-            foundAlg=True
-        else:
-            pass
-    return foundAlg
 ##
 
 ##############################################################
 
 doc=FreeCAD.ActiveDocument
-
 
 if Mv_singleInstance():
 
@@ -1457,11 +1414,9 @@ if Mv_singleInstance():
     
     MVDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
     
-    try:
-        if MVDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-            MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-    except:
-        pass
+    paramGet = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/MainWindow")
+    if len(paramGet.GetString("StyleSheet"))>0: #we are using a StyleSheet
+        MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
         
     MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
