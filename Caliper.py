@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.3.7" #Manipulator for Parts
-__date__    = "01.2018"
+__version__ = "1.3.8" #Manipulator for Parts
+__date__    = "04.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -2035,9 +2035,9 @@ class Ui_DockWidget(object):
         <br><b>Caliper Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
         <font color = blue><b>Version:  
         """+__version__+"""</b></font>"""
-        QtGui.qApp.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
         res=''
-        QtGui.qApp.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
         res = QtGui.QMessageBox.question(None,"Help",msg,QtGui.QMessageBox.Ok)
 ##
 

@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.9" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.0" #undo alignment for App::Part hierarchical objects
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -716,9 +716,9 @@ class Ui_DockWidget(object):
         <br><b>Align Tools</b> work with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects
         <b>Version:</b> 
         """+__version__
-        QtGui.qApp.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
         res=''
-        QtGui.qApp.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
         res = QtGui.QMessageBox.question(None,"Help",msg,QtGui.QMessageBox.Ok)
 ##
 
