@@ -736,7 +736,7 @@ def Alg_centerOnScreen (widg):
 ##
 
 def Alg_singleInstance():
-    app = QtGui.qApp
+    app = QtGui.QApplication #QtGui.qApp
 
     for i in app.topLevelWidgets():
         if i.objectName() == "Aligner":
@@ -755,7 +755,7 @@ def Alg_singleInstance():
 ##
 
 def Alg_checkInstance():
-    app = QtGui.qApp
+    app = QtGui.QApplication #QtGui.qApp
 
     foundAlg=False
     for i in app.topLevelWidgets():

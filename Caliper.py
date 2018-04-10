@@ -2056,7 +2056,7 @@ def Cp_centerOnScreen (widg):
 
 def Cp_singleInstance():
     global s1, ninst
-    app = QtGui.qApp
+    app = QtGui.QApplication #QtGui.qApp
 
     for i in app.topLevelWidgets():
         #print i.objectName()
@@ -2102,7 +2102,7 @@ def Cp_singleInstance():
 ##
 
 def Cp_checkInstance():
-    app = QtGui.qApp
+    app = QtGui.QApplication #QtGui.qApp
 
     foundAlg=False
     for i in app.topLevelWidgets():
