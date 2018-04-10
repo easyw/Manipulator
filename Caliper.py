@@ -2146,9 +2146,12 @@ if Cp_singleInstance():
     
     CPDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
     
-    if CPDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-        CPDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-    
+    try:
+        if CPDockWidget.style().metaObject().className()== "QStyleSheetStyle":
+            CPDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
+    except:
+        pass
+
     CPmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     CPmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,CPDockWidget)
     #MVDockWidget.show()

@@ -799,9 +799,12 @@ ALGDockWidget.raise_()
 
 ALGDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
 
-if ALGDockWidget.style().metaObject().className()== "QStyleSheetStyle":
-    ALGDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-
+try:
+    if ALGDockWidget.style().metaObject().className()== "QStyleSheetStyle":
+        ALGDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
+except:
+    pass
+        
 ALGmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
 ALGmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,ALGDockWidget)
 #ALGDockWidget.show()
