@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.0" #Manipulator for Parts
+__version__ = "1.4.1" #Manipulator for Parts
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -41,7 +41,26 @@ testing2=False #true for showing helpers
 ## import statements
 # oDraft -> Draft from FreeCAD_0.17.13488
 
-import FreeCAD, FreeCADGui, oDraft, Part, PartGui, DraftTools, DraftVecUtils, DraftGeomUtils
+import FreeCAD, FreeCADGui
+
+def getFCversion():
+
+    FC_majorV=int(FreeCAD.Version()[0])
+    FC_minorV=int(FreeCAD.Version()[1])
+    try:
+        FC_git_Nbr=int(FreeCAD.Version()[2].strip(" (Git)"))
+    except:
+        FC_git_Nbr=0
+    return FC_majorV,FC_minorV,FC_git_Nbr
+
+if getFCversion()[0]==0 and getFCversion()[1]>17:
+    import oDraft
+    mDraft = oDraft
+else:
+    import Draft
+    mDraft = Draft
+
+import Part, PartGui, DraftTools, DraftVecUtils, DraftGeomUtils
 from FreeCAD import Base
 import sys, math
 from PySide import QtCore, QtGui
@@ -274,7 +293,7 @@ def makeAPlane(w, w_multipl,norm,plcm,PC):
     FreeCAD.ActiveDocument.getObject(APEName).Placement=Base.Placement(Base.Vector(0.000,0.000,0.000),Base.Rotation(0.000,0.000,0.000,1.000))
     FreeCAD.ActiveDocument.getObject(APEName).Label='APEdge'
     FreeCAD.ActiveDocument.recompute()
-    oDraft.upgrade(FreeCAD.ActiveDocument.getObject(APEName),delete=True)
+    mDraft.upgrade(FreeCAD.ActiveDocument.getObject(APEName),delete=True)
     APT=FreeCAD.ActiveDocument.ActiveObject
     APTName=APT.Name
     
@@ -394,7 +413,7 @@ class SelObserverCaliper:
                             #print 'pnt=',pnt[0]
                             if CPDockWidget.ui.DimensionP1.isEnabled(): #step #1
                                 P1=pnt
-                                PC=oDraft.makePoint(pnt[0],pnt[1],pnt[2])
+                                PC=mDraft.makePoint(pnt[0],pnt[1],pnt[2])
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                 FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
                                 FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
@@ -405,7 +424,7 @@ class SelObserverCaliper:
                                 w=dist(P1, pnt)*5
                                 P2=pnt
                                 if CPDockWidget.ui.cbAPlane.isChecked():
-                                    PE=oDraft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    PE=mDraft.makePoint(pnt[0],pnt[1],pnt[2])
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.667,0.000)
@@ -417,9 +436,9 @@ class SelObserverCaliper:
                                     halfedge = (pnt.sub(P1)).multiply(.5)
                                     mid=FreeCAD.Vector.add(P1,halfedge)
                                     if mid!=P1: #non coincident points
-                                        dim=oDraft.makeDimension(pnt,P1,mid)
+                                        dim=mDraft.makeDimension(pnt,P1,mid)
                                         try:
-                                            oDraft.autogroup(dim)
+                                            mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         except:
@@ -450,9 +469,9 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
-                                dim=oDraft.makeDimension(P2,P1,posz)
+                                dim=mDraft.makeDimension(P2,P1,posz)
                                 try:
-                                    oDraft.autogroup(dim)
+                                    mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 except:
@@ -489,8 +508,8 @@ class SelObserverCaliper:
                                     P2=pnt
                                     halfedge = (pnt.sub(P1)).multiply(.5)
                                     mid=FreeCAD.Vector.add(P1,halfedge)
-                                    PC=oDraft.makePoint(P1[0],P1[1],P1[2])
-                                    PE=oDraft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    PC=mDraft.makePoint(P1[0],P1[1],P1[2])
+                                    PE=mDraft.makePoint(pnt[0],pnt[1],pnt[2])
                                     w=dist(P1, pnt)*5
                                     if CPDockWidget.ui.cbAPlane.isChecked():
                                         CPDockWidget.ui.APlane.setEnabled(True)
@@ -513,9 +532,9 @@ class SelObserverCaliper:
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
                                     
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
-                                        dim=oDraft.makeDimension(pnt,P1,mid)
+                                        dim=mDraft.makeDimension(pnt,P1,mid)
                                         try:
-                                            oDraft.autogroup(dim)
+                                            mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         except:
@@ -555,9 +574,9 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
-                                dim=oDraft.makeDimension(P2,P1,posz)
+                                dim=mDraft.makeDimension(P2,P1,posz)
                                 try:
-                                    oDraft.autogroup(dim)
+                                    mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 except:
@@ -594,8 +613,8 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
                                     CPDockWidget.ui.DimensionP2.setEnabled(False)
                                     P1=FreeCAD.Vector(bbC)
-                                    PC=oDraft.makePoint(P1[0],P1[1],P1[2])
-                                    PE=oDraft.makePoint(pnt[0],pnt[1],pnt[2])
+                                    PC=mDraft.makePoint(P1[0],P1[1],P1[2])
+                                    PE=mDraft.makePoint(pnt[0],pnt[1],pnt[2])
                                     w=dist(P1, pnt)*5
                                     P2=pnt
                                     if CPDockWidget.ui.cbAPlane.isChecked():
@@ -612,9 +631,9 @@ class SelObserverCaliper:
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
                                         halfedge = (pnt.sub(P1)).multiply(.5)
                                         mid=FreeCAD.Vector.add(P1,halfedge)
-                                        dim=oDraft.makeDimension(pnt,P1,mid)
+                                        dim=mDraft.makeDimension(pnt,P1,mid)
                                         try:
-                                            oDraft.autogroup(dim)
+                                            mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         except:
@@ -645,9 +664,9 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
-                                dim=oDraft.makeDimension(P2,P1,posz)
+                                dim=mDraft.makeDimension(P2,P1,posz)
                                 try:
-                                    oDraft.autogroup(dim)
+                                    mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                 except:
@@ -679,7 +698,7 @@ class SelObserverCaliper:
                                     if 'Face' in str(sel[0].SubObjects[0]):
                                         P1=FreeCAD.Vector(bbC)
                                         midP=P1
-                                        PC=oDraft.makePoint(P1[0],P1[1],P1[2])
+                                        PC=mDraft.makePoint(P1[0],P1[1],P1[2])
                                         vec1 = norm
                                         ornt_1 = orient
                                         sel1='face'
@@ -689,7 +708,7 @@ class SelObserverCaliper:
                                         P1=FreeCAD.Vector(bbC)
                                         halfedge = (pnt.sub(P1)).multiply(.5)
                                         midP=FreeCAD.Vector.add(P1,halfedge)
-                                        PC=oDraft.makePoint(midP[0],midP[1],midP[2])
+                                        PC=mDraft.makePoint(midP[0],midP[1],midP[2])
                                         va=pnt; vb=P1
                                         vec1 = pnt - P1
                                         ornt_1 = orient
@@ -719,7 +738,7 @@ class SelObserverCaliper:
                                         sel2='edge'
                                     halfedge = (mid.sub(midP)).multiply(.5)
                                     mid2=FreeCAD.Vector.add(midP,halfedge)                                   
-                                    PE=oDraft.makePoint(mid[0],mid[1],mid[2])
+                                    PE=mDraft.makePoint(mid[0],mid[1],mid[2])
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.333,0.498)
                                     w=dist(P1, P2)*5
@@ -755,11 +774,11 @@ class SelObserverCaliper:
                                         FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         if mid!=midP: #non coincident points
-                                            dim=oDraft.makeDimension(mid,midP,mid2)
+                                            dim=mDraft.makeDimension(mid,midP,mid2)
                                         else:
-                                            dim=oDraft.makeDimension(pnt,mid,P1)                                
+                                            dim=mDraft.makeDimension(pnt,mid,P1)                                
                                         try:
-                                            oDraft.autogroup(dim)
+                                            mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                         except:
@@ -799,9 +818,9 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP3.setEnabled(False)
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
                                 
-                                    dim=oDraft.makeDimension(mid,midP,posz)
+                                    dim=mDraft.makeDimension(mid,midP,posz)
                                     try:
-                                        oDraft.autogroup(dim)
+                                        mDraft.autogroup(dim)
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
                                     except:
@@ -1059,7 +1078,7 @@ def get_placement_hierarchy (sel0):
             Pt=subObj.Point
             #point = subObj.Point
             #P=subObj.Point
-            nP=oDraft.makePoint(Pt)
+            nP=mDraft.makePoint(Pt)
             #wire = Part.Wire(nP)
             subObj = nP.Shape
             FreeCAD.ActiveDocument.removeObject(nP.Name)
