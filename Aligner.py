@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.1" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.2" #undo alignment for App::Part hierarchical objects
 __date__    = "04.2018"
 
 testing=False #true for showing helpers
@@ -64,6 +64,7 @@ from sys import platform as _platform
 
 # window GUI dimensions parameters
 wdzX=302;wdzY=256
+ctrl_btn='Ctrl'
 if _platform == "linux" or _platform == "linux2":
    # linux
    pt_lnx=True
@@ -76,6 +77,7 @@ else:
     sizeXright=172;sizeYright=502#522
 if _platform == "darwin":
     pt_osx=True
+    ctrl_btn='Cmd'
 ##   # MAC OS X
 ##elif _platform == "win32":
 ##   # Windows
@@ -636,8 +638,8 @@ class Ui_DockWidget(object):
         self.Move.setToolTip("Move selected")
         self.Align.setToolTip("Align objects\nFirst object is the Reference")
         self.Help_Align.setToolTip("Help tips")
-        self.Undo_Align.setToolTip("Undo last Alignment")
-        self.Label_Align_Gui.setText("<b>Ctrl+Click</b> to add selection:<br>Planes/Faces, Edges/Axis")
+        self.Undo_Align.setToolTip("Undo last Alignment")        
+        self.Label_Align_Gui.setText("<b>"+ctrl_btn+"+Click</b> to add selection:<br>Planes/Faces, Edges/Axis")
         self.ReferenceGroup.setTitle("Reference")
         self.AlignGroup.setTitle("Align on")
 
@@ -708,15 +710,16 @@ class Ui_DockWidget(object):
 ##
     def onHelp(self):
         msg="""<b>Align Tools</b><br>
-        <b>Ctrl+Clik</b> to add selection:<br>
+        <b>"""+ctrl_btn+"""+Clik</b> to add selection:<br>
         select Faces, Planes, Edges and Axis<br>
-        then click the <i>'Align'</i> button<br>
+        then click the <i>'Align'</i> button.<br>
         <i>Note:</i><br>The <b>first Selection</b> is the
-        Reference for Aligning<br>
-        <br>Use <i>'Move'</i> button to move a single object<br>
-        <br><b>Align Tools</b> work with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects
-        <b>Version:</b> 
-        """+__version__
+        Reference for Aligning.<br>
+        <br><i>If it is not possible to align parts in one step, try to align the edges before and then the faces.</i>
+        <br><br>Use <i>'Move'</i> button to move a single object.<br>
+        <br><b>Align Tools</b> work with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects.
+        <font color = blue><b>Version: 
+        """+__version__+"""</b></font>"""
         QtGui.QApplication.restoreOverrideCursor()
         res=''
         QtGui.QApplication.restoreOverrideCursor()
