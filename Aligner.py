@@ -25,8 +25,8 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.2" #undo alignment for App::Part hierarchical objects
-__date__    = "04.2018"
+__version__ = "1.6.3" #undo alignment for App::Part hierarchical objects
+__date__    = "05.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1019,7 +1019,7 @@ def get_top_level (obj):
     lvl=10000
     top=None
     for ap in obj.InListRecursive:
-        if hasattr(ap,'Placement'):
+        if hasattr(ap,'Placement') and ap.TypeId!='App::FeaturePython' and ap.TypeId!='Part::Part2DObjectPython':
             if len(ap.InListRecursive) < lvl:
                 top = ap
                 lvl = len(ap.InListRecursive)
