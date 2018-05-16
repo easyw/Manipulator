@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.1" #Manipulator for Parts
-__date__    = "04.2018"
+__version__ = "1.4.21" #Manipulator for Parts
+__date__    = "05.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -351,6 +351,7 @@ class SelObserverCaliper:
         fntsize='0.2mm'
         ticksize='0.1mm'
         Vtx_sel=False
+        dx=0;dy=0;dz=0
         #dstP=-1
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
         
@@ -423,6 +424,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP2.setEnabled(False)
                                 w=dist(P1, pnt)*5
                                 P2=pnt
+                                dx=abs(pnt[0]-P1[0]);dy=abs(pnt[1]-P1[1]);dz=abs(pnt[2]-P1[2])
                                 if CPDockWidget.ui.cbAPlane.isChecked():
                                     PE=mDraft.makePoint(pnt[0],pnt[1],pnt[2])
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
@@ -455,9 +457,9 @@ class SelObserverCaliper:
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                     else:
                                         say("Distance : 0.0")
-                                    sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                    sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                    sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
+                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
                                 CPDockWidget.ui.APlane.setEnabled(False)
                                 CPDockWidget.ui.DimensionP3.setEnabled(True)
@@ -486,6 +488,9 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                 say("Distance : "+str(dim.Distance))
+                                sayw("Delta X  : "+str(dx))    
+                                sayw("Delta Y  : "+str(dy))    
+                                sayw("Delta Z  : "+str(dz))    
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
