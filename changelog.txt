@@ -1,4 +1,3 @@
-- v1.2.7 WB switched to precision BBox from Lattice2
 - v1.2.4 WB improved Moving and Aligning Parts (semi-circles axis)
 - v1.1.4 WB added checking updates
 - v1.3.8 Mover & Aligner Tools working with Part, App::Part and Body objects

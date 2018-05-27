@@ -9,8 +9,6 @@
 #*                                                                          *
 # evolution of Macro_CenterFace                                             *
 # some part of Macro WorkFeature                                            *
-# Lattice2 precision Bounding Box                                           *
-# https://forum.freecadweb.org/viewtopic.php?t=26024                        *
 # and assembly2                                                             *
 #                                                                           *
 # center objs faces/closed_edges to first obj face/closed_edge              *
@@ -27,13 +25,12 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.4" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.3" #undo alignment for App::Part hierarchical objects
 __date__    = "05.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
 
-# improved Bounding Box using precisionBoundingBox of Lattice2
 ## todo
 #  better Gui with icons
 ## done case: invert normal and standard when already aligned planes
@@ -90,9 +87,6 @@ btn_sizeX=32;btn_sizeY=32;
 chkb_sizeX=20;chkb_sizeY=20;
 btn_sm_sizeX=20;btn_sm_sizeY=20;
 btn_md_sizeX=26;btn_md_sizeY=26;
-
-# OCC's Precision::Confusion; should have taken this from FreeCAD but haven't found; unlikely to ever change.
-DistConfusion_alg = 1e-7
 
 def close_aligner():
     #def closeEvent(self, e):
@@ -1072,65 +1066,6 @@ def get_sorted_list (obj):
       
     return listS
 ##
-def boundBox2RealBox_alg(bb):
-    base = FreeCAD.Vector(bb.XMin, bb.YMin, bb.ZMin)
-    OX = FreeCAD.Vector(1, 0, 0)
-    OY = FreeCAD.Vector(0, 1, 0)
-    OZ = FreeCAD.Vector(0, 0, 1)
-    if bb.XLength > DistConfusion_alg and bb.YLength > DistConfusion_alg and bb.ZLength > DistConfusion_alg :
-        return Part.makeBox(bb.XLength,bb.YLength,bb.ZLength, base, OZ)
-    elif bb.XLength > DistConfusion_alg and bb.YLength > DistConfusion_alg:
-        return Part.makePlane(bb.XLength, bb.YLength, base, OZ, OX)
-    elif bb.XLength > DistConfusion_alg and bb.ZLength > DistConfusion_alg :
-        return Part.makePlane(bb.XLength, bb.ZLength, base, OY*-1, OX)
-    elif bb.YLength > DistConfusion_alg and bb.ZLength > DistConfusion_alg :
-        return Part.makePlane(bb.YLength, bb.ZLength, base, OX, OY)
-    elif bb.XLength > DistConfusion_alg:
-        return Part.makeLine(base, base + OX*bb.XLength)
-    elif bb.YLength > DistConfusion_alg:
-        return Part.makeLine(base, base + OY*bb.YLength)
-    elif bb.ZLength > DistConfusion_alg:
-        return Part.makeLine(base, base + OZ*bb.ZLength)
-    else:
-        raise ValueError("Bounding box is zero")
-###
-def scaledBoundBox_alg(bb, scale):
-    bb2 = FreeCAD.BoundBox(bb)
-    cnt = bb.Center
-    bb2.XMin = (bb.XMin - cnt.x)*scale + cnt.x
-    bb2.YMin = (bb.YMin - cnt.y)*scale + cnt.y
-    bb2.ZMin = (bb.ZMin - cnt.z)*scale + cnt.z
-    bb2.XMax = (bb.XMax - cnt.x)*scale + cnt.x
-    bb2.YMax = (bb.YMax - cnt.y)*scale + cnt.y
-    bb2.ZMax = (bb.ZMax - cnt.z)*scale + cnt.z
-    return bb2
-
-###
-def getPrecisionBoundBox_alg(shape):
-    # First, we need a box that for sure contains the object.
-    # We use imprecise bound box, scaled up twice. The scaling
-    # is required, because the imprecise bound box is often a
-    # bit smaller than the shape.
-    bb = scaledBoundBox_alg(shape.BoundBox, 2.0)
-    # Make sure bound box is not collapsed in any direction, 
-    # to make sure boundBox2RealBox returns a box, not plane
-    # or line
-    if bb.XLength < DistConfusion_alg or bb.YLength < DistConfusion_alg or bb.ZLength < DistConfusion_alg:
-        bb.enlarge(1.0)
-    
-    # Make a boundingbox shape and compute distances from faces
-    # of this enlarged bounding box to the actual shape. Shrink
-    # the boundbox by the distances.
-    bbshape = boundBox2RealBox_alg(bb)
-    #FIXME: it may be a good idea to not use hard-coded face indexes
-    bb.XMin = bb.XMin + shape.distToShape(bbshape.Faces[0])[0]
-    bb.YMin = bb.YMin + shape.distToShape(bbshape.Faces[2])[0]
-    bb.ZMin = bb.ZMin + shape.distToShape(bbshape.Faces[4])[0]
-    bb.XMax = bb.XMax - shape.distToShape(bbshape.Faces[1])[0]
-    bb.YMax = bb.YMax - shape.distToShape(bbshape.Faces[3])[0]
-    bb.ZMax = bb.ZMax - shape.distToShape(bbshape.Faces[5])[0]
-    return bb
-###
 
 def reset_prop_shapes(obj):
 
@@ -1282,8 +1217,7 @@ def Align(normal,type,mode,cx,cy,cz):
                             print_msg("Selected_Edge = " + str(Selected_Edge))
                             print_msg("Parent = " + str(Parent_Edge))
                         try:                        
-                            #Edge_Point = Parent_Edge.Shape.BoundBox.Center
-                            Edge_Point = getPrecisionBoundBox_alg(Parent_Edge.Shape).Center
+                            Edge_Point = Parent_Edge.Shape.BoundBox.Center
                         except:
                             Edge_Point = centerLinePoint(Selected_Edge,info=0)
                         
@@ -1413,9 +1347,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 say("Label : "+ make_string(sel[j].Label))     # extract the Label
                 say("Name  : "+ str(sel[j].Name))     # extract the Name
                 say( "Center Face Binder "+str(0)+" "+str(f.Faces[0].CenterOfMass)) # Vector center mass to face
-                #say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face
-                say( "Center Face Binder bb "+str(0)+" "+str(getPrecisionBoundBox_alg(f.Faces[0]).Center)) # Vector center mass to face
-                
+                say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face
             elif (selEx[j].Object.TypeId == 'App::Plane') and ('XY' in selEx[j].Object.Name or 'XZ' in selEx[j].Object.Name or 'YZ' in selEx[j].Object.Name): #Origin Planes
                 pad=0
                 edge_op=0
@@ -1449,8 +1381,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 say("Label : "+ make_string(sel[j].Label))     # extract the Label
                 say("Name  : "+ str(sel[j].Name))     # extract the Name
                 say( "Center Face Binder "+str(0)+" "+str(f.Faces[0].CenterOfMass)) # Vector center mass to face
-                #say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face
-                say( "Center Face Binder bb "+str(0)+" "+str(getPrecisionBoundBox_alg(f.Faces[0]).Center)) # Vector center mass to face
+                say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face            
             elif (selEx[j].Object.TypeId == 'App::Line') or (selEx[j].Object.TypeId == 'PartDesign::Line'):
                 FreeCAD.ActiveDocument.addObject("Part::Plane","TempAxis")
                 FreeCAD.ActiveDocument.TempAxis.Length=5.000
@@ -1477,8 +1408,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 say("Label : "+ make_string(sel[j].Label))     # extract the Label
                 say("Name  : "+ str(sel[j].Name))     # extract the Name
                 say( "Center Face Binder "+str(0)+" "+str(f.CenterOfMass)) # Vector center mass to face
-                #say( "Center Face Binder bb "+str(0)+" "+str(f.BoundBox.Center)) # Vector center mass to face
-                say( "Center Face Binder bb "+str(0)+" "+str(getPrecisionBoundBox_alg(f).Center)) # Vector center mass to face
+                say( "Center Face Binder bb "+str(0)+" "+str(f.BoundBox.Center)) # Vector center mass to face
             else:
                 try:
                     selectedEdge = selEx[j].SubObjects[0] # select one element SubObjects    
@@ -1576,10 +1506,10 @@ def Align(normal,type,mode,cx,cy,cz):
                     say("Name  : "+ str(sel[j].Name))     # extract the Name
                     if edge_op==0:
                         say( "Center Face Binder "+str(0)+" "+str(f.Faces[0].CenterOfMass)) # Vector center mass to face
-                        say( "Center Face Binder bb "+str(0)+" "+str(getPrecisionBoundBox_alg(f.Faces[0]).Center)) # Vector center mass to face
+                        say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face
                     else:
                         say( "Center Face Binder "+str(0)+" "+str(f.CenterOfMass)) # Vector center mass to face
-                        say( "Center Face Binder bb "+str(0)+" "+str(getPrecisionBoundBox_alg(f).Center)) # Vector center mass to face
+                        say( "Center Face Binder bb "+str(0)+" "+str(f.BoundBox.Center)) # Vector center mass to face
                 else: #face
                     pad=0
                     f=fc.SubObjects[0].Faces[0].copy()
@@ -1593,7 +1523,7 @@ def Align(normal,type,mode,cx,cy,cz):
                     say("Label : "+ make_string(sel[j].Label))     # extract the Label
                     say("Name  : "+ str(sel[j].Name))     # extract the Name
                     say( "Center Face Binder "+str(0)+" "+str(f.Faces[0].CenterOfMass)) # Vector center mass to face
-                    say( "Center Face Binder bb "+str(0)+" "+str(getPrecisionBoundBox_alg(f.Faces[0]).Center)) # Vector center mass to face
+                    say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face
             # LineColor
             ob = fc.Object
             #print ob.Placement
@@ -1647,32 +1577,28 @@ def Align(normal,type,mode,cx,cy,cz):
             if create_points:
                 if pad==0:
                     if use_bb:
-                        p_bb = getPrecisionBoundBox_alg(f.Faces[0])
-                        Draft.makePoint(p_bb.Center.x,p_bb.Center.y,p_bb.BoundBox.Center.z) # create a point
+                        Draft.makePoint(f.Faces[0].BoundBox.Center.x,f.Faces[0].BoundBox.Center.y,f.Faces[0].BoundBox.Center.z) # create a point
                     else:
                         Draft.makePoint(f.Faces[0].CenterOfMass.x,f.Faces[0].CenterOfMass.y,f.Faces[0].CenterOfMass.z) # create a point
                     FreeCADGui.activeDocument().activeObject().PointColor = (red, green, blue)
                 else:
                     if use_bb:
-                        p_bb = getPrecisionBoundBox_alg(f.Faces[0])
-                        Draft.makePoint(p_bb.Center.x,p_bb.Center.y,p_bb.Center.z) # create a point
+                        Draft.makePoint(f.Faces[0].BoundBox.Center.x,f.Faces[0].CenterOfMass.y,f.Faces[0].CenterOfMass.z) # create a point
                     else:
                         Draft.makePoint(f.Faces[0].CenterOfMass.x,f.Faces[0].CenterOfMass.y,f.Faces[0].CenterOfMass.z) # create a point
                     FreeCADGui.activeDocument().activeObject().PointColor = (red, green, blue)            
             if pad==0:
                 if use_bb:
                     if edge_op == 0:
-                        p_bb = getPrecisionBoundBox_alg(f.Faces[0])
-                        coordNx = p_bb.Center.x
-                        coordNy = p_bb.Center.y
-                        coordNz = p_bb.Center.z
-                        coordP  = p_bb.Center
+                        coordNx = f.Faces[0].BoundBox.Center.x
+                        coordNy = f.Faces[0].BoundBox.Center.y
+                        coordNz = f.Faces[0].BoundBox.Center.z
+                        coordP  = f.Faces[0].BoundBox.Center
                     else:
-                        p_bb = getPrecisionBoundBox_alg(f)
-                        coordNx = p_bb.Center.x
-                        coordNy = p_bb.Center.y
-                        coordNz = p_bb.Center.z
-                        coordP  = p_bb.Center
+                        coordNx = f.BoundBox.Center.x
+                        coordNy = f.BoundBox.Center.y
+                        coordNz = f.BoundBox.Center.z
+                        coordP  = f.BoundBox.Center
                 else:
                     if edge_op == 0:
                         coordNx = f.Faces[0].CenterOfMass.x
@@ -1687,17 +1613,15 @@ def Align(normal,type,mode,cx,cy,cz):
             else:
                 if use_bb:
                     if edge_op == 0:
-                        p_bb = getPrecisionBoundBox_alg(f.Faces[0])
-                        coordNx = p_bb.Center.x
-                        coordNy = p_bb.Center.y
-                        coordNz = p_bb.Center.z
-                        coordP  = p_bb.Center
+                        coordNx = f.Faces[0].BoundBox.Center.x
+                        coordNy = f.Faces[0].BoundBox.Center.y
+                        coordNz = f.Faces[0].BoundBox.Center.z
+                        coordP  = f.Faces[0].BoundBox.Center
                     else:
-                        p_bb = getPrecisionBoundBox_alg(f)
-                        coordNx = p_bb.Center.x
-                        coordNy = p_bb.Center.y
-                        coordNz = p_bb.Center.z
-                        coordP  = p_bb.Center
+                        coordNx = f.BoundBox.Center.x
+                        coordNy = f.BoundBox.Center.y
+                        coordNz = f.BoundBox.Center.z
+                        coordP  = f.BoundBox.Center
                 else:
                     if edge_op == 0:
                         coordNx = f.Faces[0].CenterOfMass.x
