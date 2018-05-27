@@ -10,6 +10,9 @@
 # evolution of Macro_CenterFace                                             *
 # some part of Macro WorkFeature                                            *
 # and Macro Rotate To Point                                                 *
+# some part of Macro WorkFeature                                            *
+# Lattice2 precision Bounding Box                                           *
+# https://forum.freecadweb.org/viewtopic.php?t=26024                        *
 # and assembly2                                                             *
 #                                                                           *
 # Move objs along obj face Normal or edge                                   *
@@ -26,12 +29,13 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.0" #Manipulator for Parts
-__date__    = "04.2018"
+__version__ = "1.5.1" #Manipulator for Parts
+__date__    = "05.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
 
+# improved Bounding Box using precisionBoundingBox of Lattice2
 ## todo
 #  better Gui with icons
 ##  ##App::Part hierarchical objects & Bodys on FC 0.17
@@ -47,6 +51,8 @@ from PySide import QtCore, QtGui
 from pivy import coin
 
 ninst = 0
+# OCC's Precision::Confusion; should have taken this from FreeCAD but haven't found; unlikely to ever change.
+DistConfusion_mvr = 1e-7
 
 ##--------------------------------------------------------------------------------------
 
@@ -132,6 +138,66 @@ def Mv_minimz():
     MVDockWidget.activateWindow()
     MVDockWidget.raise_()
 ##
+##
+def boundBox2RealBox_mvr(bb):
+    base = FreeCAD.Vector(bb.XMin, bb.YMin, bb.ZMin)
+    OX = FreeCAD.Vector(1, 0, 0)
+    OY = FreeCAD.Vector(0, 1, 0)
+    OZ = FreeCAD.Vector(0, 0, 1)
+    if bb.XLength > DistConfusion_mvr and bb.YLength > DistConfusion_mvr and bb.ZLength > DistConfusion_mvr :
+        return Part.makeBox(bb.XLength,bb.YLength,bb.ZLength, base, OZ)
+    elif bb.XLength > DistConfusion_mvr and bb.YLength > DistConfusion_mvr:
+        return Part.makePlane(bb.XLength, bb.YLength, base, OZ, OX)
+    elif bb.XLength > DistConfusion_mvr and bb.ZLength > DistConfusion_mvr :
+        return Part.makePlane(bb.XLength, bb.ZLength, base, OY*-1, OX)
+    elif bb.YLength > DistConfusion_mvr and bb.ZLength > DistConfusion_mvr :
+        return Part.makePlane(bb.YLength, bb.ZLength, base, OX, OY)
+    elif bb.XLength > DistConfusion_mvr:
+        return Part.makeLine(base, base + OX*bb.XLength)
+    elif bb.YLength > DistConfusion_mvr:
+        return Part.makeLine(base, base + OY*bb.YLength)
+    elif bb.ZLength > DistConfusion_mvr:
+        return Part.makeLine(base, base + OZ*bb.ZLength)
+    else:
+        raise ValueError("Bounding box is zero")
+###
+def scaledBoundBox_mvr(bb, scale):
+    bb2 = FreeCAD.BoundBox(bb)
+    cnt = bb.Center
+    bb2.XMin = (bb.XMin - cnt.x)*scale + cnt.x
+    bb2.YMin = (bb.YMin - cnt.y)*scale + cnt.y
+    bb2.ZMin = (bb.ZMin - cnt.z)*scale + cnt.z
+    bb2.XMax = (bb.XMax - cnt.x)*scale + cnt.x
+    bb2.YMax = (bb.YMax - cnt.y)*scale + cnt.y
+    bb2.ZMax = (bb.ZMax - cnt.z)*scale + cnt.z
+    return bb2
+
+###
+def getPrecisionBoundBox_mvr(shape):
+    # First, we need a box that for sure contains the object.
+    # We use imprecise bound box, scaled up twice. The scaling
+    # is required, because the imprecise bound box is often a
+    # bit smaller than the shape.
+    bb = scaledBoundBox_mvr(shape.BoundBox, 2.0)
+    # Make sure bound box is not collapsed in any direction, 
+    # to make sure boundBox2RealBox returns a box, not plane
+    # or line
+    if bb.XLength < DistConfusion_mvr or bb.YLength < DistConfusion_mvr or bb.ZLength < DistConfusion_mvr:
+        bb.enlarge(1.0)
+    
+    # Make a boundingbox shape and compute distances from faces
+    # of this enlarged bounding box to the actual shape. Shrink
+    # the boundbox by the distances.
+    bbshape = boundBox2RealBox_mvr(bb)
+    #FIXME: it may be a good idea to not use hard-coded face indexes
+    bb.XMin = bb.XMin + shape.distToShape(bbshape.Faces[0])[0]
+    bb.YMin = bb.YMin + shape.distToShape(bbshape.Faces[2])[0]
+    bb.ZMin = bb.ZMin + shape.distToShape(bbshape.Faces[4])[0]
+    bb.XMax = bb.XMax - shape.distToShape(bbshape.Faces[1])[0]
+    bb.YMax = bb.YMax - shape.distToShape(bbshape.Faces[3])[0]
+    bb.ZMax = bb.ZMax - shape.distToShape(bbshape.Faces[5])[0]
+    return bb
+###
 
 def recurse_node(obj,plcm,scl):
     sayerr(obj.Name)
@@ -316,7 +382,7 @@ def get_normal_placement_hierarchy (sel0):
                 nwnorm = (nwshp.Vertex2.Point - nwshp.Vertex1.Point).normalize()
             else:
                 nwnorm = nwshp.normalAt(0,0)
-            bbxCenter = nwshp.BoundBox.Center
+            bbxCenter = getPrecisionBoundBox_mvr(nwshp).Center
         else:
             nwshp = subObj.copy()
             if open_circle==True:
@@ -325,7 +391,7 @@ def get_normal_placement_hierarchy (sel0):
                 nwnorm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
             else:
                 nwnorm = nwshp.normalAt(0,0)
-            bbxCenter = nwshp.BoundBox.Center
+            bbxCenter = getPrecisionBoundBox_mvr(nwshp).Center
             
         return nwnorm, nwshp.Placement, top_level_obj, bbxCenter
 
@@ -338,7 +404,7 @@ def get_normal_placement_hierarchy (sel0):
             if subObj.isClosed():
                 subObj = Part.Face(wire)
                 norm = subObj.normalAt(0,0)
-                bbxCenter = subObj.BoundBox.Center
+                bbxCenter = getPrecisionBoundBox_mvr(subObj).Center
             else:
                 sayerr(str(subObj.Curve))
                 if 'Circle' in str(subObj.Curve):
@@ -376,11 +442,11 @@ def get_normal_placement_hierarchy (sel0):
                     #w.close
                 else:
                     norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
-                    bbxCenter = subObj.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_mvr(subObj).Center
             pad=1 #edge
         else:
             norm = subObj.normalAt(0,0)
-            bbxCenter = subObj.BoundBox.Center
+            bbxCenter = getPrecisionBoundBox_mvr(subObj).Center
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
         
@@ -920,6 +986,9 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(One_Obj_b64))
         self.rbOneObj.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.rbOneObj.setIcon(QtGui.QIcon(pm))
+        self.rbOneObj.setEnabled(False)
+        #self.rbOneObj.setCheckable(False)
+        #self.rbOneObj.setChecked(True)
         # self.rbNormal_Inv.clicked.connect(self.setNormal)
         # pm = QtGui.QPixmap()
         # pm.loadFromData(base64.b64decode(Two_Objs_b64))
@@ -1184,9 +1253,9 @@ class Ui_DockWidget(object):
         #deltaVect = FreeCAD.Vector(v.x,v.y,v.z)*delta
         norm=FreeCAD.Vector(1,0,0)
         if in_hierarchy:
-            rot_center=sel[0].Object.Shape.BoundBox.Center
+            rot_center=getPrecisionBoundBox_mvr(sel[0].Object.Shape).Center
         else:
-            rot_center=o.Shape.BoundBox.Center
+            rot_center=getPrecisionBoundBox_mvr(o.Shape).Center
         #elif self.rbAxis.isChecked:
         if len(sel[0].SubObjects)>0: #Faces or Edges
             if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
@@ -1205,7 +1274,7 @@ class Ui_DockWidget(object):
         else: ## Object selected
             if hasattr(o,'Shape'):
                 norm = o.Shape.Faces[0].normalAt(0,0).normalize()
-                rot_center=o.Shape.BoundBox.Center
+                rot_center=getPrecisionBoundBox_mvr(o.Shape).Center
                 top_level_obj=o
             else: # App::Part container
                 norm=FreeCAD.Vector(1,0,0)

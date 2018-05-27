@@ -10,6 +10,8 @@
 # evolution of Macro_CenterFace                                             *
 # some part of Macro WorkFeature                                            *
 # and Macro Rotate To Point, Macro_Delta_xyz                                *
+# Lattice2 precision Bounding Box                                           *
+# https://forum.freecadweb.org/viewtopic.php?t=26024                        *
 # and assembly2                                                             *
 #                                                                           *
 # Move objs along obj face Normal or edge                                   *
@@ -26,12 +28,13 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.21" #Manipulator for Parts
+__version__ = "1.4.3" #Manipulator for Parts
 __date__    = "05.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
 
+# improved Bounding Box using precisionBoundingBox of Lattice2
 ## todo
 #  better Gui with icons
 ##  ##App::Part hierarchical objects & Bodys on FC 0.17
@@ -70,7 +73,8 @@ import numpy as np
 
 angle_tolerance = 1e-5 #
 ninst = 0
-
+# OCC's Precision::Confusion; should have taken this from FreeCAD but haven't found; unlikely to ever change.
+DistConfusion_clp = 1e-7
 
 def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
     ## https://stackoverflow.com/questions/2824478/shortest-distance-between-two-line-segments
@@ -215,6 +219,66 @@ def point_plane_distance(point, plane_normal, plane_point):
     
     return dist
 ##    
+##
+def boundBox2RealBox_clp(bb):
+    base = FreeCAD.Vector(bb.XMin, bb.YMin, bb.ZMin)
+    OX = FreeCAD.Vector(1, 0, 0)
+    OY = FreeCAD.Vector(0, 1, 0)
+    OZ = FreeCAD.Vector(0, 0, 1)
+    if bb.XLength > DistConfusion_clp and bb.YLength > DistConfusion_clp and bb.ZLength > DistConfusion_clp :
+        return Part.makeBox(bb.XLength,bb.YLength,bb.ZLength, base, OZ)
+    elif bb.XLength > DistConfusion_clp and bb.YLength > DistConfusion_clp:
+        return Part.makePlane(bb.XLength, bb.YLength, base, OZ, OX)
+    elif bb.XLength > DistConfusion_clp and bb.ZLength > DistConfusion_clp :
+        return Part.makePlane(bb.XLength, bb.ZLength, base, OY*-1, OX)
+    elif bb.YLength > DistConfusion_clp and bb.ZLength > DistConfusion_clp :
+        return Part.makePlane(bb.YLength, bb.ZLength, base, OX, OY)
+    elif bb.XLength > DistConfusion_clp:
+        return Part.makeLine(base, base + OX*bb.XLength)
+    elif bb.YLength > DistConfusion_clp:
+        return Part.makeLine(base, base + OY*bb.YLength)
+    elif bb.ZLength > DistConfusion_clp:
+        return Part.makeLine(base, base + OZ*bb.ZLength)
+    else:
+        raise ValueError("Bounding box is zero")
+###
+def scaledBoundBox_clp(bb, scale):
+    bb2 = FreeCAD.BoundBox(bb)
+    cnt = bb.Center
+    bb2.XMin = (bb.XMin - cnt.x)*scale + cnt.x
+    bb2.YMin = (bb.YMin - cnt.y)*scale + cnt.y
+    bb2.ZMin = (bb.ZMin - cnt.z)*scale + cnt.z
+    bb2.XMax = (bb.XMax - cnt.x)*scale + cnt.x
+    bb2.YMax = (bb.YMax - cnt.y)*scale + cnt.y
+    bb2.ZMax = (bb.ZMax - cnt.z)*scale + cnt.z
+    return bb2
+
+###
+def getPrecisionBoundBox_clp(shape):
+    # First, we need a box that for sure contains the object.
+    # We use imprecise bound box, scaled up twice. The scaling
+    # is required, because the imprecise bound box is often a
+    # bit smaller than the shape.
+    bb = scaledBoundBox_clp(shape.BoundBox, 2.0)
+    # Make sure bound box is not collapsed in any direction, 
+    # to make sure boundBox2RealBox returns a box, not plane
+    # or line
+    if bb.XLength < DistConfusion_clp or bb.YLength < DistConfusion_clp or bb.ZLength < DistConfusion_clp:
+        bb.enlarge(1.0)
+    
+    # Make a boundingbox shape and compute distances from faces
+    # of this enlarged bounding box to the actual shape. Shrink
+    # the boundbox by the distances.
+    bbshape = boundBox2RealBox_clp(bb)
+    #FIXME: it may be a good idea to not use hard-coded face indexes
+    bb.XMin = bb.XMin + shape.distToShape(bbshape.Faces[0])[0]
+    bb.YMin = bb.YMin + shape.distToShape(bbshape.Faces[2])[0]
+    bb.ZMin = bb.ZMin + shape.distToShape(bbshape.Faces[4])[0]
+    bb.XMax = bb.XMax - shape.distToShape(bbshape.Faces[1])[0]
+    bb.YMax = bb.YMax - shape.distToShape(bbshape.Faces[3])[0]
+    bb.ZMax = bb.ZMax - shape.distToShape(bbshape.Faces[5])[0]
+    return bb
+###
 
 def reset_prop_shapes(obj):
 
@@ -1143,7 +1207,7 @@ def get_placement_hierarchy (sel0):
             #    pV1=findMidpoint(nwshp)
             #    nwnorm = nwshp.normalAt(0,0)
             if CPDockWidget.ui.rbBbox.isChecked():
-                bbxCenter = nwshp.BoundBox.Center
+                bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
             else:
             #    if hasattr(nwshp,'CenterOfMass'):
             #        bbxCenter = nwshp.CenterOfMass
@@ -1155,9 +1219,9 @@ def get_placement_hierarchy (sel0):
                             bbxCenter = nwshp.Solids[0].CenterOfMass
                             #print 'Mass 1'
                     else:
-                        bbxCenter = nwshp.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                 except:
-                    bbxCenter = nwshp.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
         # else:
         #     nwshp = subObj.copy()
         #     if edge_op==1:
@@ -1209,7 +1273,7 @@ def get_placement_hierarchy (sel0):
                     bbxCenter=(nwshp.Vertexes[1].Point[0],nwshp.Vertexes[1].Point[1],nwshp.Vertexes[1].Point[2])
             else:
                 if CPDockWidget.ui.rbBbox.isChecked():
-                    bbxCenter = nwshp.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                 else:
                     try:
                         if hasattr(nwshp,'Solids'):
@@ -1217,9 +1281,9 @@ def get_placement_hierarchy (sel0):
                                 bbxCenter = nwshp.Solids[0].CenterOfMass
                                 #print 'Mass 1'
                         else:
-                            bbxCenter = nwshp.BoundBox.Center
+                            bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                     except:
-                        bbxCenter = nwshp.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                     #if hasattr(nwshp,'CenterOfMass'):
                     #    bbxCenter = nwshp.CenterOfMass
                     #else:
@@ -1243,7 +1307,7 @@ def get_placement_hierarchy (sel0):
                 #Pnt=nwshp.Vertex1.Point
                 Pnt=nwshp.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
-                    bbxCenter = nwshp.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                 else:
                     try:
                         if hasattr(nwshp,'Solids'):
@@ -1251,9 +1315,9 @@ def get_placement_hierarchy (sel0):
                                 bbxCenter = nwshp.Solids[0].CenterOfMass
                                 #print 'Mass 1'
                         else:
-                            bbxCenter = nwshp.BoundBox.Center
+                            bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                     except:
-                        bbxCenter = nwshp.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                     #if hasattr(nwshp,'CenterOfMass'):
                     #    bbxCenter = nwshp.CenterOfMass
                     #else:
@@ -1271,7 +1335,7 @@ def get_placement_hierarchy (sel0):
                 #Pnt=nwshp.Vertex1.Point
                 Pnt=nwshp.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
-                    bbxCenter = nwshp.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                 else:
                     try:
                         if hasattr(nwshp,'Solids'):
@@ -1279,9 +1343,9 @@ def get_placement_hierarchy (sel0):
                                 bbxCenter = nwshp.Solids[0].CenterOfMass
                                 #print 'Mass 1'
                         else:
-                            bbxCenter = nwshp.BoundBox.Center
+                            bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                     except:
-                        bbxCenter = nwshp.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(nwshp).Center
                     #if hasattr(nwshp,'CenterOfMass'):
                     #    bbxCenter = nwshp.CenterOfMass
                     #else:
@@ -1330,7 +1394,7 @@ def get_placement_hierarchy (sel0):
                 nwnorm = subObj.normalAt(0,0)
                 #nwnorm = face.normalAt(0,0)
         if CPDockWidget.ui.rbBbox.isChecked():
-            bbxCenter = subObj.BoundBox.Center
+            bbxCenter = getPrecisionBoundBox_clp(subObj).Center
             #print 'BBox 1'
         else:
             try:
@@ -1339,9 +1403,9 @@ def get_placement_hierarchy (sel0):
                         bbxCenter = subObj.Solids[0].CenterOfMass
                         #print 'Mass 1'
                 else:
-                    bbxCenter = subObj.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(subObj).Center
             except:
-                bbxCenter = subObj.BoundBox.Center
+                bbxCenter = getPrecisionBoundBox_clp(subObj).Center
                 #print 'BBox 2'
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
@@ -1389,7 +1453,7 @@ def get_placement_hierarchy (sel0):
                     bbxCenter=(subObj.Vertexes[1].Point[0],subObj.Vertexes[1].Point[1],subObj.Vertexes[1].Point[2])
             else:
                 if CPDockWidget.ui.rbBbox.isChecked():
-                    bbxCenter = subObj.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(subObj).Center
                     #print 'BBox 3'
                 try:
                     if hasattr(subObj,'Solids'):
@@ -1397,9 +1461,9 @@ def get_placement_hierarchy (sel0):
                             bbxCenter = subObj.Solids[0].CenterOfMass
                             #print 'Mass 1'
                     else:
-                        bbxCenter = subObj.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(subObj).Center
                 except:
-                    bbxCenter = subObj.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(subObj).Center
             if pad==1:
                 #Pnt=wire.Vertex1.Point
                 Pnt=wire.Vertexes[0].Point
@@ -1419,12 +1483,12 @@ def get_placement_hierarchy (sel0):
                 #Pnt=subObj.Vertex1.Point
                 Pnt=subObj.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
-                    bbxCenter = subObj.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(subObj).Center
                 else:
                     if hasattr(subObj,'CenterOfMass'):
                         bbxCenter = subObj.CenterOfMass
                     else:
-                        bbxCenter = subObj.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(subObj).Center
         elif CPDockWidget.ui.rbAngle.isChecked():
             if edge_op==1:
                 #Pnt=subObj.Vertex1.Point
@@ -1435,12 +1499,12 @@ def get_placement_hierarchy (sel0):
                 #Pnt=subObj.Vertex1.Point
                 Pnt=subObj.Vertexes[0].Point
                 if CPDockWidget.ui.rbBbox.isChecked():
-                    bbxCenter = subObj.BoundBox.Center
+                    bbxCenter = getPrecisionBoundBox_clp(subObj).Center
                 else:
                     if hasattr(subObj,'CenterOfMass'):
                         bbxCenter = subObj.CenterOfMass
                     else:
-                        bbxCenter = subObj.BoundBox.Center
+                        bbxCenter = getPrecisionBoundBox_clp(subObj).Center
         return plcm, top_level_obj, bbxCenter, Pnt, orient, nwnorm
             
 ##
