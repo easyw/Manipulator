@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.0" #Manipulator for Parts
-__date__    = "05.2018"
+__version__ = "1.5.1" #Manipulator for Parts
+__date__    = "08.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1187,9 +1187,17 @@ class Ui_DockWidget(object):
         #deltaVect = FreeCAD.Vector(v.x,v.y,v.z)*delta
         norm=FreeCAD.Vector(1,0,0)
         if in_hierarchy:
-            rot_center=sel[0].Object.Shape.BoundBox.Center
+            if sel[0].Object.TypeId == 'App::Link':
+                shp = Part.getShape(sel[0].Object)
+            else:
+                shp = sel[0].Object.Shape
+            rot_center=shp.BoundBox.Center
         else:
-            rot_center=o.Shape.BoundBox.Center
+            if o.TypeId == 'App::Link':
+                shp = Part.getShape(o)
+            else:
+                shp = o.Shape
+            rot_center=shp.BoundBox.Center
         #elif self.rbAxis.isChecked:
         if len(sel[0].SubObjects)>0: #Faces or Edges
             if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
@@ -1209,6 +1217,11 @@ class Ui_DockWidget(object):
             if hasattr(o,'Shape'):
                 norm = o.Shape.Faces[0].normalAt(0,0).normalize()
                 rot_center=o.Shape.BoundBox.Center
+                top_level_obj=o
+            elif o.TypeId == 'App::Link':
+                shp = Part.getShape(o)
+                norm = shp.Faces[0].normalAt(0,0).normalize()
+                rot_center=shp.BoundBox.Center
                 top_level_obj=o
             else: # App::Part container
                 norm=FreeCAD.Vector(1,0,0)
@@ -1350,7 +1363,7 @@ class Ui_DockWidget(object):
         and change the Rotation/Position with the <i>'Move/Rotate'</i> spin boxes.<br>
         <i>Note:</i><br>The <b>first Selection</b> is the
         Reference for Moving/Rotating<br>
-        <br><b>Mover Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
+        <br><b>Mover Tools</b> work with <b>Part, App::Part Body</b> and <b>Link</b> objects<br>
         <font color = blue><b>Version:  
         """+__version__+"""</b></font>"""
         QtGui.QApplication.restoreOverrideCursor()
