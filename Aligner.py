@@ -25,7 +25,7 @@
 __title__   = "Center Faces of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.5" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.6" #undo alignment for App::Part hierarchical objects
 __date__    = "08.2018"
 
 testing=False #true for showing helpers
@@ -96,7 +96,7 @@ def close_aligner():
     ALGDockWidget.deleteLater()
     ##ALGDockWidget.close()
     #self.setWindowState(QtCore.Qt.WindowActive)
-    onXRayB()
+    onXRayB([])
     doc=FreeCAD.ActiveDocument
     if doc is not None:
         FreeCAD.setActiveDocument(doc.Name)
@@ -718,7 +718,7 @@ class Ui_DockWidget(object):
     def onAlign(self):
         global objs_moved
         say("Align clicked")
-        onXRayB()
+        onXRayB([])
         normal=0;type=0;mode=0
         if self.rbNormal_Inv.isChecked():
             say("Align Normal Inverted")
@@ -759,7 +759,8 @@ class Ui_DockWidget(object):
         Undo()
 ##
     def onXRayBtn(self): #XrayM temp
-        onXRayB()
+        sel = FreeCADGui.Selection.getSelectionEx()
+        onXRayB(sel)
 ##    
     def onHelp(self):
         msg="""<b>Align Tools</b><br>
@@ -782,16 +783,16 @@ class Ui_DockWidget(object):
 ##
 
 ###############################################################################################################
-def onXRayB(): #XrayM temp
+def onXRayB(sel_list): #XrayM temp
     global libraryX,myXRayed
     
-    sel = FreeCADGui.Selection.getSelectionEx()
+    #sel = FreeCADGui.Selection.getSelectionEx()
     if len(myXRayed) != 0:
     #if len(sel) == 0:
         XRayM(None)
         myXRayed = []
     else:
-        for selobj in sel:
+        for selobj in sel_list: #sel:
             XRayM(selobj.Object)
             myXRayed.append(selobj.Object)
         # Gui.Selection.clearSelection()
