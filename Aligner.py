@@ -22,10 +22,10 @@
 #****************************************************************************
 
 
-__title__   = "Center Faces of Parts"
+__title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.6" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.7" #undo alignment for App::Part hierarchical objects
 __date__    = "08.2018"
 
 testing=False #true for showing helpers
@@ -815,7 +815,7 @@ def XRayM(obj):
     else:
         tv = Show.TempoVis(App.ActiveDocument)
         tv.modifyVPProperty(obj, 'Transparency', 80)
-        tv.modifyVPProperty(obj, 'DisplayMode', 'Shaded')
+        #tv.modifyVPProperty(obj, 'DisplayMode', 'Shaded')
         tv.setUnpickable(obj)
         libraryX[obj] = tv
 ##
