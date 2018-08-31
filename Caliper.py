@@ -26,14 +26,15 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.2" #Manipulator for Parts
-__date__    = "05.2018"
+__version__ = "1.4.3" #Manipulator for Parts
+__date__    = "08.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
 
 ## todo
 #  better Gui with icons
+#  fix dist snap point in asm3 branch 
 ##  ##App::Part hierarchical objects & Bodys on FC 0.17
 ##
 
@@ -379,6 +380,7 @@ class SelObserverCaliper:
                         posz=position
                         #sayw('posz '+str(posz))
                         plcm, top_level_obj, bbC, pnt, orient, norm = get_placement_hierarchy (sel[0])
+                        #print(top_level_obj);stop
                         if top_level_obj is not None:
                             #say('object in App::Part hierarchy or Body')
                             top_level_obj_Name=top_level_obj.Name
@@ -967,11 +969,12 @@ def dist(first, second):
 
 def recurse_node(obj,plcm,scl):
     #sayerr(obj.Name)
-    if "App::Part" in obj.TypeId or "Body" in obj.TypeId or "Compound" in obj.TypeId:
-        for o in obj.Group:
+    if "App::Part" in obj.TypeId or "Body" in obj.TypeId or "Compound" in obj.TypeId or 'App::LinkGroup' in obj.TypeId:
+        for o in obj.OutList: #for o in obj.Group:
             #sayerr(o.Name)
-            if "App::Part" in o.TypeId  or "Body" in o.TypeId or "Compound" in o.TypeId:
+            if "App::Part" in o.TypeId  or "Body" in o.TypeId or "Compound" in o.TypeId or 'App::LinkGroup' in obj.TypeId:
                 #sayerr(o.Name)#+" * "+obj.Name)
+                stop
                 new_plcm=get_node_plc(o,obj)
                 recurse_node(o,new_plcm,scl)
             else:
@@ -989,6 +992,7 @@ def get_top_level (obj):
                 if len(ap.InListRecursive) < lvl:
                     top = ap
                     lvl = len(ap.InListRecursive)
+    #print (top);stop
     return top
 ##
 
@@ -1109,7 +1113,7 @@ def get_placement_hierarchy (sel0):
                 #    say(o_.Name)
                 if len(Obj.InList):
                     top_level_obj = get_top_level(Obj)
-                    #sayerr(top_level_obj[j].Label)
+                    #sayerr(top_level_obj.Label)
                     listSorted=get_sorted_list (Obj)
                     #for p in listSorted:
                     #    print p.Name
@@ -1118,7 +1122,8 @@ def get_placement_hierarchy (sel0):
                     for i in range (0,lrl):
                         if hasattr(listSorted[i],'Placement'):
                             #if 'Plane' not in ob.InListRecursive[i].TypeId:
-                            if listSorted[i].hasExtension("App::GeoFeatureGroupExtension"):
+                            #print(listSorted[i].TypeId)
+                            if listSorted[i].hasExtension("App::GeoFeatureGroupExtension") or listSorted[i].TypeId == 'App::LinkGroup':
                                 acpy.Placement=acpy.Placement.multiply(listSorted[i].Placement)
             #say(acpy.Placement)
             #acpy.Placement=acpy.Placement.multiply(pOriginal)
@@ -1174,11 +1179,11 @@ def get_placement_hierarchy (sel0):
                     d1=dist(pV1,pCkd);d2=dist(pV2,pCkd)
                     halfedge = (pV1.sub(pV2)).multiply(.5)
                     mid=FreeCAD.Vector.add(pV2,halfedge)
-                    #Draft.makePoint(mid[0],mid[1],mid[2]) #  creating a point takes selection
+                    #mDraft.makePoint(mid[0],mid[1],mid[2]) #  creating a point takes selection
                     #sayw(mid)
                     d3=dist(pCkd,mid)
-                    #sayerr('d1 '+str(d1)+' d2 '+str(d2)+' d3 '+str(d3))
                     d=min(d1,d2,d3)
+                    #sayerr('d1 '+str(d1)+' d2 '+str(d2)+' d3 '+str(d3)+' d '+str(d))
                     if d==d1:
                         Pnt=pV1
                     elif d==d2:
