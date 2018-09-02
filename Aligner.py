@@ -25,7 +25,7 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.7" #undo alignment for App::Part hierarchical objects
+__version__ = "1.6.8" #undo alignment for App::Part hierarchical objects
 __date__    = "08.2018"
 
 testing=False #true for showing helpers
@@ -96,7 +96,8 @@ def close_aligner():
     ALGDockWidget.deleteLater()
     ##ALGDockWidget.close()
     #self.setWindowState(QtCore.Qt.WindowActive)
-    onXRayB([])
+    if hasattr(FreeCADGui.Selection,"clearPreselection"):
+        onXRayB([])
     doc=FreeCAD.ActiveDocument
     if doc is not None:
         FreeCAD.setActiveDocument(doc.Name)
@@ -664,7 +665,8 @@ class Ui_DockWidget(object):
         self.XRayBtn.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.XRayBtn.setIcon(QtGui.QIcon(pm))
         self.XRayBtn.clicked.connect(self.onXRayBtn)
-        
+        if not hasattr(FreeCADGui.Selection,"clearPreselection"):
+            self.XRayBtn.setEnabled(False)    
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(hierachy_b64))
         self.cbHierarchy.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
@@ -718,7 +720,8 @@ class Ui_DockWidget(object):
     def onAlign(self):
         global objs_moved
         say("Align clicked")
-        onXRayB([])
+        if hasattr(FreeCADGui.Selection,"clearPreselection"):
+            onXRayB([])
         normal=0;type=0;mode=0
         if self.rbNormal_Inv.isChecked():
             say("Align Normal Inverted")
@@ -796,7 +799,8 @@ def onXRayB(sel_list): #XrayM temp
             XRayM(selobj.Object)
             myXRayed.append(selobj.Object)
         # Gui.Selection.clearSelection()
-        FreeCADGui.Selection.clearPreselection()
+        if hasattr(FreeCADGui.Selection,"clearPreselection"):
+            FreeCADGui.Selection.clearPreselection()
 ##
 def XRayM(obj):
     import FreeCAD as App
