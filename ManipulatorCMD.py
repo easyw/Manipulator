@@ -15,6 +15,8 @@ import FreeCAD, FreeCADGui, Part, os
 import imp, os, sys, tempfile
 import FreeCAD, FreeCADGui
 from PySide import QtGui
+from PySide.QtCore import QT_TRANSLATE_NOOP
+
 import mvr_locator
 # from kicadStepUptools import onLoadBoard, onLoadFootprint
 
@@ -37,20 +39,20 @@ ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons
 
 # class SMExtrudeCommandClass():
 #   """Extrude face"""
-# 
+#
 #   def GetResources(self):
 #     return {'Pixmap'  : os.path.join( iconPath , 'SMExtrude.svg') , # the name of a svg file available in the resources
-#             'MenuText': "Extend Face" ,
-#             'ToolTip' : "Extend a face along normal"}
+#             'MenuText': QtCore.QT_TRANSLATE_NOOP("Manipulator", "Extend Face"),
+#             'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Extend a face along normal")}
 
 class AlignerTools:
     "manipulator tools object"
- 
+
     def GetResources(self):
         return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Center-Align.svg') , # the name of a svg file available in the resources
-                     'MenuText': "Aligner Tools" ,
-                     'ToolTip' : "Aligner & Mover Manipulator workbench"}
- 
+                     'MenuText': QtCore.QT_TRANSLATE_NOOP("Manipulator", "Aligner Tools"),
+                     'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Aligner & Mover Manipulator workbench")}
+
     def IsActive(self):
         #if FreeCAD.ActiveDocument == None:
         #    return False
@@ -74,9 +76,9 @@ class MoverTools:
 
     def GetResources(self):
         return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Manipulator-cmd.svg') , # the name of a svg file available in the resources
-                     'MenuText': "Mover Tools" ,
-                     'ToolTip' : "Mover Manipulator workbench"}
- 
+                     'MenuText': QtCore.QT_TRANSLATE_NOOP("Manipulator", "Mover Tools"),
+                     'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Mover Manipulator workbench")}
+
     def IsActive(self):
         #if FreeCAD.ActiveDocument == None:
         #    return False
@@ -103,9 +105,9 @@ class CaliperTools:
 
     def GetResources(self):
         return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Caliper.svg') , # the name of a svg file available in the resources
-                     'MenuText': "Caliper Tools" ,
-                     'ToolTip' : "Caliper Manipulator workbench"}
- 
+                     'MenuText': QtCore.QT_TRANSLATE_NOOP("Manipulator", "Caliper Tools"),
+                     'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Caliper Manipulator workbench")}
+
     def IsActive(self):
         #if FreeCAD.ActiveDocument == None:
         #    return False
@@ -143,14 +145,14 @@ class ManpHelpFiles:
         if 'pdf' in self.ext:
             return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'datasheet.svg') ,
                     'MenuText': str(self.exFile),
-                    'ToolTip' : "Help files"}
+                    'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Help files")}
         elif 'fcstd' in self.ext:
             return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Freecad.svg') ,
                     'MenuText': str(self.exFile),
-                    'ToolTip' : "Demo files"}        
+                    'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Demo files")}
         else:
             return {'MenuText': str(self.exFile),
-                    'ToolTip' : "Demo files"}
+                    'ToolTip' : QtCore.QT_TRANSLATE_NOOP("Manipulator", "Demo files")}
 
     def Activated(self):
         FreeCAD.Console.PrintWarning('opening ' + self.exFile + "\r\n")
