@@ -7,7 +7,7 @@
 #*  Copyright (c) 2015                                                      *
 #*  Maurice easyw@katamail.com                                              *
 #*                                                                          *
-#*  Kicad STEPUP (TM) is a TradeMark and cannot be freely useable           *
+#*  Kicad STEPUP (TM) is a TradeMark and cannot be freely usable            *
 #*                                                                          *
 
 import FreeCAD,FreeCADGui
@@ -59,19 +59,19 @@ class AlignerTools:
         #import kicadStepUptools
         import os, sys
         return True
- 
+
     def Activated(self):
         # do something here...
         import Aligner
         reload_lib(Aligner)
         FreeCAD.Console.PrintWarning( 'Aligner active :)\n' )
         #import kicadStepUptools
- 
+
 FreeCADGui.addCommand('AlignerTools',AlignerTools())
 ##
 class MoverTools:
     "manipulator Mover tools object"
- 
+
     def GetResources(self):
         return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Manipulator-cmd.svg') , # the name of a svg file available in the resources
                      'MenuText': "Mover Tools" ,
@@ -85,7 +85,7 @@ class MoverTools:
         #import Mover
         import os, sys
         return True
- 
+
     def Activated(self):
         # do something here...
         #import kicadStepUptools
@@ -94,13 +94,13 @@ class MoverTools:
         reload_lib(Mover)
         FreeCAD.Console.PrintWarning( 'Mover active :)\n' )
         #import kicadStepUptools
- 
+
 FreeCADGui.addCommand('MoverTools',MoverTools())
 ##
 
 class CaliperTools:
     "manipulator Caliper tools object"
- 
+
     def GetResources(self):
         return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'Caliper.svg') , # the name of a svg file available in the resources
                      'MenuText': "Caliper Tools" ,
@@ -114,7 +114,7 @@ class CaliperTools:
         #import Mover
         import os, sys
         return True #False #True
- 
+
     def Activated(self):
         # do something here...
         #import kicadStepUptools
@@ -123,7 +123,7 @@ class CaliperTools:
         reload_lib(Caliper)
         FreeCAD.Console.PrintWarning( 'Caliper active :)\n' )
         #import kicadStepUptools
- 
+
 FreeCADGui.addCommand('CaliperTools',CaliperTools())
 ##
 
@@ -135,7 +135,7 @@ class ManpHelpFiles:
         self.exFile = str(exFile)
         self.ext    = self.exFile[self.exFile.rfind('.'):].lower()
         #print self.ext
-    
+
     # 'hierarchy_nav.svg' for Demo
     #'Pixmap'  : os.path.join( ksuWB_icons_path , 'hierarchy_nav.svg') ,
 

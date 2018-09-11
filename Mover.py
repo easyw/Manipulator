@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #****************************************************************************
@@ -201,7 +202,7 @@ def get_sorted_list (obj):
         listUsName.pop(idx)
         lvl=10000
         #sayerr(listUsName)
-      
+
     return listS
 ##
 
@@ -209,20 +210,20 @@ def get_normal_placement_hierarchy (sel0):
     """get normal at face and placement relative to hierarchy
        of first selection object/face
        return normal, placement, topObj, bbox center absolute"""
-    
+
     global use_hierarchy
     import Draft
-    from FreeCAD import Base 
+    from FreeCAD import Base
 
-    
+
     Obj=sel0.Object
     subObj=sel0.SubObjects[0]
     edge_op=0
-    
+
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
         say('Hierarchy obj')
-        
+
         pad=0
         open_circle=False
         if 'Face' in str(subObj):
@@ -235,16 +236,16 @@ def get_normal_placement_hierarchy (sel0):
             else:
                 sayerr(str(subObj.Curve))
                 if 'Circle' in str(subObj.Curve):
-                    sayerr('Circle radius '+str(subObj.Curve.Radius)) 
+                    sayerr('Circle radius '+str(subObj.Curve.Radius))
                     #f1=subObj.Shape.Faces[0]
-                    
+
                     wf = Part.Face(Part.Wire(subObj))
                     Part.show(wf)
                     wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
-                    
+
                     dir=wf.normalAt(0,0)
                     # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
-                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
                     ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dir))
                     #ccircle_face = Part.Face(ccircle)
                     #Part.show(ccircle_face)
@@ -259,9 +260,9 @@ def get_normal_placement_hierarchy (sel0):
                     FreeCAD.ActiveDocument.removeObject(ccircle_name)
                     FreeCAD.ActiveDocument.removeObject(wf_name)
                     # ccircle.Curve
-                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
                     bbxCenter = subObj.Curve.Center
-                    
+
                     norm = f2.normalAt(0,0)
                     subObj = f2
                     FreeCAD.ActiveDocument.removeObject(f2_name)
@@ -326,7 +327,7 @@ def get_normal_placement_hierarchy (sel0):
             else:
                 nwnorm = nwshp.normalAt(0,0)
             bbxCenter = nwshp.BoundBox.Center
-            
+
         return nwnorm, nwshp.Placement, top_level_obj, bbxCenter
 
     elif 'Face' in str(subObj) or 'Edge' in str(subObj): # not in hierarchy
@@ -342,16 +343,16 @@ def get_normal_placement_hierarchy (sel0):
             else:
                 sayerr(str(subObj.Curve))
                 if 'Circle' in str(subObj.Curve):
-                    sayerr('Circle radius '+str(subObj.Curve.Radius)) 
+                    sayerr('Circle radius '+str(subObj.Curve.Radius))
                     #f1=subObj.Shape.Faces[0]
-                    
+
                     wf = Part.Face(Part.Wire(subObj))
                     Part.show(wf)
                     wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
-                    
+
                     dir=wf.normalAt(0,0)
                     # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
-                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
                     ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dir))
                     #ccircle_face = Part.Face(ccircle)
                     #Part.show(ccircle_face)
@@ -366,9 +367,9 @@ def get_normal_placement_hierarchy (sel0):
                     FreeCAD.ActiveDocument.removeObject(ccircle_name)
                     FreeCAD.ActiveDocument.removeObject(wf_name)
                     # ccircle.Curve
-                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                    # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
                     bbxCenter = subObj.Curve.Center
-                    
+
                     norm = f2.normalAt(0,0)
                     #subObj = f2
                     FreeCAD.ActiveDocument.removeObject(f2_name)
@@ -383,9 +384,9 @@ def get_normal_placement_hierarchy (sel0):
             bbxCenter = subObj.BoundBox.Center
         top_level_obj=None
         #sayerr(str(norm)+str(Obj.Placement)+str(bbxCenter)+str(top_level_obj))
-        
+
         return norm, Obj.Placement, top_level_obj, bbxCenter
-            
+
 ##
 
 ####################################
@@ -949,7 +950,7 @@ class Ui_DockWidget(object):
         self.DS_MoveInput.setMaximum(Max_move)
         self.DS_RotateInput_Delta.setProperty("value", Step_initial_angle)
         self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
-        
+
         ####
         #self.MoveDial.valueChanged.connect(self.on_MoveDial)       # connection
         #self.RotateDial.valueChanged.connect(self.on_RotateDial)       # connection
@@ -957,7 +958,7 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.valueChanged.connect(self.on_RotateDS)
         self.DS_MoveInput_Delta.valueChanged.connect(self.on_MoveDS_Delta)
         self.DS_RotateInput_Delta.valueChanged.connect(self.on_RotateDS_Delta)
-        
+
 ###############################################################################################################
         self.retranslateUi(DockWidget)
         QtCore.QMetaObject.connectSlotsByName(DockWidget)
@@ -989,11 +990,11 @@ class Ui_DockWidget(object):
 
     def onDoubleClick(self):
         global inv_view
-        
+
         inv_view = False
 ##
     def onViewAlign(self):
-        """ macro Macro_Align_View_to_Face 
+        """ macro Macro_Align_View_to_Face
             App:Part and Body compliant"""
         global selobject, sel, double_click_dly, inv_view, use_hierarchy
 
@@ -1002,7 +1003,7 @@ class Ui_DockWidget(object):
             y = up
             x = y.cross(z)
             y = z.cross(x)
-        
+
             rot = FreeCAD.Matrix()
             rot.A11 = x.x
             rot.A21 = x.y
@@ -1013,9 +1014,9 @@ class Ui_DockWidget(object):
             rot.A13 = z.x
             rot.A23 = z.y
             rot.A33 = z.z
-        
+
             return FreeCAD.Placement(rot).Rotation
-        
+
         #try:
         sl=FreeCADGui.Selection.getSelectionEx()
         if len (sl)>0:
@@ -1026,7 +1027,7 @@ class Ui_DockWidget(object):
                     #faceSel = ob.SubObjects[0]
                     norm, plcm, top, bbC = get_normal_placement_hierarchy (sl[0])
                     cam = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
-                    
+
                     if inv_view==1:
                         sayerr('double click: inversion View')
                         #dir = faceSel.normalAt(0,0)*-1
@@ -1041,7 +1042,7 @@ class Ui_DockWidget(object):
                         rot = pointAt(dir, FreeCAD.Vector(0.0,1.0,0.0))
                     else :
                         rot = pointAt(dir, FreeCAD.Vector(0.0,0.0,-1.0))
-                    
+
                     cam.orientation.setValue(rot.Q)
                     #FreeCADGui.SendMsgToActiveView("ViewSelection")
                     FreeCADGui.SendMsgToActiveView("ViewFit")
@@ -1055,37 +1056,37 @@ class Ui_DockWidget(object):
         global DSMove_prev_Val, DSRotate_prev_Val
         global selobject, sel
         global initial_placement, last_selection, objs
-        
+
         last_selection.append(sel[0].Object)
         obj = sel[0].Object
         initial_placement.append(obj.Placement)
-        objs.append(obj)        
+        objs.append(obj)
         DSMove_prev_Val=0
         DSRotate_prev_Val=0
         self.DS_MoveInput.setValue(0.0)
         self.DS_RotateInput.setValue(0.0)
 ##
-        
+
     def on_MoveDS_Delta(self, val):
         self.DS_MoveInput.setSingleStep(self.DS_MoveInput_Delta.value())
         # print self.DS_MoveInput_Delta.value()
         # print self.DS_MoveInput.singleStep
 ##
-        
+
     def on_RotateDS_Delta(self, val):
         self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
 ##
-        
+
     #def on_MoveDial(self, val):
     def on_MoveDS(self, val):
         global selobject, sel
         global initial_placement, last_selection, objs
         global DSMove_prev_Val, in_hierarchy, use_hierarchy
-        
+
         #x=self.DS_MoveInput.value()
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
-        
+
         #print val
         self.DS_MoveInput.setSingleStep(self.DS_MoveInput_Delta.value())
         #print self.DS_MoveInput.singleStep
@@ -1116,7 +1117,7 @@ class Ui_DockWidget(object):
                 else:
                     top_level_obj_Name=sel[0].Object.Name
                 rot_center=bbC
-                
+
                 # if in_hierarchy and not use_hierarchy:
                 #     norm = sel[0].SubObjects[0].normalAt(0,0)
                 #     rot_center=sel[0].SubObjects[0].BoundBox.Center
@@ -1149,7 +1150,7 @@ class Ui_DockWidget(object):
             #newshape = Part.Shape
             newshape.Placement = top_level_obj.Placement
             newshape.translate(deltaVect)
-            #o.Placement=newshape.Placement 
+            #o.Placement=newshape.Placement
             top_level_obj.Placement=newshape.Placement
         elif in_hierarchy and not use_hierarchy:  ## only ok for Faces and not for Normal ATM
             sayerr('subobject moved alone')
@@ -1158,7 +1159,7 @@ class Ui_DockWidget(object):
             newshape = Part.Shape()
             newshape.Placement = o.Placement #o.Placement
             newshape.translate(deltaVect)
-            o.Placement=newshape.Placement 
+            o.Placement=newshape.Placement
         else:
             deltaVect = norm*delta
             newshape = o.Shape.copy()
@@ -1168,13 +1169,13 @@ class Ui_DockWidget(object):
         #self.label_1.setText("Position (" + str(float(val)/10) + " mm)")
         #self.DS_horizontalSlider.setValue(float(val))
         # FreeCAD.ActiveDocument.recompute()        #say (self.MoveDial.value())
-        
+
 ##
     def on_RotateDS(self, val):
         global selobject, sel
         global initial_placement, last_selection, objs
         global DSRotate_prev_Val
-        
+
         #x=self.DS_MoveInput.value()
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
@@ -1226,7 +1227,7 @@ class Ui_DockWidget(object):
             else: # App::Part container
                 norm=FreeCAD.Vector(1,0,0)
                 rot_center=o.Placement.Base
-                top_level_obj=o                    
+                top_level_obj=o
             #say('selected object, using Face[0]')
         if self.rbX.isChecked():
             norm=FreeCAD.Vector(1,0,0)
@@ -1253,7 +1254,7 @@ class Ui_DockWidget(object):
             # FreeCADGui.Selection.addSelection(selobject[0])         # Select an object
             # #FreeCADGui.Selection.addSelectionEx(sel[0])
             newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
-            #o.Placement=newshape.Placement 
+            #o.Placement=newshape.Placement
             top_level_obj.Placement=newshape.Placement
         elif in_hierarchy and not use_hierarchy:  ## only ok for Faces and not for Normal ATM
             sayerr('subobject moved alone')
@@ -1262,7 +1263,7 @@ class Ui_DockWidget(object):
             newshape = Part.Shape()
             newshape.Placement = o.Placement #o.Placement
             newshape.rotate(DraftVecUtils.tup(rot_center), DraftVecUtils.tup(rot_axis), rot_angle)
-            o.Placement=newshape.Placement 
+            o.Placement=newshape.Placement
         else:
             rot_axis=norm
             rot_angle=delta
@@ -1304,7 +1305,7 @@ class Ui_DockWidget(object):
         global selobject, sel
         global initial_placement, last_selection, objs
         global sO, DSMove_prev_Val, DSRotate_prev_Val
-        
+
         #say("Move clicked")
         #Move()
         #self.MoveDial.setValue(0.0)
@@ -1364,7 +1365,7 @@ class Ui_DockWidget(object):
         <i>Note:</i><br>The <b>first Selection</b> is the
         Reference for Moving/Rotating<br>
         <br><b>Mover Tools</b> work with <b>Part, App::Part Body</b> and <b>Link</b> objects<br>
-        <font color = blue><b>Version:  
+        <font color = blue><b>Version:
         """+__version__+"""</b></font>"""
         QtGui.QApplication.restoreOverrideCursor()
         res=''
@@ -1418,22 +1419,22 @@ if Mv_singleInstance():
     #ui = Ui_AlignDockWidget()
     #ui.setupUi(AlignDockWidget)
     #AlignDockWidget.show()
-    
+
     MVDockWidget.setObjectName("Mover")
-    
+
     MVDockWidget.setFloating(True)  #undock
     MVDockWidget.resize(sizeX,sizeY)
     MVDockWidget.activateWindow()
     MVDockWidget.raise_()
-    
+
     #MVDockWidget.show()
-    
+
     MVDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
-    
+
     paramGet = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/MainWindow")
     if len(paramGet.GetString("StyleSheet"))>0: #we are using a StyleSheet
         MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-        
+
     MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
     #MVDockWidget.show()
@@ -1466,7 +1467,7 @@ def Undo():
         objs = []
         last_selection = []
         MVDockWidget.ui.Undo_Move.setEnabled(False)
-##    
+##
 
 
 def reset_prop_shapes(obj):
@@ -1511,14 +1512,14 @@ class SelObserver:
         global selobject, sel
         global initial_placement, last_selection, objs
         global DSMove_prev_Val, DSRotate_prev_Val, in_hierarchy, use_hierarchy
-        
-        
+
+
         use_hierarchy=MVDockWidget.ui.cbHierarchy.isChecked()
-        
+
         if 1:#try:
             selobject = FreeCADGui.Selection.getSelection()           # Select an object
             sel       = FreeCADGui.Selection.getSelectionEx()         # Select an subObject
-            
+
             #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
             if MVDockWidget.ui.rbOneObj.isChecked:
                 if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
@@ -1528,7 +1529,7 @@ class SelObserver:
                             #     try:
                             #         sayerr(sel[0].SubObjects[0].Curve)
                             #         if 'Circle' in str(sel[0].SubObjects[0].Curve):
-                            #             sayerr('Circle radius '+str(sel[0].SubObjects[0].Curve.Radius)) 
+                            #             sayerr('Circle radius '+str(sel[0].SubObjects[0].Curve.Radius))
                             #             f1=sel[0].Object.Shape.Faces[0]
                             #             FreeCAD.ActiveDocument.addObject("Part::Circle","testCircle")
                             #             FreeCAD.ActiveDocument.testCircle.Radius=2.000
@@ -1592,10 +1593,8 @@ class SelObserver:
                             MVDockWidget.ui.DS_RotateInput.setEnabled(False)
         if 0:#except:
             sayerr('restarted')
-    
+
 
 #s=SelObserver()
 #FreeCADGui.Selection.addObserver(s)                    # installe la fonction en mode resident
 ###################################################################################################
-
-

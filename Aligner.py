@@ -666,14 +666,14 @@ class Ui_DockWidget(object):
         self.XRayBtn.setIcon(QtGui.QIcon(pm))
         self.XRayBtn.clicked.connect(self.onXRayBtn)
         if not hasattr(FreeCADGui.Selection,"clearPreselection"):
-            self.XRayBtn.setEnabled(False)    
+            self.XRayBtn.setEnabled(False)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(hierachy_b64))
         self.cbHierarchy.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.cbHierarchy.setIcon(QtGui.QIcon(pm))
         #self.cbHierarchy.setChecked(False)
         #self.cbHierarchy.clicked.connect(self.onHelp)
-        
+
 ###############################################################################################################
         self.retranslateUi(DockWidget)
         QtCore.QMetaObject.connectSlotsByName(DockWidget)
@@ -689,7 +689,7 @@ class Ui_DockWidget(object):
         self.Move.setToolTip("Move selected")
         self.Align.setToolTip("Align objects\nFirst object is the Reference")
         self.Help_Align.setToolTip("Help tips")
-        self.Undo_Align.setToolTip("Undo last Alignment")        
+        self.Undo_Align.setToolTip("Undo last Alignment")
         self.Label_Align_Gui.setText("<b>"+ctrl_btn+"+Click</b> to add selection:<br>Planes/Faces, Edges/Axis")
         self.ReferenceGroup.setTitle("Reference")
         self.AlignGroup.setTitle("Align on")
@@ -750,7 +750,7 @@ class Ui_DockWidget(object):
         if len (objs_moved) > 0:
             self.Undo_Align.setEnabled(True)
         else:
-            self.Undo_Align.setEnabled(False)        
+            self.Undo_Align.setEnabled(False)
 ##
 
     def onMove(self):
@@ -764,7 +764,7 @@ class Ui_DockWidget(object):
     def onXRayBtn(self): #XrayM temp
         sel = FreeCADGui.Selection.getSelectionEx()
         onXRayB(sel)
-##    
+##
     def onHelp(self):
         msg="""<b>Align Tools</b><br>
         <b>"""+ctrl_btn+"""+Clik</b> to add selection:<br>
@@ -777,7 +777,7 @@ class Ui_DockWidget(object):
         <br><br>Use <i>'Move'</i> button to move a single object.<br>
         <br>Use 'XRay' button to make your selection clickable through it.<br>
         <br><b>Align Tools</b> work with <b>Part</b>, <b>App::Part</b> and <b>Body</b> objects.
-        <br><font color = blue><b>Version: 
+        <br><font color = blue><b>Version:
         """+__version__+"""</b></font>"""
         QtGui.QApplication.restoreOverrideCursor()
         res=''
@@ -788,7 +788,7 @@ class Ui_DockWidget(object):
 ###############################################################################################################
 def onXRayB(sel_list): #XrayM temp
     global libraryX,myXRayed
-    
+
     #sel = FreeCADGui.Selection.getSelectionEx()
     if len(myXRayed) != 0:
     #if len(sel) == 0:
@@ -805,7 +805,7 @@ def onXRayB(sel_list): #XrayM temp
 def XRayM(obj):
     import FreeCAD as App
     import Show
-    
+
     global libraryX
     if obj is None:
         for itobj in libraryX:
@@ -863,30 +863,30 @@ def Alg_singleInstance():
 ##############################################################
 
 doc=FreeCAD.ActiveDocument
-# 
+#
 if Alg_singleInstance():
-    
+
     ALGDockWidget = QtGui.QDockWidget()          # create a new dckwidget
     ALGDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
     ALGDockWidget.ui.setupUi(ALGDockWidget) # setup the ui
     #ui = Ui_AlignDockWidget()
     #ui.setupUi(AlignDockWidget)
     #AlignDockWidget.show()
-    
+
     ALGDockWidget.setObjectName("Aligner")
-    
+
     ALGDockWidget.setFloating(True)  #undock
     ALGDockWidget.resize(sizeX,sizeY)
     ALGDockWidget.activateWindow()
     ALGDockWidget.raise_()
-    
+
     #ALGDockWidget.show()
-    
+
     ALGDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
 
     paramGet = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/MainWindow")
     if len(paramGet.GetString("StyleSheet"))>0: #we are using a StyleSheet
-        ALGDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')    
+        ALGDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
 
     ALGmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     ALGmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,ALGDockWidget)
@@ -923,7 +923,7 @@ def Undo_old():
             #sayerr (plc_moved[i])
             o.Placement = plc_moved[i]
             i=i+1
-            
+
         objs = []
         last_selection = []
         objs_moved = []
@@ -981,12 +981,12 @@ def Undo():
         ALGDockWidget.ui.Undo_Align.setEnabled(False)
         if _recompute:
             FreeCAD.ActiveDocument.recompute()
-##    
-    
+##
+
 def Move():
     global initial_placement, last_selection
     global objs, objs_plc
-    
+
     say('Move')
     selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
     if len(selection) == 1:
@@ -1000,7 +1000,7 @@ def Move():
 
 class PartMover:
     global initial_placement
-    
+
     def __init__(self, view, obj):
         global initial_placement
         self.obj = obj
@@ -1072,7 +1072,7 @@ class PartMoverSelectionObserver:
 #             PartMoverSelectionObserver()
 
 #FreeCADGui.addCommand('assembly2_movePart', MovePartCommand())
-            
+
 def duplicateImportedPart( part ):
     nameBase = part.Label
     while nameBase[-1] in '0123456789' and len(nameBase) > 0:
@@ -1097,7 +1097,7 @@ def duplicateImportedPart( part ):
     newObj.ViewObject.Proxy = ImportedPartViewProviderProxy()
     newObj.Placement.Base = part.Placement.Base
     newObj.Placement.Rotation = part.Placement.Rotation
-    return newObj    
+    return newObj
 
 def recurse_node(obj,plcm,scl):
     sayerr(obj.Name)
@@ -1162,7 +1162,7 @@ def get_sorted_list (obj):
         listUsName.pop(idx)
         lvl=10000
         #sayerr(listUsName)
-      
+
     return listS
 ##
 
@@ -1207,11 +1207,11 @@ def Align(normal,type,mode,cx,cy,cz):
     global objs_moved, plc_moved
     #objs = [] ; objs_plc = []
     #objs_moved = [] ; plc_moved = []
-    
-    
-    #cx = 1  # center x -> 1  
-    #cy = 1  # center y -> 1 
-    #cz = 1  # center z -> 1 
+
+
+    #cx = 1  # center x -> 1
+    #cy = 1  # center y -> 1
+    #cz = 1  # center z -> 1
     say(str(cx)+str(cy)+str(cz))
     create_points=False
     use_bb = True #align center based on bounding boxes or center of mass
@@ -1233,7 +1233,7 @@ def Align(normal,type,mode,cx,cy,cz):
         moving.append([FreeCAD.Vector(0,0,0)])
         rotating.append([0, FreeCAD.Vector(0,0,0), FreeCAD.Vector(0,0,0)])
         #k=k+1
-        
+
     def edgeToVector(edge):
         """ Return a vector from an edge or a Part.line.
         """
@@ -1243,7 +1243,7 @@ def Align(normal,type,mode,cx,cy,cz):
             return edge.EndPoint.sub(edge.StartPoint)
         else:
             sayw("Error in edgeToVector(edge) : not a good type of input" + str(type(edge)))
-            return None    
+            return None
 
     def centerLinePoint(edge,info=0):
         """ Return the center point of the Line.
@@ -1252,62 +1252,62 @@ def Align(normal,type,mode,cx,cy,cz):
         #VVector_A=edge.valueAt( 0.0 )
         Vector_A = edge.Vertexes[0].Point
         if info != 0:
-            say("Origin of line selected is : "+str(Vector_A)) 
+            say("Origin of line selected is : "+str(Vector_A))
         #Vector_B=edge.valueAt( edge.Length )
         Vector_B = edge.Vertexes[-1].Point
         if info != 0:
-            say("End of line selected is : "+str(Vector_B)) 
+            say("End of line selected is : "+str(Vector_B))
         Vector_MidPoint = Vector_B + Vector_A
         center = Vector_MidPoint.multiply(0.5)
         if info != 0:
-            say("Center of line selected is : "+str(center)) 
+            say("Center of line selected is : "+str(center))
         return center
-    
+
     def object_alignEdges():
-        """ 
+        """
         Align the Edge(s) from selected object(s) to the last Edge selected.
-        - Click first to select an Edge of an object or several Edges from several objects. 
+        - Click first to select an Edge of an object or several Edges from several objects.
         - Click second to select an Edge to align to.
-    
+
         NB:
-        The center of rotation is the center of the bounbing box if possible or 
+        The center of rotation is the center of the bounbing box if possible or
         the center of the Edge.
-        
+
         if the Edge of the object selected is already aligned to the last one,
         a rotation of 180 deg is applied to the object.
         In this case the Axis of rotation is Z vector : Base.Vector(0, 0, 1)
-        
+
         Two clicks will rotate by 180 deg.
         """
         msg=verbose
-    
+
         error_msg =\
         "INCORRECT Object(s) Selection :\n" +\
         "You Must Select at least two(2) Edges (from two objects) !\n" +\
         "All Edges will be aligned to the last one !"
-        
+
         Selection = get_SelectedObjectsWithParent(info=msg, printError=False)
         m_actDoc=get_ActiveDocument(info=1)
         Selection2 = FreeCADGui.Selection.getSelectionEx(m_actDoc.Name)
-        
+
         try:
             SelectedObjects = Selection
             Number_of_Edges  = SelectedObjects[1]
             if msg!=0:
                 print_msg("Number_of_Edges=" + str(Number_of_Edges))
-                
+
             if Number_of_Edges >= 2 :
                 Edge_List = SelectedObjects[4]
                 if msg != 0:
                     print_msg(" Edge_List=" + str(Edge_List))
-                
+
                 # Get the Reference Edge : last of the selected
                 Ref_Edge_dict = Edge_List[-1]
                 for Selected_Edge, Parent_Edge in Ref_Edge_dict.iteritems():
                     Edge_ref = Selected_Edge
-    
+
                 del Edge_List[-1]
-                            
+
                 for Selected_Edge_dict in Edge_List:
                     if msg != 0:
                         print_msg("Selected_Edge_dict = " + str(Selected_Edge_dict))
@@ -1315,15 +1315,15 @@ def Align(normal,type,mode,cx,cy,cz):
                         if msg != 0:
                             print_msg("Selected_Edge = " + str(Selected_Edge))
                             print_msg("Parent = " + str(Parent_Edge))
-                        try:                        
+                        try:
                             Edge_Point = Parent_Edge.Shape.BoundBox.Center
                         except:
                             Edge_Point = centerLinePoint(Selected_Edge,info=0)
-                        
+
                         if msg != 0:
                             print_point(Edge_Point, msg="Edge_Point = ")
                         Edge = Selected_Edge
-                        
+
                         if colinearEdges(Edge, Edge_ref, info=msg , tolerance=1e-12):
                             rot_axis = Base.Vector(0, 0, 1).cross(edgeToVector(Edge))
                             rot_center = Edge_Point
@@ -1337,14 +1337,14 @@ def Align(normal,type,mode,cx,cy,cz):
                             rot_center = Edge_Point
                             rot_angle = m_angle + m_angleAlignEdges
                             Draft.rotate(Parent_Edge,rot_angle,rot_center,rot_axis)
-                # Reset the selection changed by Draft.rotate 
+                # Reset the selection changed by Draft.rotate
                 reset_SelectedObjects(Selection2, info=0)
             else:
-                sayerr(error_msg)                          
+                sayerr(error_msg)
         except:
             sayerr(error_msg)
-    
-    
+
+
     def angleBetween(e1, e2):
         """ Return the angle (in degrees) between 2 edges.
         """
@@ -1369,14 +1369,14 @@ def Align(normal,type,mode,cx,cy,cz):
             ve1 = e1
             v3 = e2.Vertexes[-1].Point
             v4 = e2.Vertexes[0].Point
-            ve2 = v3.sub(v4)   
+            ve2 = v3.sub(v4)
         else:
             return
-        
+
         angle = ve1.getAngle(ve2)
         import math
         return math.degrees(angle), angle
-        
+
     def colinearVectors(A, B, C, info=0, tolerance=1e-12):
         """ Return true if the 3 points are aligned.
         """
@@ -1388,7 +1388,7 @@ def Align(normal,type,mode,cx,cy,cz):
         Vector_3 = Vector_1.cross(Vector_2)
         #if info != 0:
         #    print_point(Vector_3, msg="Vector_1.cross(Vector_2) : ")
-            
+
         if abs(Vector_3.x) <= tolerance and abs(Vector_3.y) <= tolerance and abs(Vector_3.z) <= tolerance:
             if info != 0:
                 sayw("Colinear Vectors !")
@@ -1397,8 +1397,8 @@ def Align(normal,type,mode,cx,cy,cz):
             if info != 0:
                 sayw("NOT Colinear Vectors !")
             return False
-        return 
-    
+        return
+
     global _recompute
     coords = []
     normals = []
@@ -1423,7 +1423,7 @@ def Align(normal,type,mode,cx,cy,cz):
             say ("j= "+str(j))
             say("len selEx "+str(len(selEx)))
             s=fc
-            #selectedEdge = FreeCADGui.Selection.getSelectionEx()[j].SubObjects[0] # select one element SubObjects    
+            #selectedEdge = FreeCADGui.Selection.getSelectionEx()[j].SubObjects[0] # select one element SubObjects
             #sayerr(selEx[j].Object.TypeId)
             if (selEx[j].Object.TypeId == 'PartDesign::Plane'): #Datum plane with super Placement #(selEx[j].Object.TypeId == 'App::Plane') or :
                 ##print norm
@@ -1483,7 +1483,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 say("Label : "+ make_string(sel[j].Label))     # extract the Label
                 say("Name  : "+ str(sel[j].Name))     # extract the Name
                 say( "Center Face Binder "+str(0)+" "+str(f.Faces[0].CenterOfMass)) # Vector center mass to face
-                say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face            
+                say( "Center Face Binder bb "+str(0)+" "+str(f.Faces[0].BoundBox.Center)) # Vector center mass to face
             elif (selEx[j].Object.TypeId == 'App::Line') or (selEx[j].Object.TypeId == 'PartDesign::Line'):
                 FreeCAD.ActiveDocument.addObject("Part::Plane","TempAxis")
                 FreeCAD.ActiveDocument.TempAxis.Length=5.000
@@ -1513,7 +1513,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 say( "Center Face Binder bb "+str(0)+" "+str(f.BoundBox.Center)) # Vector center mass to face
             else:
                 try:
-                    selectedEdge = selEx[j].SubObjects[0] # select one element SubObjects    
+                    selectedEdge = selEx[j].SubObjects[0] # select one element SubObjects
                 except:
                     sayerr('select only Faces or closed Edges')
                     return
@@ -1521,7 +1521,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 pad=0
                 edge_op=0
                 if str(fc.SubObjects[0])[1:5] != "Face": #edge
-                    # try:                        
+                    # try:
                     #     Edge_Point = centerLinePoint(selectedEdge,info=1)
                     # except:
                     #     stop
@@ -1549,17 +1549,17 @@ def Align(normal,type,mode,cx,cy,cz):
                     #except: # edge not closed
                     else:  # edge not closed
                         if 'Circle' in str(selectedEdge.Curve):
-                            sayerr('Circle radius '+str(selectedEdge.Curve.Radius)) 
+                            sayerr('Circle radius '+str(selectedEdge.Curve.Radius))
                             #f1=subObj.Shape.Faces[0]
-                            
+
                             wf = Part.Face(Part.Wire(selectedEdge))
                             Part.show(wf)
                             wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
-                            
+
                             dir=wf.normalAt(0,0)
                             #sayw(dir)
                             # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
-                            # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                            # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
                             ccircle = Part.makeCircle(selectedEdge.Curve.Radius, Base.Vector(selectedEdge.Curve.Center), Base.Vector(dir))
                             #ccircle_face = Part.Face(ccircle)
                             #Part.show(ccircle_face)
@@ -1574,7 +1574,7 @@ def Align(normal,type,mode,cx,cy,cz):
                             FreeCAD.ActiveDocument.removeObject(ccircle_name)
                             FreeCAD.ActiveDocument.removeObject(wf_name)
                             # ccircle.Curve
-                            # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0)) 
+                            # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
                             #bbxCenter = selectedEdge.Curve.Center
                             Edge_Point = selectedEdge.Curve.Center
                             # norm = f.normalAt(0,0)
@@ -1672,7 +1672,7 @@ def Align(normal,type,mode,cx,cy,cz):
             #stop
             f.Placement = s.Placement
             #stop
-        
+
             red   = 1.0  # 1 = 255
             green = 0.0  #
             blue  = 0.0  #
@@ -1688,7 +1688,7 @@ def Align(normal,type,mode,cx,cy,cz):
                         Draft.makePoint(f.Faces[0].BoundBox.Center.x,f.Faces[0].CenterOfMass.y,f.Faces[0].CenterOfMass.z) # create a point
                     else:
                         Draft.makePoint(f.Faces[0].CenterOfMass.x,f.Faces[0].CenterOfMass.y,f.Faces[0].CenterOfMass.z) # create a point
-                    FreeCADGui.activeDocument().activeObject().PointColor = (red, green, blue)            
+                    FreeCADGui.activeDocument().activeObject().PointColor = (red, green, blue)
             if pad==0:
                 if use_bb:
                     if edge_op == 0:
@@ -1761,7 +1761,7 @@ def Align(normal,type,mode,cx,cy,cz):
                     norm = f.Vertex2.Point - f.Vertex1.Point
                     #norm = e.normalAt(0)
             #else:
-            #    norm = f.Shape.Faces[0].normalAt(0,0)        
+            #    norm = f.Shape.Faces[0].normalAt(0,0)
             say (norm)
             normals.append (norm)
             if not testing:
@@ -1800,7 +1800,7 @@ def Align(normal,type,mode,cx,cy,cz):
                 say(rot_axis)
                 say(rot_center)
                 say(rot_angle)
-                
+
                 object_added=0
                 if not testing2:
                     #print 'not testing2, mode  ', mode, ' rot_angle ',rot_angle
@@ -1810,7 +1810,7 @@ def Align(normal,type,mode,cx,cy,cz):
                                 if top_level_obj[j] != 'none' and top_level_obj[j] is not None and hierarchy:
                                     o = top_level_obj[j]
                                 else:
-                                    o = objs[j] 
+                                    o = objs[j]
                                 #sayerr(o.Name+' '+o.Label+' '+str(o.Placement)+' rotation')
                                 objs_moved.append(o)
                                 plc_moved.append(o.Placement)
@@ -1836,7 +1836,7 @@ def Align(normal,type,mode,cx,cy,cz):
                         if top_level_obj[j] != 'none' and top_level_obj[j] is not None and hierarchy:
                             o = top_level_obj[j]
                         else:
-                            o = objs[j] 
+                            o = objs[j]
                         objs_moved.append(o)
                         plc_moved.append(o.Placement)
                         #sayerr(o.Name+' '+o.Label+' '+str(o.Placement)+' centers')
@@ -1852,13 +1852,12 @@ def Align(normal,type,mode,cx,cy,cz):
 
             object_added=0
             j=j+1
-    
+
     if _recompute:
         FreeCAD.ActiveDocument.recompute()
     #for obj in objs:
     for obj in FreeCAD.ActiveDocument.Objects:
         FreeCADGui.Selection.removeSelection(obj)
-    
+
     # except:
     #     FreeCAD.Console.PrintError( "select a face"+"\n")
-

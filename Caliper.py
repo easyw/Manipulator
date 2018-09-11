@@ -34,7 +34,7 @@ testing2=False #true for showing helpers
 
 ## todo
 #  better Gui with icons
-#  fix dist snap point in asm3 branch 
+#  fix dist snap point in asm3 branch
 ##  ##App::Part hierarchical objects & Bodys on FC 0.17
 ##
 
@@ -199,7 +199,7 @@ def colinearVectors(A, B, C, info=0, tolerance=1e-12):
     Vector_3 = Vector_1.cross(Vector_2)
     #if info != 0:
     #    print_point(Vector_3, msg="Vector_1.cross(Vector_2) : ")
-        
+
     if abs(Vector_3.x) <= tolerance and abs(Vector_3.y) <= tolerance and abs(Vector_3.z) <= tolerance:
         if info != 0:
             sayw("Colinear Vectors !")
@@ -208,14 +208,14 @@ def colinearVectors(A, B, C, info=0, tolerance=1e-12):
         if info != 0:
             sayw("NOT Colinear Vectors !")
         return False
-    return 
+    return
 ###
 def point_plane_distance(point, plane_normal, plane_point):
     """signed distance between plane and point"""
     dist = float (dotproduct(plane_normal, (point.sub(plane_point))))
-    
+
     return dist
-##    
+##
 
 def reset_prop_shapes(obj):
 
@@ -249,7 +249,7 @@ def reset_prop_shapes(obj):
 def makeAPlane(w, w_multipl,norm,plcm,PC):
     """ creating an Annotation Plane and reference for Dimension
         aligned to the selected Face and centered on its center"""
-    
+
     #FreeCAD.ActiveDocument.addObject("Part::Plane","AnnotationPlane")
     #APT=FreeCAD.ActiveDocument.ActiveObject
     #APTName=APT.Name
@@ -297,7 +297,7 @@ def makeAPlane(w, w_multipl,norm,plcm,PC):
     mDraft.upgrade(FreeCAD.ActiveDocument.getObject(APEName),delete=True)
     APT=FreeCAD.ActiveDocument.ActiveObject
     APTName=APT.Name
-    
+
     FreeCAD.ActiveDocument.getObject(APTName).Label='APLane'
     FreeCADGui.ActiveDocument.getObject(APTName).ShapeColor = (0.667,0.667,0.498)
     FreeCADGui.ActiveDocument.getObject(APTName).Transparency = 50 #99
@@ -319,17 +319,17 @@ def makeAPlane(w, w_multipl,norm,plcm,PC):
     #print rot_axis
     sh1.rotate(DraftVecUtils.tup(PC), DraftVecUtils.tup(rot_axis), rot_angle)
     sh1.rotate(DraftVecUtils.tup(PC), DraftVecUtils.tup(norm), 45)
-    
+
     FreeCAD.ActiveDocument.getObject(APTName).Placement=sh1.Placement
     FreeCAD.ActiveDocument.recompute()
-    
+
     # PLN=FreeCAD.ActiveDocument.getObject(APT.Name)
     # AP=reset_prop_shapes(PLN)
-    
+
     #sh1=FreeCAD.ActiveDocument.getObject(AP.Name).Shape.copy()
     #sh1.translate(FreeCAD.Vector(-w/2,-w/2,0))
-    #FreeCAD.ActiveDocument.getObject(AP.Name).Placement=sh1.Placement    
-                                        
+    #FreeCAD.ActiveDocument.getObject(AP.Name).Placement=sh1.Placement
+
     return APTName
 ##
 def remove_all_selection():
@@ -337,7 +337,7 @@ def remove_all_selection():
         FreeCAD.ActiveDocument.recompute()
         for ob in FreeCAD.ActiveDocument.Objects:
             FreeCADGui.Selection.removeSelection(ob)
-        
+
 ##
 
 ##--------------------------------------------------------------------------------------
@@ -348,18 +348,18 @@ class SelObserverCaliper:
         global initial_placement, last_selection, objs
         global added_dim, in_hierarchy, vec1, mid, midP, va, vb, P_T
         global ornt_1, sel1, has_radius, w, angle, dstP
-        
+
         fntsize='0.2mm'
         ticksize='0.1mm'
         Vtx_sel=False
         dx=0;dy=0;dz=0
         #dstP=-1
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
-        
+
         if 1:#try:
             selobject = FreeCADGui.Selection.getSelection()           # Select an object
             sel       = FreeCADGui.Selection.getSelectionEx()         # Select a  subObject
-            
+
             #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
             if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
                 if len(sel[0].SubObjects)>0: #Faces or Edges
@@ -409,7 +409,7 @@ class SelObserverCaliper:
                         #say ('last selection: ' + obj.Name)
                         #for o in last_selection:
                         #    say('sel list ' + o.Name) #o.Object.Name)
-                        
+
                         if CPDockWidget.ui.rbSnap.isChecked()\
                               or CPDockWidget.ui.rbBbox.isChecked() or CPDockWidget.ui.rbMass.isChecked():    ### Snap
                             #print (sel[0].SubObjects[0].Vertexes[0].Point,sel[0].SubObjects[0].Vertexes[1].Point)
@@ -459,20 +459,20 @@ class SelObserverCaliper:
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                     else:
                                         say("Distance : 0.0")
-                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
+                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
+                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
                                 CPDockWidget.ui.APlane.setEnabled(False)
                                 CPDockWidget.ui.DimensionP3.setEnabled(True)
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                 APName=makeAPlane(w,0.7,norm,plcmT,P1)
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                
+
                                 dim=mDraft.makeDimension(P2,P1,posz)
                                 try:
                                     mDraft.autogroup(dim)
@@ -490,19 +490,19 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                 say("Distance : "+str(dim.Distance))
-                                sayw("Delta X  : "+str(dx))    
-                                sayw("Delta Y  : "+str(dy))    
-                                sayw("Delta Z  : "+str(dz))    
+                                sayw("Delta X  : "+str(dx))
+                                sayw("Delta Y  : "+str(dy))
+                                sayw("Delta Z  : "+str(dz))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(APName)
-                                
+
                             FreeCAD.ActiveDocument.recompute()
 ### -------------------------------------------------- end Snap ------------------------------------------------------------- ###
 
                         elif (CPDockWidget.ui.rbRadius.isChecked() and not Vtx_sel): ### Radius
-                            if CPDockWidget.ui.DimensionP1.isEnabled():# and not CPDockWidget.ui.APlane.isEnabled(): #step #1                            
+                            if CPDockWidget.ui.DimensionP1.isEnabled():# and not CPDockWidget.ui.APlane.isEnabled(): #step #1
                                 if 'Edge' in str(sel[0].SubObjects[0]):
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
                                     CPDockWidget.ui.DimensionP2.setEnabled(False)
@@ -537,7 +537,7 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
-                                    
+
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
                                         dim=mDraft.makeDimension(pnt,P1,mid)
                                         try:
@@ -561,9 +561,9 @@ class SelObserverCaliper:
                                         else:
                                             say("Distance : "+str(dim.Distance))
                                             FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
-                                            sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                            sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                            sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                            sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
+                                            sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
+                                            sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                             FreeCAD.ActiveDocument.removeObject(PE.Name)
                                             FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
@@ -575,12 +575,12 @@ class SelObserverCaliper:
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                 APName=makeAPlane(w,2.,norm,plcmT,P1)
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
-                            
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
+
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                
+
                                 dim=mDraft.makeDimension(P2,P1,posz)
                                 try:
                                     mDraft.autogroup(dim)
@@ -603,19 +603,19 @@ class SelObserverCaliper:
                                 else:
                                     say("Distance : "+str(dim.Distance))
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
-                                    sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                    sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
+                                    sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
+                                    sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
                                     sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                     FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(APName)
-                                
+
                                 FreeCAD.ActiveDocument.recompute()
 ### ---------------------------- end radius ------------------------------------------ ###
 
                         elif (CPDockWidget.ui.rbLength.isChecked() and not Vtx_sel):  ### Length
-                            if CPDockWidget.ui.DimensionP1.isEnabled():# and not CPDockWidget.ui.APlane.isEnabled(): #step #1                            
+                            if CPDockWidget.ui.DimensionP1.isEnabled():# and not CPDockWidget.ui.APlane.isEnabled(): #step #1
                                 if 'Edge' in str(sel[0].SubObjects[0]):
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
                                     CPDockWidget.ui.DimensionP2.setEnabled(False)
@@ -655,9 +655,9 @@ class SelObserverCaliper:
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         say("Distance : "+str(dim.Distance))
-                                        sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                        sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                        sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                        sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
+                                        sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
+                                        sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                     FreeCAD.ActiveDocument.recompute()
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
@@ -666,11 +666,11 @@ class SelObserverCaliper:
                                 #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                 APName=makeAPlane(w,0.5,norm,plcmT,P1)
-                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                
+
                                 dim=mDraft.makeDimension(P2,P1,posz)
                                 try:
                                     mDraft.autogroup(dim)
@@ -688,14 +688,14 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
                                 say("Distance : "+str(dim.Distance))
-                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))    
-                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))    
-                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))    
+                                sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
+                                sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
+                                sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(APName)
-                                
+
                                 FreeCAD.ActiveDocument.recompute()
 ### -------------------------------------- end Length ---------------------------------------------------------- ###
 
@@ -709,7 +709,7 @@ class SelObserverCaliper:
                                         vec1 = norm
                                         ornt_1 = orient
                                         sel1='face'
-                                        va=P1; 
+                                        va=P1;
                                         vb=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
                                     else:
                                         P1=FreeCAD.Vector(bbC)
@@ -732,7 +732,7 @@ class SelObserverCaliper:
                                     P2=pnt
                                     P1=FreeCAD.Vector(bbC)
                                     if 'Face' in str(slct):
-                                        v4=P1; 
+                                        v4=P1;
                                         v3=FreeCAD.Vector(bbC[0]+norm[0],bbC[1]+norm[1],bbC[2]+norm[2])
                                         mid=FreeCAD.Vector(bbC)
                                         sel2='face'
@@ -740,11 +740,11 @@ class SelObserverCaliper:
                                         v3 = P2 #e2.Vertexes[-1].Point
                                         v4 = P1 #e2.Vertexes[0].Point
                                         halfedge = (pnt.sub(P1)).multiply(.5)
-                                        mid=FreeCAD.Vector.add(P1,halfedge)   
+                                        mid=FreeCAD.Vector.add(P1,halfedge)
                                         ##Px=Draft.makePoint(mid[0],mid[1],mid[2])
                                         sel2='edge'
                                     halfedge = (mid.sub(midP)).multiply(.5)
-                                    mid2=FreeCAD.Vector.add(midP,halfedge)                                   
+                                    mid2=FreeCAD.Vector.add(midP,halfedge)
                                     PE=mDraft.makePoint(mid[0],mid[1],mid[2])
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.333,0.498)
@@ -754,14 +754,14 @@ class SelObserverCaliper:
                                     v2 = vb #e1.Vertexes[0].Point
                                     ve1 = v1.sub(v2)
                                     # Create the Vector for second edge
-                                    ve2 = v3.sub(v4)                                
+                                    ve2 = v3.sub(v4)
                                     if orient==ornt_1:
                                         # print 'adjusting angle'
-                                        ve2 = v4.sub(v3)                                
+                                        ve2 = v4.sub(v3)
                                     angle = math.degrees(ve2.getAngle(ve1))
                                     dstP=-1
                                     #print abs(angle)
-                                    
+
                                     if (abs(angle)<angle_tolerance or abs(angle-180)<angle_tolerance) and sel1=='face' and sel2=='face':
                                         ## distance between // planes
                                         dstP = abs(point_plane_distance(P1, norm, midP))
@@ -773,7 +773,7 @@ class SelObserverCaliper:
                                         b0=np.array([v3[0],v3[1],v3[2]])
                                         b1=np.array([v4[0],v4[1],v4[2]])
                                         dstP=closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False)[2]
-                                    
+
                                     if CPDockWidget.ui.cbAPlane.isChecked():
                                         CPDockWidget.ui.APlane.setEnabled(True)
                                     else:
@@ -783,7 +783,7 @@ class SelObserverCaliper:
                                         if mid!=midP: #non coincident points
                                             dim=mDraft.makeDimension(mid,midP,mid2)
                                         else:
-                                            dim=mDraft.makeDimension(pnt,mid,P1)                                
+                                            dim=mDraft.makeDimension(pnt,mid,P1)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -819,12 +819,12 @@ class SelObserverCaliper:
                                     #print 'step#2 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                                     plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                     APName=makeAPlane(w,0.5,norm,plcmT,P1)
-                                    added_dim.append(FreeCAD.ActiveDocument.getObject(APName))                                
+                                    added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
 
                                 elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #4
                                     CPDockWidget.ui.DimensionP3.setEnabled(False)
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
-                                
+
                                     dim=mDraft.makeDimension(mid,midP,posz)
                                     try:
                                         mDraft.autogroup(dim)
@@ -855,15 +855,15 @@ class SelObserverCaliper:
                                     FreeCAD.ActiveDocument.removeObject(APName)
 
                                 FreeCAD.ActiveDocument.recompute()
-                                    
-                                
-                            
+
+
+
                     else: #OLD Vertex not allowed in selection
                         pass
         if 0:#except:
             sayerr('restarted')
 ##
-       
+
 def a_clear_console():
     #clearing previous messages
     mw=FreeCADGui.getMainWindow()
@@ -923,9 +923,9 @@ def close_caliper():
     #CPDockWidget.Measure.toggle()
     #if CPDockWidget.Measure.isChecked():
     #    print 'checked'
-    
+
     # CPDockWidget.close()
-    
+
     #self.setWindowState(QtCore.Qt.WindowActive)
     doc=FreeCAD.ActiveDocument
     if doc is not None:
@@ -953,12 +953,12 @@ def Cp_minimz():
     CPDockWidget.raise_()
 ##
 
-def sub(first, second): 
+def sub(first, second):
 	"sub(Vector,Vector) - subtracts second vector from first one"
 	if isinstance(first,FreeCAD.Vector) and isinstance(second,FreeCAD.Vector):
 		return FreeCAD.Vector(first.x-second.x, first.y-second.y, first.z-second.z)
 def length(first):
-	"lengh(Vector) - gives vector length"
+	"length(Vector) - gives vector length"
 	if isinstance(first,FreeCAD.Vector):
 		return math.sqrt(first.x*first.x + first.y*first.y + first.z*first.z)
 def dist(first, second):
@@ -1034,7 +1034,7 @@ def get_sorted_list (obj):
         listUsName.pop(idx)
         lvl=10000
         #sayerr(listUsName)
-      
+
     return listS
 ##
 
@@ -1042,11 +1042,11 @@ def get_placement_hierarchy (sel0):
     """get normal at face and placement relative to hierarchy
        of first selection object/face
        return normal, placement, topObj, bbox center, Pnt absolute"""
-    
+
     global use_hierarchy, posz
-    
+
     remove_all_selection()
-    
+
     Obj=sel0.Object
     subObj=sel0.SubObjects[0]
     edge_op=0
@@ -1055,7 +1055,7 @@ def get_placement_hierarchy (sel0):
     pV2= FreeCAD.Vector(0.0, 0.0, 0.0)
     Pnt= FreeCAD.Vector(0.0, 0.0, 0.0)
     orient = None; nwnorm = None; Vtx=False
-    
+
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
         face=subObj
@@ -1139,7 +1139,7 @@ def get_placement_hierarchy (sel0):
                 ss=subObj.copy()#SubObjects[0] is the edge list
                 pointsDirection  = []
                 pointsDirection = ss.discretize(Number=5) # discretize the path line
-                nwnorm=pointsDirection[0].sub(pointsDirection[1]) 
+                nwnorm=pointsDirection[0].sub(pointsDirection[1])
             #print edge_op
             if pad==0 and not Vtx:
                 face.Placement=nwshp.Placement
@@ -1290,7 +1290,7 @@ def get_placement_hierarchy (sel0):
                     #if hasattr(nwshp,'CenterOfMass'):
                     #    bbxCenter = nwshp.CenterOfMass
                     #else:
-                    #    bbxCenter = nwshp.BoundBox.Center                    
+                    #    bbxCenter = nwshp.BoundBox.Center
             return Obj.Placement, top_level_obj, bbxCenter, Pnt, orient, nwnorm
 
 
@@ -1315,7 +1315,7 @@ def get_placement_hierarchy (sel0):
                 ss=subObj.copy()#SubObjects[0] is the edge list
                 pointsDirection  = []
                 pointsDirection = ss.discretize(Number=5) # discretize the path line
-                nwnorm=pointsDirection[0].sub(pointsDirection[1]) 
+                nwnorm=pointsDirection[0].sub(pointsDirection[1])
                 #norm = (subObj.Vertex2.Point - subObj.Vertex1.Point).normalize()
                 #pV1=subObj.Vertex1.Point; pV2=subObj.Vertex2.Point
                 if len(subObj.Vertexes)>=2:
@@ -1447,7 +1447,7 @@ def get_placement_hierarchy (sel0):
                     else:
                         bbxCenter = subObj.BoundBox.Center
         return plcm, top_level_obj, bbxCenter, Pnt, orient, nwnorm
-            
+
 ##
 
 ####################################
@@ -1959,14 +1959,14 @@ class Ui_DockWidget(object):
         self.rbParallel.setIcon(QtGui.QIcon(pm))
         self.rbParallel.setEnabled(False)
         # self.CleanDist.clicked.connect(self.onClean)
-        
+
         #self.cbAPlane.setChecked(False)
         #self.cbAPlane.setChecked(True)
         #self.rbAngle.setChecked(True)
         #self.rbRadius.setChecked(True)
-        
+
         ####
-        
+
 ###############################################################################################################
         self.retranslateUi(DockWidget)
         QtCore.QMetaObject.connectSlotsByName(DockWidget)
@@ -1990,7 +1990,7 @@ class Ui_DockWidget(object):
         self.rbSnap.setChecked(False)
         self.rbBbox.setChecked(False)
         sayerr('Ruler')
-##        
+##
     def onSnap(self):
         self.rbRadius.setChecked(False)
         self.rbLength.setChecked(False)
@@ -2010,12 +2010,12 @@ class Ui_DockWidget(object):
                 FreeCADGui.Selection.removeSelection(ob)
         added_dim=[]
 ##
-        
+
     def onMeasure_toggled(self,checked):
         global selobject, sel
         global initial_placement, last_selection, objs
         global s1, DSMove_prev_Val, DSRotate_prev_Val
-        
+
         #say("Move clicked")
         #Move()
         #self.MoveDial.setValue(0.0)
@@ -2064,7 +2064,7 @@ class Ui_DockWidget(object):
         to identify your measurement points.<br>
         <b>Check Annotation Plane</b> to use an Annotation Plane to place a Dimension.
         <br><b>Caliper Tools</b> work with <b>Part, App::Part</b> and <b>Body</b> objects<br>
-        <font color = blue><b>Version:  
+        <font color = blue><b>Version:
         """+__version__+"""</b></font>"""
         QtGui.QApplication.restoreOverrideCursor()
         res=''
@@ -2121,18 +2121,18 @@ if Cp_singleInstance():
     #ui = Ui_AlignDockWidget()
     #ui.setupUi(AlignDockWidget)
     #AlignDockWidget.show()
-    
+
     CPDockWidget.setObjectName("Caliper")
-    
+
     CPDockWidget.setFloating(True)  #undock
     CPDockWidget.resize(sizeX,sizeY)
     CPDockWidget.activateWindow()
     CPDockWidget.raise_()
-    
+
     #MVDockWidget.show()
-    
+
     CPDockWidget.setFeatures( QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable) #|QtGui.QDockWidget.DockWidgetClosable )
-    
+
     paramGet = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/MainWindow")
     if len(paramGet.GetString("StyleSheet"))>0: #we are using a StyleSheet
         CPDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
@@ -2143,14 +2143,12 @@ if Cp_singleInstance():
     Cp_undock()
     Cp_centerOnScreen(CPDockWidget)
     # use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
-    
-    
+
+
 ### ------------------------------------------------------------------------------------ ###
 
 ##################################################################################################
     #def removeSelection(self,document, object, element): # Delete the selected object
-    #    FreeCAD.Console.PrintMessage("removeSelection"+"\n")    
+    #    FreeCAD.Console.PrintMessage("removeSelection"+"\n")
 
 ###################################################################################################
-
-

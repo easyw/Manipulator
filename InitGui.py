@@ -36,7 +36,7 @@ if (sys.version_info > (3, 0)):  #py3
 else:  #py2
     import urllib2
     from urllib2 import Request, urlopen, URLError, HTTPError
-    
+
 import mvr_locator
 from ManipulatorCMD import *
 
@@ -51,19 +51,19 @@ main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 #    from FreeCADGui import Workbench
 #except ImportError as e:
 #    FreeCAD.Console.PrintWarning("error")
-    
+
 class ManipulatorWB ( Workbench ):
     global main_MWB_Icon, MWB_wb_version
-    
+
     "kicad StepUp WB object"
     Icon = main_MWB_Icon
     #Icon = ":Resources/icons/kicad-StepUp-tools-WB.svg"
     MenuText = "Manipulator WB"
     ToolTip = "Aligner & Mover Manipulator workbench"
- 
+
     def GetClassName(self):
         return "Gui::PythonWorkbench"
-    
+
     def Initialize(self):
         #import ManipulatorCMD
         submenu = ['Manipulator-cheat-sheet.pdf']
@@ -71,21 +71,21 @@ class ManipulatorWB ( Workbench ):
 
         #self.appendToolbar("ksu Tools", ["ksuTools"])
         self.appendToolbar("Manipulator Tools", ["AlignerTools","MoverTools","CaliperTools"])
-        
+
         #self.appendMenu("ksu Tools", ["ksuTools","ksuToolsEdit"])
         self.appendMenu("Manipulator Tools", ["AlignerTools"])
         self.appendMenu("Manipulator Tools", ["MoverTools"])
         self.appendMenu("Manipulator Tools", ["CaliperTools"])
         self.appendMenu(["Manipulator Tools", "Help"], submenu)
-        
+
         Log ("Loading Manipulator Module... done\n")
- 
+
     def Activated(self):
                 # do something here if needed...
         Msg ("Manipulator WB Activated("+MWB_wb_version+")\n")
         from PySide import QtGui
         import time
-        
+
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
         tnow = int(time.time())
         oneday = 86400
@@ -128,14 +128,14 @@ class ManipulatorWB ( Workbench ):
                 try:
                     response = request.urlopen(req)
                     resp_ok = True
-                    the_page = response.read().decode("utf-8") 
+                    the_page = response.read().decode("utf-8")
                 except error.HTTPError as e:
                     FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
                     FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
                 except error.URLError as e:
                     FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
                     FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
-                
+
             else:  #py2
                 import urllib2
                 from urllib2 import Request, urlopen, URLError, HTTPError
@@ -149,8 +149,8 @@ class ManipulatorWB ( Workbench ):
                     FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
                 except URLError as e:
                     FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
-                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')          
-                
+                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
+
             if resp_ok:
                 # everything is fine
                 #the_page = response.read()
@@ -172,7 +172,7 @@ class ManipulatorWB ( Workbench ):
                 nbr_commits=my_commits[:pos]
                 nbr_commits=nbr_commits.replace(',','')
                 nbr_commits=nbr_commits.replace('.','')
-                
+
                 FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
                 delta = int(nbr_commits) - commit_nbr
                 if delta > 0:
@@ -197,12 +197,12 @@ class ManipulatorWB ( Workbench ):
         ##
         if upd and interval:
             check_updates(myurlMWB, mycommitsMWB)
- 
- 
+
+
     def Deactivated(self):
                 # do something here if needed...
         Msg ("Manipulator WB Deactivated()\n")
-    
+
     @staticmethod
     def ListDemos():
         import os
