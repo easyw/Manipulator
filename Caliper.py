@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.4" #Manipulator for Parts
+__version__ = "1.4.5" #Manipulator for Parts
 __date__    = "09.2018"
 
 testing=False #true for showing helpers
@@ -1221,7 +1221,7 @@ def get_placement_hierarchy (sel0):
                     circ=nwshp.Edges[0].Curve
                     bbxCenter=circ.Center
                 elif 'BSpline' in str(curve_type):
-                    arcs=subObj.Curve.toBiArcs(tobiarc_tol)
+                    arcs=nwshp.Edges[0].Curve.toBiArcs(tobiarc_tol)
                     sayerr('BSpline approximated to Arc')
                     #print (arcs[0].Radius)
                     #circ=arcs[0].Curve
