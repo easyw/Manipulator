@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.3" #Manipulator for Parts
-__date__    = "08.2018"
+__version__ = "1.4.4" #Manipulator for Parts
+__date__    = "09.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -71,7 +71,8 @@ import numpy as np
 
 angle_tolerance = 1e-5 #
 ninst = 0
-
+global tobiarc_tol
+tobiarc_tol = 0.001 #0.0001
 
 def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
     ## https://stackoverflow.com/questions/2824478/shortest-distance-between-two-line-segments
@@ -507,10 +508,12 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
                                     CPDockWidget.ui.DimensionP2.setEnabled(False)
                                     #print 'bbC',bbC
-                                    has_radius=False
+                                    has_radius=0
                                     curve_type = type(sel[0].SubObjects[0].Curve)
                                     if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
-                                        has_radius=True
+                                        has_radius=1
+                                    elif curve_type == Part.BSplineCurve: #approx to radius
+                                        has_radius=2
                                     P1=FreeCAD.Vector(bbC)
                                     P2=pnt
                                     halfedge = (pnt.sub(P1)).multiply(.5)
@@ -527,7 +530,7 @@ class SelObserverCaliper:
                                         #added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
                                     #print norm
                                     #P=Draft.makePoint(pnt[0],pnt[1],pnt[2])
-                                    if has_radius:
+                                    if has_radius != 0:
                                         PC.Label='Center'
                                     else:
                                         PC.Label='Mid'
@@ -553,7 +556,12 @@ class SelObserverCaliper:
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                        if has_radius:
+                                        if has_radius == 2:
+                                            say("Radius approx: "+str(dim.Distance))
+                                            FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius approx"
+                                            sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
+                                            FreeCAD.ActiveDocument.removeObject(PE.Name)
+                                        elif has_radius == 1:
                                             say("Radius   : "+str(dim.Distance))
                                             FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
                                             sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
@@ -596,7 +604,11 @@ class SelObserverCaliper:
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
-                                if has_radius:
+                                if has_radius == 2:
+                                    say("Radius approx: "+str(dim.Distance))
+                                    FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius approx"
+                                    sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
+                                elif has_radius == 1:
                                     say("Radius   : "+str(dim.Distance))
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius"
                                     sayw("Center Coordinates  : "+'{0:.3f}'.format(P1[0])+'; {0:.3f}'.format(P1[1])+'; {0:.3f}'.format(P1[2]))
@@ -1043,7 +1055,7 @@ def get_placement_hierarchy (sel0):
        of first selection object/face
        return normal, placement, topObj, bbox center, Pnt absolute"""
 
-    global use_hierarchy, posz
+    global use_hierarchy, posz, tobiarc_tol
 
     remove_all_selection()
 
@@ -1208,6 +1220,26 @@ def get_placement_hierarchy (sel0):
                 if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
                     circ=nwshp.Edges[0].Curve
                     bbxCenter=circ.Center
+                elif 'BSpline' in str(curve_type):
+                    arcs=subObj.Curve.toBiArcs(tobiarc_tol)
+                    sayerr('BSpline approximated to Arc')
+                    #print (arcs[0].Radius)
+                    #circ=arcs[0].Curve
+                    bbxCenter=arcs[0].Center
+                    rads = []
+                    for a in arcs:
+                        rads.append(a.Radius)
+                    r0 = rads[0]; delta_tol = False
+                    for r in rads:
+                        if abs(r0 - r) > tobiarc_tol:
+                            delta_tol = True
+                    if delta_tol:
+                        sayerr("more than an Arc in Bspline approximation!")
+                        sayerr("only the first is dimensioned!")
+                        for a in arcs:
+                            say('Radius: '+str(a.Radius))
+                    #print (arcs[0].Center)
+                    #arcs[1].Radius
                 else:
                     #bbxCenter=nwshp.BoundBox.Center
                     #bbxCenter=(nwshp.Vertex2.Point[0],nwshp.Vertex2.Point[1],nwshp.Vertex2.Point[2])
@@ -1385,9 +1417,31 @@ def get_placement_hierarchy (sel0):
             # print edge_op, '-', type(subObj.Curve)
             if edge_op==1:
                 curve_type = type(subObj.Curve)
+                #print (str(curve_type))
                 if curve_type == Part.Circle or curve_type == Part.ArcOfCircle:
                     circ=subObj.Curve
                     bbxCenter=circ.Center
+                elif 'BSpline' in str(curve_type):
+                    #print (curve_type)
+                    arcs=subObj.Curve.toBiArcs(tobiarc_tol)
+                    sayerr('BSpline approximated to Arc')
+                    #print (arcs[0].Radius)
+                    #circ=arcs[0].Curve
+                    bbxCenter=arcs[0].Center
+                    rads = []
+                    for a in arcs:
+                        rads.append(a.Radius)
+                    r0 = rads[0]; delta_tol = False
+                    for r in rads:
+                        if abs(r0 - r) > tobiarc_tol:
+                            delta_tol = True
+                    if delta_tol:
+                        sayerr("more than an Arc in Bspline approximation!")
+                        sayerr("only the first is dimensioned!")
+                        for a in arcs:
+                            say('Radius: '+str(a.Radius))
+                    #print (arcs[0].Center)
+                    #arcs[1].Radius
                 else:
                     #bbxCenter=subObj.BoundBox.Center
                     #bbxCenter=(subObj.Vertex2.Point[0],subObj.Vertex2.Point[1],subObj.Vertex2.Point[2])
