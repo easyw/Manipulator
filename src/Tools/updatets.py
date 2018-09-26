@@ -24,8 +24,9 @@
 #*                                                                         *
 #***************************************************************************
 
-
-Usage = """updatets - update all .ts files found in the source directories
+# This script has been modified to work for the Manipulator WB Addon
+# https://github.com/easyw/Manipulator/pull/11
+Usage = """updatets - update all .ts files found in the Manipulator WB source directory
 
 Usage:
    updatets
@@ -49,8 +50,10 @@ DirFilter = ["^Attic$",
              "oDraft.py"]
 
 # python folders that need a special pylupdate command
+# Manipulator WB: we're excluding oDraft.py for now
+# see https://github.com/easyw/Manipulator/issues/12
 PyCommands = [["./",
-               'pylupdate `find ./ -name "*.py"` -ts Resources/translations/Manipulator.ts'],
+               'pylupdate `find ./ -name "*.py" \( ! -name "oDraft.py" \)` -ts Resources/translations/Manipulator.ts'],
                ]
 
 # add python folders to exclude list
