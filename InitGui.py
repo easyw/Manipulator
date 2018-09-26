@@ -58,8 +58,8 @@ class ManipulatorWB ( Workbench ):
     "kicad StepUp WB object"
     Icon = main_MWB_Icon
     #Icon = ":Resources/icons/kicad-StepUp-tools-WB.svg"
-    MenuText = "Manipulator WB"
-    ToolTip = "Aligner & Mover Manipulator workbench"
+    MenuText = QtCore.QT_TRANSLATE_NOOP("Manipulator", "Manipulator WB")
+    ToolTip =  QtCore.QT_TRANSLATE_NOOP("Manipulator", "Aligner & Mover Manipulator workbench")
 
     def GetClassName(self):
         return "Gui::PythonWorkbench"
