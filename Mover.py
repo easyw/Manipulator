@@ -734,7 +734,7 @@ class Ui_DockWidget(object):
         self.Confirm_Move = QtGui.QPushButton(self.gridLayoutWidget_6)
         self.Confirm_Move.setMinimumSize(QtCore.QSize(48, 36))
         self.Confirm_Move.setMaximumSize(QtCore.QSize(60, 48))
-        self.Confirm_Move.setToolTip(QtCore.QT_TRANSLATE_NOOP("Manipulator", "Mover button\nClick it to enable\nMove/Rotation))
+        self.Confirm_Move.setToolTip(QtCore.QT_TRANSLATE_NOOP("Manipulator", "Mover button\nClick it to enable\nMove/Rotation"))
         self.Confirm_Move.setText("")
         self.Confirm_Move.setIcon(icon)
         self.Confirm_Move.setIconSize(QtCore.QSize(28, 28))
