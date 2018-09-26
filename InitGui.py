@@ -29,6 +29,7 @@ mycommitsMWB=115 #v 1.2.6
 
 import FreeCAD, FreeCADGui, Part, os, sys
 import re, time
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 if (sys.version_info > (3, 0)):  #py3
     import urllib

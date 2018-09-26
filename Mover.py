@@ -46,6 +46,7 @@ from FreeCAD import Base
 import sys, math
 from PySide import QtCore, QtGui
 from pivy import coin
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 ninst = 0
 
