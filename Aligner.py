@@ -746,7 +746,9 @@ class Ui_DockWidget(object):
             cy=1
         if self.cbZ.isChecked():
             cz=1
+        FreeCAD.ActiveDocument.openTransaction('Align')
         Align(normal,type,mode,cx,cy,cz)
+        FreeCAD.ActiveDocument.commitTransaction()
         if len (objs_moved) > 0:
             self.Undo_Align.setEnabled(True)
         else:
