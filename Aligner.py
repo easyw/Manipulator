@@ -25,8 +25,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.8" #undo alignment for App::Part hierarchical objects
-__date__    = "08.2018"
+__version__ = "1.7.0" #undo alignment for App::Part hierarchical objects
+__date__    = "04.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1425,11 +1425,15 @@ def Align(normal,type,mode,cx,cy,cz):
             s=fc
             #selectedEdge = FreeCADGui.Selection.getSelectionEx()[j].SubObjects[0] # select one element SubObjects
             #sayerr(selEx[j].Object.TypeId)
-            if (selEx[j].Object.TypeId == 'PartDesign::Plane'): #Datum plane with super Placement #(selEx[j].Object.TypeId == 'App::Plane') or :
+            if (selEx[j].Object.TypeId == 'PartDesign::Plane') or (selEx[j].Object.TypeId == 'App::Placement'): #Datum plane with super Placement #(selEx[j].Object.TypeId == 'App::Plane') or :
                 ##print norm
                 pad=0
                 edge_op=0
-                f1=selEx[j].Object.Shape.Faces[0]
+                if (selEx[j].Object.TypeId != 'App::Placement'):
+                    f1=selEx[j].Object.Shape.Faces[0]
+                else:
+                    f1 = Part.Shape()
+                    f1.Placement = selEx[j].Object.Placement
                 FreeCAD.ActiveDocument.addObject("Part::Circle","testCircle")
                 FreeCAD.ActiveDocument.testCircle.Radius=2.000
                 FreeCAD.ActiveDocument.testCircle.Angle0=0.000

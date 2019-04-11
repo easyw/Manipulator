@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.5" #Manipulator for Parts
-__date__    = "09.2018"
+__version__ = "1.4.6" #Manipulator for Parts
+__date__    = "04.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -46,10 +46,10 @@ import FreeCAD, FreeCADGui
 
 def getFCversion():
 
-    FC_majorV=int(FreeCAD.Version()[0])
-    FC_minorV=int(FreeCAD.Version()[1])
+    FC_majorV=int(float(FreeCAD.Version()[0]))
+    FC_minorV=int(float(FreeCAD.Version()[1]))
     try:
-        FC_git_Nbr=int(FreeCAD.Version()[2].strip(" (Git)"))
+        FC_git_Nbr=int(float(FreeCAD.Version()[2].strip(" (Git)")))
     except:
         FC_git_Nbr=0
     return FC_majorV,FC_minorV,FC_git_Nbr
@@ -458,6 +458,10 @@ class SelObserverCaliper:
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                         say("Distance : "+str(dim.Distance))
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                        anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
+                                        anno.BasePosition = mid
+                                        anno.LabelText = str(dim.Distance)
+                                        added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
                                     else:
                                         say("Distance : 0.0")
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
@@ -495,6 +499,10 @@ class SelObserverCaliper:
                                 sayw("Delta Y  : "+str(dy))
                                 sayw("Delta Z  : "+str(dz))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
+                                anno.BasePosition = P1
+                                anno.LabelText = str(dim.Distance)
+                                added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(APName)

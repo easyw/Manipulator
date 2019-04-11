@@ -168,8 +168,8 @@ class ManpHelpFiles:
         fnameDemo=(os.path.join(exs_dir_path, self.exFile))
         ext = os.path.splitext(os.path.basename(fnameDemo))[1]
         nme = os.path.splitext(os.path.basename(fnameDemo))[0]        # We've created a library that FreeCAD can use as well to open CQ files
-        FC_majorV=int(FreeCAD.Version()[0])
-        FC_minorV=int(FreeCAD.Version()[1])
+        FC_majorV=int(float(FreeCAD.Version()[0]))
+        FC_minorV=int(float(FreeCAD.Version()[1]))
 
         if ext.lower()==".pdf":
             import subprocess, sys
