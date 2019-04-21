@@ -764,7 +764,7 @@ class Ui_DockWidget(object):
                 FreeCAD.ActiveDocument.abortTransaction()
 ##
     def onCenter(self):
-        say('Center')
+        say('Centering')
         global initial_placement, last_selection
         global moving, rotating
         global objs, objs_plc
@@ -794,9 +794,9 @@ class Ui_DockWidget(object):
             FreeCADGui.Selection.addSelection(rface,'Face1')
             FreeCADGui.Selection.addSelection(selOb,selSubEl)
             #s0.SubElementNames)
-            print('here1')
+            # print('here1')
             self.onAlign()
-            print('here2')
+            # print('here2')
             FreeCAD.ActiveDocument.removeObject(rface_name)
 ##
 #    def onCenter(self):
