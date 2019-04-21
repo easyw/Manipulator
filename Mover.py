@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #****************************************************************************
@@ -27,11 +26,15 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.1" #Manipulator for Parts
+__version__ = "1.5.2" # undo mover with FC native undo redo
 __date__    = "08.2018"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
+
+global onmoved, onrotated
+onrotated = False
+onmoved = False
 
 ## todo
 #  better Gui with icons
@@ -892,6 +895,7 @@ class Ui_DockWidget(object):
         self.Undo_Move.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.Undo_Move.setIcon(QtGui.QIcon(pm))
         self.Undo_Move.clicked.connect(self.onUndo)
+        self.Undo_Move.setVisible(False) 
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(help_b64))
         self.Help_Mover.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
@@ -1081,12 +1085,14 @@ class Ui_DockWidget(object):
     def on_MoveDS(self, val):
         global selobject, sel
         global initial_placement, last_selection, objs
-        global DSMove_prev_Val, in_hierarchy, use_hierarchy
+        global DSMove_prev_Val, in_hierarchy, use_hierarchy, onmoved
 
         #x=self.DS_MoveInput.value()
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
 
+        onmoved = True
+        print('onmoved',onmoved)
         #print val
         self.DS_MoveInput.setSingleStep(self.DS_MoveInput_Delta.value())
         #print self.DS_MoveInput.singleStep
@@ -1174,8 +1180,10 @@ class Ui_DockWidget(object):
     def on_RotateDS(self, val):
         global selobject, sel
         global initial_placement, last_selection, objs
-        global DSRotate_prev_Val
+        global DSRotate_prev_Val, onrotated
 
+        onrotated = True
+        print('onrotated', onrotated)
         #x=self.DS_MoveInput.value()
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
@@ -1305,6 +1313,7 @@ class Ui_DockWidget(object):
         global selobject, sel
         global initial_placement, last_selection, objs
         global sO, DSMove_prev_Val, DSRotate_prev_Val
+        global onmoved, onrotated
 
         #say("Move clicked")
         #Move()
@@ -1320,6 +1329,8 @@ class Ui_DockWidget(object):
                 self.rowOverride = True
                 self.DS_MoveInput.setValue(0.0)
                 self.DS_RotateInput.setValue(0.0)
+                onmoved = False; onrotated = False
+                FreeCAD.ActiveDocument.openTransaction('Mover')
                 DSMove_prev_Val=0
                 DSRotate_prev_Val=0
                 #self.DS_MoveInput.setEnabled(True)
@@ -1332,6 +1343,11 @@ class Ui_DockWidget(object):
                 FreeCADGui.Selection.addObserver(sO) # install resident function
             else:
                 sayerr('removing observer')
+                if (onmoved or onrotated):
+                    FreeCAD.ActiveDocument.commitTransaction()
+                else:
+                    FreeCAD.ActiveDocument.abortTransaction()
+                onmoved = False; onrotated = False
                 self.rowOverride = False
                 self.DS_MoveInput.setEnabled(False)
                 self.DS_RotateInput.setEnabled(False)

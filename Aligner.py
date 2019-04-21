@@ -25,7 +25,7 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.0" #undo alignment for App::Part hierarchical objects
+__version__ = "1.7.1" #undo alignment with FC native undo redo
 __date__    = "04.2019"
 
 testing=False #true for showing helpers
@@ -366,12 +366,13 @@ class Ui_DockWidget(object):
         self.rbBBox.setMinimumSize(QtCore.QSize(64, 32))
         self.rbBBox.setToolTip("Center of\n"
 "Boundig Box")
+        self.rbMass.setChecked(True)
         self.rbBBox.setText("")
         icon6 = QtGui.QIcon()
         icon6.addPixmap(QtGui.QPixmap("Bbox.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.rbBBox.setIcon(icon6)
         self.rbBBox.setIconSize(QtCore.QSize(26, 26))
-        self.rbBBox.setChecked(True)
+        self.rbBBox.setChecked(False)
         self.rbBBox.setObjectName("rbBBox")
         self.gridLayout_10.addWidget(self.rbBBox, 0, 0, 1, 1)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -537,6 +538,7 @@ class Ui_DockWidget(object):
         self.Undo_Align.setMinimumSize(QtCore.QSize(48, 36))
         self.Undo_Align.setMaximumSize(QtCore.QSize(64, 64))
         self.Undo_Align.setText("")
+        self.Undo_Align.setVisible(False) 
         icon16 = QtGui.QIcon()
         icon16.addPixmap(QtGui.QPixmap("Undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Undo_Align.setIcon(icon16)
@@ -749,8 +751,11 @@ class Ui_DockWidget(object):
         Align(normal,type,mode,cx,cy,cz)
         if len (objs_moved) > 0:
             self.Undo_Align.setEnabled(True)
+            FreeCAD.ActiveDocument.commitTransaction()
         else:
             self.Undo_Align.setEnabled(False)
+            if FreeCAD.ActiveDocument is not None:
+                FreeCAD.ActiveDocument.abortTransaction()
 ##
 
     def onMove(self):
@@ -897,40 +902,6 @@ if Alg_singleInstance():
 ### ------------------------------------------------------------------------------------ ###
 
 
-def Undo_old():
-    say('Undo')
-    global initial_placement, last_selection
-    global moving, rotating
-    global objs, objs_plc
-    global objs_moved, plc_moved, _recompute
-
-    if len(last_selection) == 1:
-        obj = last_selection[0].Object
-        say ('last selection: ' + obj.Name)
-        obj.Placement.Base =initial_placement
-        #obj.Placement = initial_placement
-        if _recompute:
-            FreeCAD.ActiveDocument.recompute()
-        objs = []
-        last_selection = []
-    elif len (objs) > 1:
-        say ('Moving: ' + str(moving))
-        say ('Rotating: ' + str(rotating))
-        #sayerr(len(objs_moved))
-        i=0
-        for o in objs_moved:
-            #sayerr (o.Name)
-            #sayerr (plc_moved[i])
-            o.Placement = plc_moved[i]
-            i=i+1
-
-        objs = []
-        last_selection = []
-        objs_moved = []
-        plc_moved = []
-        if _recompute:
-            FreeCAD.ActiveDocument.recompute()
-##
 def Undo():
     say('Undo')
     global initial_placement, last_selection
@@ -990,23 +961,28 @@ def Move():
     say('Move')
     selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
     if len(selection) == 1:
+        if FreeCAD.ActiveDocument is not None:
+                FreeCAD.ActiveDocument.openTransaction('Moving')
         objs = []
         last_selection = selection
-        say('Move2')
+        say('Move 1')
+        p = selection[0].Object.Placement.Base
+        selection[0].Object.Placement.Base = p
         PartMover( FreeCADGui.activeDocument().activeView(), selection[0].Object )
         say('starting '+str(initial_placement))
     else:
         PartMoverSelectionObserver()
 
 class PartMover:
-    global initial_placement
+    global initial_placement, final_placement
 
     def __init__(self, view, obj):
         global initial_placement
         self.obj = obj
         self.initialPosition = self.obj.Placement.Base
         initial_placement = self.initialPosition
-        #sayw('init '+str(initial_placement))
+        sayw('init '+str(initial_placement))
+        obj.Placement.Base = self.initialPosition
         self.copiedObject = False
         self.view = view
         self.callbackMove = self.view.addEventCallback("SoLocation2Event",self.moveMouse)
@@ -1029,7 +1005,8 @@ class PartMover:
                 if _recompute:
                     FreeCAD.ActiveDocument.recompute()
                 #sayw('releasing\ninitial p: '+ str( initial_placement ))
-                #sayw('final p: '+str(self.obj.Placement.Base))
+                sayw('final p: '+str(self.obj.Placement.Base))
+                final_placement = self.obj.Placement.Base
                 self.removeCallbacks()
             elif info['ShiftDown']: #copy object
                 self.obj = duplicateImportedPart( self.obj )
@@ -1051,15 +1028,23 @@ class PartMover:
             self.removeCallbacks()
 
 class PartMoverSelectionObserver:
-     def __init__(self):
-         FreeCADGui.Selection.addObserver(self)
-         FreeCADGui.Selection.removeSelectionGate()
-     def addSelection( self, docName, objName, sub, pnt ):
-         # debugPrint(4,'addSelection: docName,objName,sub = %s,%s,%s' % (docName, objName, sub))
-         FreeCADGui.Selection.removeObserver(self)
-         obj = FreeCAD.ActiveDocument.getObject(objName)
-         view = FreeCADGui.activeDocument().activeView()
-         PartMover( view, obj )
+    def __init__(self):
+        global initial_placement
+        
+        FreeCADGui.Selection.addObserver(self)
+        FreeCADGui.Selection.removeSelectionGate()
+        if FreeCAD.ActiveDocument is not None:
+            FreeCAD.ActiveDocument.openTransaction('Moving 2')
+        if len(FreeCADGui.Selection.getSelection()) > 0:
+            p = FreeCADGui.Selection.getSelection()[0].Placement.Base
+            FreeCADGui.Selection.getSelection()[0].Placement.Base = p
+        
+    def addSelection( self, docName, objName, sub, pnt ):
+        # debugPrint(4,'addSelection: docName,objName,sub = %s,%s,%s' % (docName, objName, sub))
+        FreeCADGui.Selection.removeObserver(self)
+        obj = FreeCAD.ActiveDocument.getObject(objName)
+        view = FreeCADGui.activeDocument().activeView()
+        PartMover( view, obj )
 
 # class MovePartCommand:
 #     say('Move')
@@ -1222,6 +1207,9 @@ def Align(normal,type,mode,cx,cy,cz):
     selEx = FreeCADGui.Selection.getSelectionEx()
     if len(selEx) < 2 and not testing:
         return
+    
+    if FreeCAD.ActiveDocument is not None:
+            FreeCAD.ActiveDocument.openTransaction('Aligner')
     last_selection = []
     say("number of objects: "+ str(len(selEx)))
     objs = [selobj.Object for selobj in selEx]
