@@ -67,6 +67,17 @@ def translate(ctx,txt):
 
 arrowtypes = ["Dot","Circle","Arrow","Tick","Tick-2"]
 
+def msg(text=None,mode=None):
+    "prints the given message on the FreeCAD status bar"
+    if not text: FreeCAD.Console.PrintMessage("")
+    else:
+        if mode == 'warning':
+            FreeCAD.Console.PrintWarning(text)
+        elif mode == 'error':
+            FreeCAD.Console.PrintError(text)
+        else:
+            FreeCAD.Console.PrintMessage(text)
+
 #---------------------------------------------------------------------------
 # General functions
 #---------------------------------------------------------------------------
@@ -3146,7 +3157,7 @@ def upgrade(objects,delete=False,force=None):
     of objects to be deleted"""
 
     import Part, DraftGeomUtils
-    from DraftTools import msg
+    ## from DraftTools import msg
 
     if not isinstance(objects,list):
         objects = [objects]
