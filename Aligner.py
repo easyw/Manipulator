@@ -25,8 +25,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.3" #undo alignment with FC native undo redo
-__date__    = "04.2019"
+__version__ = "1.7.4" #undo alignment with FC native undo redo
+__date__    = "07.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -71,11 +71,11 @@ ctrl_btn='Ctrl'
 if _platform == "linux" or _platform == "linux2":
    # linux
    pt_lnx=True
-   sizeXmin=108;sizeYmin=34+34
+   sizeXmin=128;sizeYmin=34+34
    sizeX=wdzX;sizeY=wdzY-22+34 #516 #536
    sizeXright=172;sizeYright=536 #556
 else:
-    sizeXmin=108;sizeYmin=34
+    sizeXmin=128;sizeYmin=34
     sizeX=wdzX;sizeY=wdzY-22 #482#502
     sizeXright=172;sizeYright=502#522
 if _platform == "darwin":
@@ -105,16 +105,30 @@ def close_aligner():
     #FreeCADGui.ActiveDocument=FreeCADGui.getDocument(doc.Label)
 
 def Alg_undock():
+    global alg_dock_mode
+    
     ALGDockWidget.setFloating(True)  #undock
     ALGDockWidget.resize(sizeX,sizeY)
     ALGDockWidget.activateWindow()
     ALGDockWidget.raise_()
+    ag = ALGDockWidget.geometry()
+    #(int(a_geo[1]), int(a_geo[2]),int(a_geo[3]), int(a_geo[4]))
+    alg_dock_mode = 'float/'+str(ag.x())+'/'+str(ag.y())+'/'+str(ag.width())+'/'+str(ag.height())
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("ALG_dock",alg_dock_mode)
+    say("position written "+alg_dock_mode)
+    #Alg_centerOnScreen (ALGDockWidget)
     #AlgWidget.resize(QtCore.QSize(300,100).expandedTo(AlgWidget.maximumSize())) # sets size of the widget
     #AlgWidget.setFloating(False)  #dock
     #say ("now!")
 
 def Alg_minimz():
+    global alg_dock_mode
     #clear_console()
+    alg_dock_mode = 'float'
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("ALG_dock",alg_dock_mode)
+    say("position written "+alg_dock_mode)
     ALGDockWidget.setFloating(True)  #undock
     # AlgWidget.hide();
     # AlgWidget.setWindowState(QtCore.Qt.WindowMinimized)
@@ -122,8 +136,9 @@ def Alg_minimz():
     ALGDockWidget.resize(sizeXmin,sizeYmin)
     ALGDockWidget.activateWindow()
     ALGDockWidget.raise_()
+    
 
-
+    
 ####################################
 # embedded button images
 import base64
@@ -222,7 +237,9 @@ global initial_placement, last_selection
 global moving, rotating
 global objs_moved, plc_moved
 global objs, objs_plc
+global alg_dock_mode
 
+alg_dock_mode = ''
 #init
 initial_placement = FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0)) #Placement [Pos=(0,0,0), Yaw-Pitch-Roll=(0,0,0)]
 moving = [] #[FreeCAD.Vector(0,0,0)]
@@ -769,6 +786,7 @@ class Ui_DockWidget(object):
         global moving, rotating
         global objs, objs_plc
         global objs_moved, plc_moved, _recompute
+        get_ALGposition()
     
         selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
         if len(selection) == 1:
@@ -886,6 +904,8 @@ def Alg_centerOnScreen (widg):
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
     widg.setGeometry(xp-sizeX, yp, sizeX, sizeY)
 ##
+global alg_instance_nbr
+alg_instance_nbr=0
 
 def Alg_singleInstance():
     app = QtGui.QApplication #QtGui.qApp
@@ -906,15 +926,130 @@ def Alg_singleInstance():
         #say (str(i.objectName()))
         if str(i.objectName()) == "Aligner": #"kicad StepUp 3D tools":
             say (str(i.objectName())+' docked')
+            set_ALGposition()
             #i.deleteLater()
             return False
     return True
 ##
 
 ##############################################################
+def dock_right_ALG(): ##ok
+    global alg_instance_nbr
+    
+    ALGmw = FreeCADGui.getMainWindow()
+    t=FreeCADGui.getMainWindow()
+    dw=t.findChildren(QtGui.QDockWidget)
+    looping=False
+    ldw=len (dw)
+    if ldw>0:
+        looping=True
+    idw=0
+    cv=None
+    while looping and idw < ldw:
+    #for d in dw:
+        d=dw[idw]
+        idw+=1
+        area = t.dockWidgetArea(d)
+        #if area == QtCore.Qt.LeftDockWidgetArea:
+        #    print (d.windowTitle(), '(Left)')
+        if area == QtCore.Qt.RightDockWidgetArea:
+            print (d.windowTitle(), '(Right)')
+            r_w=str(d.objectName()) #;print(r_w)
+            cv = t.findChild(QtGui.QDockWidget, r_w)
+            looping=False
+    if ALGDockWidget and cv is not None:
+        dw=t.findChildren(QtGui.QDockWidget)
+        #t.tabifyDockWidget(cv,RHDockWidget)
+        try:
+            t.tabifyDockWidget(cv,ALGDockWidget)
+            say( "Tabified done !")               
+            #stop
+        except:
+            say('exception raised')
+            pass
+    else:
+        ALGmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,ALGDockWidget)
+        ALGDockWidget.setFloating(False)  #dock
+        #stop
+    #RHDockWidget.resize(sizeXright,sizeYright)
+    ALGDockWidget.activateWindow()
+    ALGDockWidget.raise_()
+    if alg_instance_nbr==0:
+        alg_instance_nbr=1
+        dock_right_ALG()
+##
+
+def dock_left_ALG():
+    ALGmw = FreeCADGui.getMainWindow()
+    # ALGDockWidget = QtGui.QDockWidget()          # create a new dckwidget
+    # ALGDockWidget.ui = Ui_DockWidget()   #Ui_AlignDockWidget()           # myWidget_Ui()             # load the Ui script
+    # ALGDockWidget.ui.setupUi(ALGDockWidget) # setup the ui
+
+    #ALGDockWidget.setObjectName("Aligner")
+
+    ALGmw.addDockWidget(QtCore.Qt.LeftDockWidgetArea,ALGDockWidget)
+    ALGDockWidget.setFloating(False)  #dock
+    ALGDockWidget.activateWindow()
+    ALGDockWidget.raise_()
+    t=FreeCADGui.getMainWindow()
+    cv = t.findChild(QtGui.QDockWidget, "Combo View")
+    if ALGDockWidget and cv:
+        dw=t.findChildren(QtGui.QDockWidget)
+        try:
+            t.tabifyDockWidget(cv,ALGDockWidget)
+            say( "Tabified done !")              
+        except:
+            say('exception raised')
+            pass
+##
 
 doc=FreeCAD.ActiveDocument
 #
+def set_ALGposition():
+    global alg_dock_mode
+    
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    alg_dock_mode = pg.GetString("ALG_dock")
+    if len (alg_dock_mode) == 0:
+        alg_dock_mode = 'float'
+    if 'float' in alg_dock_mode:
+        ALGDockWidget.setFloating(True)  #undock
+        ALGDockWidget.resize(sizeX,sizeY)
+        a_geo = alg_dock_mode.split('/')
+        # print(a_geo)
+        ALGDockWidget.activateWindow()
+        ALGDockWidget.raise_()
+        if len (a_geo) > 1:
+            ALGDockWidget.setGeometry(int(a_geo[1]), int(a_geo[2]),int(a_geo[3]), int(a_geo[4]))
+            # print('setting position to: ', a_geo)
+    if alg_dock_mode == 'left':
+        dock_left_ALG()
+        ALGDockWidget.activateWindow()
+        ALGDockWidget.raise_()
+    elif alg_dock_mode == 'right':
+        dock_right_ALG()
+        ALGDockWidget.activateWindow()
+        ALGDockWidget.raise_()
+    say("position set "+alg_dock_mode)
+##
+def get_ALGposition():
+    global alg_dock_mode
+    t=FreeCADGui.getMainWindow()
+    if ALGDockWidget.isFloating():
+        ag = ALGDockWidget.geometry()
+        # print(ag)
+        alg_dock_mode = 'float/'+str(ag.x())+'/'+str(ag.y())+'/'+str(ag.width())+'/'+str(ag.height())
+    elif t.dockWidgetArea(ALGDockWidget) == QtCore.Qt.RightDockWidgetArea:
+        alg_dock_mode = 'right'
+    else:
+        alg_dock_mode = 'left'
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("ALG_dock",alg_dock_mode)
+    say("position written "+alg_dock_mode)
+##
+
+
+
 if Alg_singleInstance():
 
     ALGDockWidget = QtGui.QDockWidget()          # create a new dckwidget
@@ -942,8 +1077,9 @@ if Alg_singleInstance():
     ALGmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     ALGmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,ALGDockWidget)
     #ALGDockWidget.show()
-    Alg_undock()
-    Alg_centerOnScreen (ALGDockWidget)
+    set_ALGposition()
+    #Alg_undock()
+    #Alg_centerOnScreen (ALGDockWidget)
 
 ### ------------------------------------------------------------------------------------ ###
 def Undo():
@@ -1003,6 +1139,7 @@ def Move():
     global objs, objs_plc
 
     say('Move')
+    get_ALGposition()
     selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
     if len(selection) == 1:
         if FreeCAD.ActiveDocument is not None:
@@ -1237,7 +1374,7 @@ def Align(normal,type,mode,cx,cy,cz):
     #objs = [] ; objs_plc = []
     #objs_moved = [] ; plc_moved = []
 
-
+    get_ALGposition()
     #cx = 1  # center x -> 1
     #cy = 1  # center y -> 1
     #cz = 1  # center z -> 1
