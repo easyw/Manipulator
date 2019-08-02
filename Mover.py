@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.2" # undo mover with FC native undo redo
-__date__    = "08.2018"
+__version__ = "1.5.4" # undo mover with FC native undo redo
+__date__    = "08.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -36,6 +36,8 @@ global onmoved, onrotated
 onrotated = False
 onmoved = False
 
+global mv_dock_mode
+mv_dock_mode = ''
 ## todo
 #  better Gui with icons
 ##  ##App::Part hierarchical objects & Bodys on FC 0.17
@@ -100,6 +102,7 @@ Step_initial_angle=15.0
 
 def close_mover():
     global sO
+    get_MVposition()
     #def closeEvent(self, e):
     try:
         FreeCADGui.Selection.removeObserver(sO)   # desinstalle la fonction residente SelObserver
@@ -118,16 +121,30 @@ def close_mover():
     #FreeCADGui.ActiveDocument=FreeCADGui.getDocument(doc.Label)
 
 def Mv_undock():
+    global mv_dock_mode
+
     MVDockWidget.setFloating(True)  #undock
     MVDockWidget.resize(sizeX,sizeY)
     MVDockWidget.activateWindow()
     MVDockWidget.raise_()
+    mg = MVDockWidget.geometry()
+    #(int(a_geo[1]), int(a_geo[2]),int(a_geo[3]), int(a_geo[4]))
+    mv_dock_mode = 'float/'+str(mg.x())+'/'+str(mg.y())+'/'+str(mg.width())+'/'+str(mg.height())
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("MV_dock",mv_dock_mode)
+    say("position written "+mv_dock_mode)
     #AlgWidget.resize(QtCore.QSize(300,100).expandedTo(AlgWidget.maximumSize())) # sets size of the widget
     #AlgWidget.setFloating(False)  #dock
     #say ("now!")
-
+##
 def Mv_minimz():
     #clear_console()
+    global mv_dock_mode
+    #clear_console()
+    mv_dock_mode = 'float'
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("MV_dock",mv_dock_mode)
+    say("position written "+mv_dock_mode)
     MVDockWidget.setFloating(True)  #undock
     # AlgWidget.hide();
     # AlgWidget.setWindowState(QtCore.Qt.WindowMinimized)
@@ -1315,6 +1332,7 @@ class Ui_DockWidget(object):
         global sO, DSMove_prev_Val, DSRotate_prev_Val
         global onmoved, onrotated
 
+        get_MVposition()
         #say("Move clicked")
         #Move()
         #self.MoveDial.setValue(0.0)
@@ -1401,6 +1419,9 @@ def Mv_centerOnScreen (widg):
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
     widg.setGeometry(xp, yp, sizeX, sizeY)
 ##
+global mv_instance_nbr
+mv_instance_nbr=0
+
 def Mv_singleInstance():
     app = QtGui.QApplication #QtGui.qApp
     for i in app.topLevelWidgets():
@@ -1419,13 +1440,121 @@ def Mv_singleInstance():
         if str(i.objectName()) == "Mover": #"kicad StepUp 3D tools":
             say (str(i.objectName())+' docked')
             #i.deleteLater()
+            set_MVposition()
             return False
     return True
 ##
 
 ##############################################################
+def dock_right_MV(): ##ok
+    global mv_instance_nbr
+    
+    MVmw = FreeCADGui.getMainWindow()
+    t=FreeCADGui.getMainWindow()
+    dw=t.findChildren(QtGui.QDockWidget)
+    looping=False
+    ldw=len (dw)
+    if ldw>0:
+        looping=True
+    idw=0
+    cv=None
+    while looping and idw < ldw:
+    #for d in dw:
+        d=dw[idw]
+        idw+=1
+        area = t.dockWidgetArea(d)
+        #if area == QtCore.Qt.LeftDockWidgetArea:
+        #    print (d.windowTitle(), '(Left)')
+        if area == QtCore.Qt.RightDockWidgetArea:
+            print (d.windowTitle(), '(Right)')
+            r_w=str(d.objectName()) #;print(r_w)
+            cv = t.findChild(QtGui.QDockWidget, r_w)
+            looping=False
+    if MVDockWidget and cv is not None:
+        dw=t.findChildren(QtGui.QDockWidget)
+        #t.tabifyDockWidget(cv,RHDockWidget)
+        try:
+            t.tabifyDockWidget(cv,MVDockWidget)
+            say( "Tabified done !")               
+            #stop
+        except:
+            say('exception raised')
+            pass
+    else:
+        MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
+        MVDockWidget.setFloating(False)  #dock
+        #stop
+    #RHDockWidget.resize(sizeXright,sizeYright)
+    MVDockWidget.activateWindow()
+    MVDockWidget.raise_()
+    if mv_instance_nbr==0:
+        mv_instance_nbr=1
+        dock_right_MV()
+##
+
+def dock_left_MV():
+    MVmw = FreeCADGui.getMainWindow()
+
+    MVmw.addDockWidget(QtCore.Qt.LeftDockWidgetArea,MVDockWidget)
+    MVDockWidget.setFloating(False)  #dock
+    MVDockWidget.activateWindow()
+    MVDockWidget.raise_()
+    t=FreeCADGui.getMainWindow()
+    cv = t.findChild(QtGui.QDockWidget, "Combo View")
+    if MVDockWidget and cv:
+        dw=t.findChildren(QtGui.QDockWidget)
+        try:
+            t.tabifyDockWidget(cv,MVDockWidget)
+            say( "Tabified done !")              
+        except:
+            say('exception raised')
+            pass
+##
 
 doc=FreeCAD.ActiveDocument
+
+def set_MVposition():
+    global mv_dock_mode
+    
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    mv_dock_mode = pg.GetString("MV_dock")
+    if len (mv_dock_mode) == 0:
+        mv_dock_mode = 'float'
+    if 'float' in mv_dock_mode:
+        MVDockWidget.setFloating(True)  #undock
+        MVDockWidget.resize(sizeX,sizeY)
+        m_geo = mv_dock_mode.split('/')
+        # print(a_geo)
+        MVDockWidget.activateWindow()
+        MVDockWidget.raise_()
+        if len (m_geo) > 1:
+            MVDockWidget.setGeometry(int(m_geo[1]), int(m_geo[2]),int(m_geo[3]), int(m_geo[4]))
+            # print('setting position to: ', a_geo)
+    if mv_dock_mode == 'left':
+        dock_left_MV()
+        MVDockWidget.activateWindow()
+        MVDockWidget.raise_()
+    elif mv_dock_mode == 'right':
+        dock_right_MV()
+        MVDockWidget.activateWindow()
+        MVDockWidget.raise_()
+    say("position set "+mv_dock_mode)
+##
+def get_MVposition():
+    global mv_dock_mode
+    t=FreeCADGui.getMainWindow()
+    if MVDockWidget.isFloating():
+        mg = MVDockWidget.geometry()
+        # print(ag)
+        mv_dock_mode = 'float/'+str(mg.x())+'/'+str(mg.y())+'/'+str(mg.width())+'/'+str(mg.height())
+    elif t.dockWidgetArea(MVDockWidget) == QtCore.Qt.RightDockWidgetArea:
+        mv_dock_mode = 'right'
+    else:
+        mv_dock_mode = 'left'
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("MV_dock",mv_dock_mode)
+    say("position written "+mv_dock_mode)
+##
 
 if Mv_singleInstance():
 
@@ -1454,8 +1583,9 @@ if Mv_singleInstance():
     MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
     #MVDockWidget.show()
-    Mv_undock()
-    Mv_centerOnScreen(MVDockWidget)
+    set_MVposition()
+    # Mv_undock()
+    # Mv_centerOnScreen(MVDockWidget)
     use_hierarchy=MVDockWidget.ui.cbHierarchy.isChecked()
 
 ### ------------------------------------------------------------------------------------ ###

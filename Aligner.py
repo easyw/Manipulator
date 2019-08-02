@@ -25,7 +25,7 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.4" #undo alignment with FC native undo redo
+__version__ = "1.7.5" #undo alignment with FC native undo redo
 __date__    = "07.2019"
 
 testing=False #true for showing helpers
@@ -93,6 +93,7 @@ btn_md_sizeX=26;btn_md_sizeY=26;
 
 def close_aligner():
     #def closeEvent(self, e):
+    get_ALGposition()
     ALGDockWidget.deleteLater()
     ##ALGDockWidget.close()
     #self.setWindowState(QtCore.Qt.WindowActive)

@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.4.7" #Manipulator for Parts
-__date__    = "07.2019"
+__version__ = "1.4.8" #Manipulator for Parts
+__date__    = "08.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -37,7 +37,8 @@ testing2=False #true for showing helpers
 #  fix dist snap point in asm3 branch
 ##  ##App::Part hierarchical objects & Bodys on FC 0.17
 ##
-
+global clp_dock_mode
+clp_dock_mode = ''
 
 ## import statements
 # oDraft -> Draft from FreeCAD_0.17.13488
@@ -73,6 +74,50 @@ angle_tolerance = 1e-5 #
 ninst = 0
 global tobiarc_tol
 tobiarc_tol = 0.001 #0.0001
+
+def set_CPposition():
+    global clp_dock_mode
+    
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    clp_dock_mode = pg.GetString("CP_dock")
+    if len (clp_dock_mode) == 0:
+        clp_dock_mode = 'float'
+    if 'float' in clp_dock_mode:
+        CPDockWidget.setFloating(True)  #undock
+        CPDockWidget.resize(sizeX,sizeY)
+        c_geo = clp_dock_mode.split('/')
+        # print(a_geo)
+        CPDockWidget.activateWindow()
+        CPDockWidget.raise_()
+        if len (c_geo) > 1:
+            CPDockWidget.setGeometry(int(c_geo[1]), int(c_geo[2]),int(c_geo[3]), int(c_geo[4]))
+            # print('setting position to: ', a_geo)
+    if clp_dock_mode == 'left':
+        dock_left_CP()
+        CPDockWidget.activateWindow()
+        CPDockWidget.raise_()
+    elif clp_dock_mode == 'right':
+        dock_right_CP()
+        CPDockWidget.activateWindow()
+        CPDockWidget.raise_()
+    say("position set "+clp_dock_mode)
+##
+def get_CPposition():
+    global clp_dock_mode
+    t=FreeCADGui.getMainWindow()
+    if CPDockWidget.isFloating():
+        cg = CPDockWidget.geometry()
+        # print(ag)
+        clp_dock_mode = 'float/'+str(cg.x())+'/'+str(cg.y())+'/'+str(cg.width())+'/'+str(cg.height())
+    elif t.dockWidgetArea(CPDockWidget) == QtCore.Qt.RightDockWidgetArea:
+        clp_dock_mode = 'right'
+    else:
+        clp_dock_mode = 'left'
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("CP_dock",clp_dock_mode)
+    say("position written "+clp_dock_mode)
+##
+
 
 def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1=False,clampB0=False,clampB1=False):
     ## https://stackoverflow.com/questions/2824478/shortest-distance-between-two-line-segments
@@ -930,6 +975,7 @@ btn_md_sizeX=26;btn_md_sizeY=26;
 
 def close_caliper():
     global s1
+    get_CPposition()
     sayerr('close called')
     #def closeEvent(self, e):
     try:
@@ -959,12 +1005,22 @@ def Cp_undock():
     CPDockWidget.resize(sizeX,sizeY)
     CPDockWidget.activateWindow()
     CPDockWidget.raise_()
+    cg = CPDockWidget.geometry()
+    #(int(a_geo[1]), int(a_geo[2]),int(a_geo[3]), int(a_geo[4]))
+    clp_dock_mode = 'float/'+str(cg.x())+'/'+str(cg.y())+'/'+str(cg.width())+'/'+str(cg.height())
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("CP_dock",clp_dock_mode)
+    say("position written "+clp_dock_mode)
     #AlgWidget.resize(QtCore.QSize(300,100).expandedTo(AlgWidget.maximumSize())) # sets size of the widget
     #AlgWidget.setFloating(False)  #dock
     #say ("now!")
 
 def Cp_minimz():
     #clear_console()
+    clp_dock_mode = 'float'
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
+    pg.SetString("CP_dock",clp_dock_mode)
+    say("position written "+clp_dock_mode)
     CPDockWidget.setFloating(True)  #undock
     # AlgWidget.hide();
     # AlgWidget.setWindowState(QtCore.Qt.WindowMinimized)
@@ -2079,6 +2135,7 @@ class Ui_DockWidget(object):
         global initial_placement, last_selection, objs
         global s1, DSMove_prev_Val, DSRotate_prev_Val
 
+        get_CPposition()
         #say("Move clicked")
         #Move()
         #self.MoveDial.setValue(0.0)
@@ -2150,6 +2207,9 @@ def Cp_centerOnScreen (widg):
 
 global CPDockWidget
 
+global clp_instance_nbr
+clp_instance_nbr=0
+
 def Cp_singleInstance():
     app = QtGui.QApplication #QtGui.qApp
     for i in app.topLevelWidgets():
@@ -2167,14 +2227,79 @@ def Cp_singleInstance():
         #say (str(i.objectName()))
         if str(i.objectName()) == "Caliper":
             say (str(i.objectName())+' docked')
+            set_CPposition()
             #i.deleteLater()
             return False
     return True
 ##
 
 ##############################################################
+def dock_right_CP(): ##ok
+    global clp_instance_nbr
+    
+    CPmw = FreeCADGui.getMainWindow()
+    t=FreeCADGui.getMainWindow()
+    dw=t.findChildren(QtGui.QDockWidget)
+    looping=False
+    ldw=len (dw)
+    if ldw>0:
+        looping=True
+    idw=0
+    cv=None
+    while looping and idw < ldw:
+    #for d in dw:
+        d=dw[idw]
+        idw+=1
+        area = t.dockWidgetArea(d)
+        #if area == QtCore.Qt.LeftDockWidgetArea:
+        #    print (d.windowTitle(), '(Left)')
+        if area == QtCore.Qt.RightDockWidgetArea:
+            print (d.windowTitle(), '(Right)')
+            r_w=str(d.objectName()) #;print(r_w)
+            cv = t.findChild(QtGui.QDockWidget, r_w)
+            looping=False
+    if CPDockWidget and cv is not None:
+        dw=t.findChildren(QtGui.QDockWidget)
+        #t.tabifyDockWidget(cv,RHDockWidget)
+        try:
+            t.tabifyDockWidget(cv,CPDockWidget)
+            say( "Tabified done !")               
+            #stop
+        except:
+            say('exception raised')
+            pass
+    else:
+        CPmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,CPDockWidget)
+        CPDockWidget.setFloating(False)  #dock
+        #stop
+    #RHDockWidget.resize(sizeXright,sizeYright)
+    CPDockWidget.activateWindow()
+    CPDockWidget.raise_()
+    if clp_instance_nbr==0:
+        clp_instance_nbr=1
+        dock_right_CP()
+##
 
+def dock_left_CP():
+    CPmw = FreeCADGui.getMainWindow()
+
+    CPmw.addDockWidget(QtCore.Qt.LeftDockWidgetArea,CPDockWidget)
+    CPDockWidget.setFloating(False)  #dock
+    CPDockWidget.activateWindow()
+    CPDockWidget.raise_()
+    t=FreeCADGui.getMainWindow()
+    cv = t.findChild(QtGui.QDockWidget, "Combo View")
+    if CPDockWidget and cv:
+        dw=t.findChildren(QtGui.QDockWidget)
+        try:
+            t.tabifyDockWidget(cv,CPDockWidget)
+            say( "Tabified done !")              
+        except:
+            say('exception raised')
+            pass
+##
 doc=FreeCAD.ActiveDocument
+
 
 if Cp_singleInstance():
 
@@ -2203,8 +2328,9 @@ if Cp_singleInstance():
     CPmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     CPmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,CPDockWidget)
     #MVDockWidget.show()
-    Cp_undock()
-    Cp_centerOnScreen(CPDockWidget)
+    set_CPposition()
+    #Cp_undock()
+    #Cp_centerOnScreen(CPDockWidget)
     # use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
 
 
