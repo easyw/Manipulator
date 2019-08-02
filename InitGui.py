@@ -29,6 +29,7 @@ mycommitsMWB=123 #v 1.2.8
 
 import FreeCAD, FreeCADGui, Part, os, sys
 import re, time
+from PySide.QtCore import QT_TRANSLATE_NOOP
 
 if (sys.version_info > (3, 0)):  #py3
     import urllib
@@ -58,8 +59,8 @@ class ManipulatorWB ( Workbench ):
     "kicad StepUp WB object"
     Icon = main_MWB_Icon
     #Icon = ":Resources/icons/kicad-StepUp-tools-WB.svg"
-    MenuText = "Manipulator WB"
-    ToolTip = "Aligner & Mover Manipulator workbench"
+    MenuText = QtCore.QT_TRANSLATE_NOOP("Manipulator", "Manipulator WB")
+    ToolTip =  QtCore.QT_TRANSLATE_NOOP("Manipulator", "Aligner & Mover Manipulator workbench")
 
     def GetClassName(self):
         return "Gui::PythonWorkbench"
