@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.3.0'
+MWB_wb_version='v 1.3.1'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=124 #v 1.2.8
+mycommitsMWB=125 #v 1.3.1
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -55,10 +55,10 @@ main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
 class ManipulatorWB ( Workbench ):
     global main_MWB_Icon, MWB_wb_version
 
-    "kicad StepUp WB object"
+    "Manipulator WB object"
     Icon = main_MWB_Icon
     #Icon = ":Resources/icons/kicad-StepUp-tools-WB.svg"
-    MenuText = "Manipulator WB"
+    MenuText = "Manipulator"
     ToolTip = "Aligner & Mover Manipulator workbench"
 
     def GetClassName(self):
