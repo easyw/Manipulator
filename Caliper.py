@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.1" #Manipulator for Parts
+__version__ = "1.5.2" #Manipulator for Parts
 __date__    = "08.2019"
 
 testing=False #true for showing helpers
@@ -2167,7 +2167,7 @@ class Ui_DockWidget(object):
         added_dim=[]
 ##
     def onLabel_toggled(self,checked):
-        print('label clicked')
+        #print('label clicked')
         if self.bLabel.isChecked():
             pm = QtGui.QPixmap()
             pm.loadFromData(base64.b64decode(label_selected_b64))
@@ -2192,15 +2192,15 @@ class Ui_DockWidget(object):
         #self.RotateDial.setValue(0.0)
         #self.RotateDial.setValue("{0:.2f}".format(0.0))
         #if self.Confirm_Move.isChecked:
+        if self.Measure.isChecked():
+            pm = QtGui.QPixmap()
+            pm.loadFromData(base64.b64decode(Caliper_selected_b64))
+            self.Measure.setIcon(QtGui.QIcon(pm))
+        else:
+            pm = QtGui.QPixmap()
+            pm.loadFromData(base64.b64decode(Caliper_b64))
+            self.Measure.setIcon(QtGui.QIcon(pm))
         if FreeCAD.ActiveDocument is not None:
-            if self.Measure.isChecked():
-                pm = QtGui.QPixmap()
-                pm.loadFromData(base64.b64decode(Caliper_selected_b64))
-                self.Measure.setIcon(QtGui.QIcon(pm))
-            else:
-                pm = QtGui.QPixmap()
-                pm.loadFromData(base64.b64decode(Caliper_b64))
-                self.Measure.setIcon(QtGui.QIcon(pm))
             if checked:
                 for ob in FreeCAD.ActiveDocument.Objects:
                     FreeCADGui.Selection.removeSelection(ob)

@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.5" # undo mover with FC native undo redo
+__version__ = "1.5.6" # undo mover with FC native undo redo
 __date__    = "08.2019"
 
 testing=False #true for showing helpers
@@ -1343,15 +1343,15 @@ class Ui_DockWidget(object):
         #self.RotateDial.setValue(0.0)
         #self.RotateDial.setValue("{0:.2f}".format(0.0))
         #if self.Confirm_Move.isChecked:
+        if self.Confirm_Move.isChecked():
+            pm = QtGui.QPixmap()
+            pm.loadFromData(base64.b64decode(Move_purple_selected_b64))
+            self.Confirm_Move.setIcon(QtGui.QIcon(pm))
+        else:
+            pm = QtGui.QPixmap()
+            pm.loadFromData(base64.b64decode(Move_purple_b64))
+            self.Confirm_Move.setIcon(QtGui.QIcon(pm))
         if FreeCAD.ActiveDocument is not None:
-            if self.Confirm_Move.isChecked():
-                pm = QtGui.QPixmap()
-                pm.loadFromData(base64.b64decode(Move_purple_selected_b64))
-                self.Confirm_Move.setIcon(QtGui.QIcon(pm))
-            else:
-                pm = QtGui.QPixmap()
-                pm.loadFromData(base64.b64decode(Move_purple_b64))
-                self.Confirm_Move.setIcon(QtGui.QIcon(pm))
             if checked:
                 for ob in FreeCAD.ActiveDocument.Objects:
                     FreeCADGui.Selection.removeSelection(ob)
