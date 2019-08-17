@@ -37,6 +37,7 @@ testing2=False #true for showing helpers
 ## done works for Bodys on FC 0.17
 ##
 
+#FreeCAD.ActiveDocument.addObject('PartDesign::CoordinateSystem','Local_CS')
 
 ## import statements
 
@@ -1595,11 +1596,12 @@ def Align(normal,type,mode,cx,cy,cz):
             s=fc
             #selectedEdge = FreeCADGui.Selection.getSelectionEx()[j].SubObjects[0] # select one element SubObjects
             #sayerr(selEx[j].Object.TypeId)
-            if (selEx[j].Object.TypeId == 'PartDesign::Plane') or (selEx[j].Object.TypeId == 'App::Placement'): #Datum plane with super Placement #(selEx[j].Object.TypeId == 'App::Plane') or :
+            if (selEx[j].Object.TypeId == 'PartDesign::Plane') or (selEx[j].Object.TypeId == 'App::Placement')\
+            or (selEx[j].Object.TypeId == 'PartDesign::CoordinateSystem'): #Datum plane with super Placement #(selEx[j].Object.TypeId == 'App::Plane') or :
                 ##print norm
                 pad=0
                 edge_op=0
-                if (selEx[j].Object.TypeId != 'App::Placement'):
+                if (selEx[j].Object.TypeId != 'App::Placement') and (selEx[j].Object.TypeId != 'PartDesign::CoordinateSystem'):
                     f1=selEx[j].Object.Shape.Faces[0]
                 else:
                     f1 = Part.Shape()

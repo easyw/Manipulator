@@ -1680,9 +1680,16 @@ class SelObserver:
 
             #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
             if MVDockWidget.ui.rbOneObj.isChecked:
+                #print(selobject[0].TypeId)
                 if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
-                    if len(sel[0].SubObjects)>0: #Faces or Edges
-                        if 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
+                    if (len(sel[0].SubObjects) > 0) or ('PartDesign::CoordinateSystem' in str(selobject[0].TypeId)): # #Faces or Edges
+                        #print(selobject[0].TypeId)
+                        enabled=False
+                        if 'PartDesign::CoordinateSystem' in str(selobject[0].TypeId):
+                            enabled=True
+                        elif 'Face' in str(sel[0].SubObjects[0]) or 'Edge' in str(sel[0].SubObjects[0]):
+                            enabled=True
+                        if enabled:
                             # if 'Edge' in str(sel[0].SubObjects[0]):
                             #     try:
                             #         sayerr(sel[0].SubObjects[0].Curve)
