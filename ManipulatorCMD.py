@@ -460,3 +460,30 @@ class AnnoLbl:
         
 FreeCADGui.addCommand('AnnoLbl',AnnoLbl())
 ##
+class ResetPositions:
+    "manipulator reset positions tool"
+
+    def GetResources(self):
+        return {'Pixmap'  : os.path.join( ManipulatorWB_icons_path , 'centering-w.svg') , # the name of a svg file available in the resources
+                     'MenuText': "Centering Widgets" ,
+                     'ToolTip' : "Centering Widgets\nManipulator workbench"}
+ 
+    def IsActive(self):
+        import os, sys
+        return True #False #True
+
+    def Activated(self):
+        # do something here...
+        #import kicadStepUptools
+        #reload_lib( kicadStepUptools )
+        import Caliper
+        reload_lib(Caliper)
+        Caliper.Cp_centerOnScreen(Caliper.CPDockWidget)
+        import Mover
+        reload_lib(Mover)
+        Mover.Mv_centerOnScreen(Mover.MVDockWidget)
+        import Aligner
+        reload_lib(Aligner)
+        Aligner.Alg_centerOnScreen (Aligner.ALGDockWidget)
+FreeCADGui.addCommand('ResetPositions',ResetPositions())
+##

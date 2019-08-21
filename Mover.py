@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.6" # undo mover with FC native undo redo
+__version__ = "1.5.7" # undo mover with FC native undo redo
 __date__    = "08.2019"
 
 testing=False #true for showing helpers
@@ -1426,7 +1426,7 @@ def Mv_centerOnScreen (widg):
     # sayw(widg.width());sayw(widg.height())
     # sayw(widg.pos().x());sayw(widg.pos().y())
     resolution = QtGui.QDesktopWidget().screenGeometry()
-    xp=(resolution.width() / 2) - sizeX/2 # - (KSUWidget.frameSize().width() / 2)
+    xp=(resolution.width() / 2) - sizeX/2 +5 # - (KSUWidget.frameSize().width() / 2)
     yp=(resolution.height() / 2) - sizeY/2 # - (KSUWidget.frameSize().height() / 2))
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
     widg.setGeometry(xp, yp, sizeX, sizeY)
@@ -1531,7 +1531,7 @@ def set_MVposition():
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
     mv_dock_mode = pg.GetString("MV_dock")
     if len (mv_dock_mode) == 0:
-        mv_dock_mode = 'float'
+        mv_dock_mode = 'float/350/300/304/268'
     if 'float' in mv_dock_mode:
         MVDockWidget.setFloating(True)  #undock
         MVDockWidget.resize(sizeX,sizeY)

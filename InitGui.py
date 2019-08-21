@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.3.2'
+MWB_wb_version='v 1.3.3'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=130 #v 1.3.2
+mycommitsMWB=131 #v 1.3.3
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -77,6 +77,7 @@ class ManipulatorWB ( Workbench ):
         self.appendMenu("Manipulator Tools", ["AlignerTools"])
         self.appendMenu("Manipulator Tools", ["MoverTools"])
         self.appendMenu("Manipulator Tools", ["CaliperTools"])
+        self.appendMenu("Manipulator Tools", ["ResetPositions"])
         self.appendMenu(["Manipulator Tools", "Help"], submenu)
 
         Log ("Loading Manipulator Module... done\n")

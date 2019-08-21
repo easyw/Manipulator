@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.2" #Manipulator for Parts
+__version__ = "1.5.3" #Manipulator for Parts
 __date__    = "08.2019"
 
 testing=False #true for showing helpers
@@ -81,7 +81,7 @@ def set_CPposition():
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
     clp_dock_mode = pg.GetString("CP_dock")
     if len (clp_dock_mode) == 0:
-        clp_dock_mode = 'float'
+        clp_dock_mode = 'float/350/300/302/240'
     if 'float' in clp_dock_mode:
         CPDockWidget.setFloating(True)  #undock
         CPDockWidget.resize(sizeX,sizeY)

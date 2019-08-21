@@ -25,8 +25,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.5" #undo alignment with FC native undo redo
-__date__    = "07.2019"
+__version__ = "1.7.6" #undo alignment with FC native undo redo
+__date__    = "08.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1013,7 +1013,7 @@ def set_ALGposition():
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
     alg_dock_mode = pg.GetString("ALG_dock")
     if len (alg_dock_mode) == 0:
-        alg_dock_mode = 'float'
+        alg_dock_mode = 'float/350/300/302/268'
     if 'float' in alg_dock_mode:
         ALGDockWidget.setFloating(True)  #undock
         ALGDockWidget.resize(sizeX,sizeY)
@@ -1269,10 +1269,12 @@ def duplicateImportedPart( part ):
 
 def recurse_node(obj,plcm,scl):
     sayerr(obj.Name)
-    if "App::Part" in obj.TypeId or "Body" in obj.TypeId or "Compound" in obj.TypeId:
+    if "App::Part" in obj.TypeId or "Body" in obj.TypeId \
+    or "Compound" in obj.TypeId or 'App::LinkGroup' in obj.TypeId:
         for o in obj.Group:
             #sayerr(o.Name)
-            if "App::Part" in o.TypeId  or "Body" in o.TypeId or "Compound" in o.TypeId:
+            if "App::Part" in o.TypeId  or "Body" in o.TypeId \
+            or "Compound" in o.TypeId  or 'App::LinkGroup' in obj.TypeId:
                 #sayerr(o.Name)#+" * "+obj.Name)
                 new_plcm=get_node_plc(o,obj)
                 recurse_node(o,new_plcm,scl)
