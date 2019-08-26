@@ -478,12 +478,15 @@ class ResetPositions:
         #reload_lib( kicadStepUptools )
         import Caliper
         reload_lib(Caliper)
+        Caliper.Cp_undock()
         Caliper.Cp_centerOnScreen(Caliper.CPDockWidget)
         import Mover
         reload_lib(Mover)
+        Mover.Mv_undock()
         Mover.Mv_centerOnScreen(Mover.MVDockWidget)
         import Aligner
         reload_lib(Aligner)
+        Aligner.Alg_undock()
         Aligner.Alg_centerOnScreen (Aligner.ALGDockWidget)
 FreeCADGui.addCommand('ResetPositions',ResetPositions())
 ##

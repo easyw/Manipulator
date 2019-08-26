@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.3.3'
+MWB_wb_version='v 1.3.4'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=131 #v 1.3.3
+mycommitsMWB=132 #v 1.3.4
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -70,7 +70,7 @@ class ManipulatorWB ( Workbench ):
         dirs = self.ListDemos()
 
         #self.appendToolbar("ksu Tools", ["ksuTools"])
-        self.appendToolbar("Manipulator Tools", ["AlignerTools","MoverTools","CaliperTools"])
+        self.appendToolbar("Manipulator Tools", ["AlignerTools","MoverTools","CaliperTools","Separator","Separator","ResetPositions"])
         self.appendToolbar("Datum Tools", ["DatumPoint","DatumLine","DatumPlane","DatumLCS","AltLCS","Plane","AnnoLbl"])  #"Point","Line",
 
         #self.appendMenu("ksu Tools", ["ksuTools","ksuToolsEdit"])
