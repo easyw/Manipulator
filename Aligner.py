@@ -25,7 +25,7 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.6" #undo alignment with FC native undo redo
+__version__ = "1.7.7" #undo alignment with FC native undo redo
 __date__    = "08.2019"
 
 testing=False #true for showing helpers
@@ -1292,6 +1292,8 @@ def get_top_level (obj):
             if len(ap.InListRecursive) < lvl:
                 top = ap
                 lvl = len(ap.InListRecursive)
+    if top is not None:
+        print(top.Label,top.TypeId)
     return top
 
 def get_sorted_list (obj):
@@ -1327,6 +1329,8 @@ def get_sorted_list (obj):
                 topName = ap.Name
         listS.append(top)
         #print topName
+        if top is not None:
+            print(top.Label,top.TypeId)
         idx=listUsName.index(topName)
         #sayw(idx)
         listUsName.pop(idx)
