@@ -26,8 +26,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.7" # undo mover with FC native undo redo
-__date__    = "08.2019"
+__version__ = "1.5.8" # undo mover with FC native undo redo
+__date__    = "09.2019"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -808,7 +808,7 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.setEnabled(False)
         self.DS_RotateInput.setMinimumSize(QtCore.QSize(48, 0))
         self.DS_RotateInput.setToolTip("rotate (+/- deg)")
-        self.DS_RotateInput.setDecimals(1)
+        self.DS_RotateInput.setDecimals(2)
         self.DS_RotateInput.setMinimum(-180.0)
         self.DS_RotateInput.setMaximum(180.0)
         self.DS_RotateInput.setObjectName("DS_RotateInput")
@@ -872,8 +872,8 @@ class Ui_DockWidget(object):
         self.DS_RotateInput_Delta.setMinimumSize(QtCore.QSize(48, 0))
         self.DS_RotateInput_Delta.setToolTip("rotation\n"
 "increment")
-        self.DS_RotateInput_Delta.setDecimals(1)
-        self.DS_RotateInput_Delta.setMinimum(0.1)
+        self.DS_RotateInput_Delta.setDecimals(2)
+        self.DS_RotateInput_Delta.setMinimum(0.01)
         self.DS_RotateInput_Delta.setMaximum(180.0)
         self.DS_RotateInput_Delta.setProperty("value", 15.0)
         self.DS_RotateInput_Delta.setObjectName("DS_RotateInput_Delta")
