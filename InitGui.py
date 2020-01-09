@@ -24,7 +24,7 @@ MWB_wb_version='v 1.3.4'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=134 #v 1.3.4
+mycommitsMWB=135 #v 1.3.5
 
 
 import FreeCAD, FreeCADGui, Part, os, sys

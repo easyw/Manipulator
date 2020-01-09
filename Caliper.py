@@ -26,8 +26,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.3" #Manipulator for Parts
-__date__    = "08.2019"
+__version__ = "1.5.4" #Manipulator for Parts
+__date__    = "01.2020"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -397,6 +397,7 @@ class SelObserverCaliper:
 
         fntsize='0.2mm'
         ticksize='0.1mm'
+        anno_fntsize = 8.0
         Vtx_sel=False
         dx=0;dy=0;dz=0
         #dstP=-1
@@ -508,6 +509,8 @@ class SelObserverCaliper:
                                             anno.BasePosition = mid
                                             anno.LabelText = ['ds: '+str(dim.Distance),'dx: '+str(abs(pnt[0]-P1[0])),'dy: '+str(abs(pnt[1]-P1[1])),'dz: '+str(abs(pnt[2]-P1[2]))]
                                             added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
+                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
+                                            annoG.FontSize = anno_fntsize
                                     else:
                                         say("Distance : 0.0")
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
@@ -550,6 +553,8 @@ class SelObserverCaliper:
                                     anno.BasePosition = P1
                                     anno.LabelText = ['ds: '+str(dim.Distance),'dx: '+str(abs(P2[0]-P1[0])),'dy: '+str(abs(P2[1]-P1[1])),'dz: '+str(abs(P2[2]-P1[2]))]
                                     #['ds: '+str(dim.Distance),'dx: '+str(dx),'dy: '+str(dy),'dz: '+str(dz)] # str(dim.Distance)
+                                    annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
+                                    annoG.FontSize = anno_fntsize
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)

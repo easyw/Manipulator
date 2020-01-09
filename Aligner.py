@@ -911,6 +911,8 @@ alg_instance_nbr=0
 
 def Alg_singleInstance():
     app = QtGui.QApplication #QtGui.qApp
+    #print(app.screens())
+    #setPixelSize(12)
     #app.setAttribute(QtCore.AA_DisableHighDpiScaling)
     #app.setAttribute(QtCore.Qt.AA_Use96Dpi)
     for i in app.topLevelWidgets():
@@ -1060,6 +1062,11 @@ if Alg_singleInstance():
     #ui = Ui_AlignDockWidget()
     #ui.setupUi(AlignDockWidget)
     #AlignDockWidget.show()
+    #font = ALGDockWidget.font()
+    #font.setPixelSize(150)
+    # #font.setPointSize(2)
+    #ALGDockWidget.setFont(font)
+    #self.setPixelSize
 
     ALGDockWidget.setObjectName("Aligner")
 
