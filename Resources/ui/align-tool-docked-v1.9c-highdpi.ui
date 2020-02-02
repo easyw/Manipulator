@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>317</width>
-    <height>317</height>
+    <width>324</width>
+    <height>329</height>
    </rect>
   </property>
   <property name="windowIcon">
@@ -41,37 +41,8 @@
            <property name="spacing">
             <number>2</number>
            </property>
-           <item row="0" column="0">
-            <widget class="QRadioButton" name="rbCenters">
-             <property name="minimumSize">
-              <size>
-               <width>56</width>
-               <height>32</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string notr="true">Align Centers</string>
-             </property>
-             <property name="text">
-              <string notr="true"/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>Centers.png</normaloff>Centers.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
-              </size>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QCheckBox" name="cbY">
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="cbX">
              <property name="minimumSize">
               <size>
                <width>48</width>
@@ -85,48 +56,19 @@
               </size>
              </property>
              <property name="toolTip">
-              <string notr="true">center on Y</string>
+              <string notr="true">center on X</string>
              </property>
              <property name="text">
               <string notr="true"/>
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>Yaxis.png</normaloff>Yaxis.png</iconset>
+               <normaloff>Xaxis.png</normaloff>Xaxis.png</iconset>
              </property>
              <property name="iconSize">
               <size>
                <width>16</width>
                <height>16</height>
-              </size>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QRadioButton" name="rbPlanesCenters">
-             <property name="minimumSize">
-              <size>
-               <width>56</width>
-               <height>32</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string notr="true">Align Centers &amp; Planes</string>
-             </property>
-             <property name="text">
-              <string notr="true"/>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>Planes-Centers.png</normaloff>Planes-Centers.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>26</width>
-               <height>26</height>
               </size>
              </property>
              <property name="checked">
@@ -169,8 +111,8 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="cbX">
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="cbY">
              <property name="minimumSize">
               <size>
                <width>48</width>
@@ -184,14 +126,14 @@
               </size>
              </property>
              <property name="toolTip">
-              <string notr="true">center on X</string>
+              <string notr="true">center on Y</string>
              </property>
              <property name="text">
               <string notr="true"/>
              </property>
              <property name="icon">
               <iconset>
-               <normaloff>Xaxis.png</normaloff>Xaxis.png</iconset>
+               <normaloff>Yaxis.png</normaloff>Yaxis.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -201,6 +143,35 @@
              </property>
              <property name="checked">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="rbCenters">
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string notr="true">Align Centers</string>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>Centers.png</normaloff>Centers.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>26</width>
+               <height>26</height>
+              </size>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -233,7 +204,49 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="rbPlanesCenters">
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string notr="true">Align Centers &amp; Planes</string>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>Planes-Centers.png</normaloff>Planes-Centers.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>26</width>
+               <height>26</height>
+              </size>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
           </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -245,164 +258,152 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QGroupBox" name="groupBox">
-           <property name="title">
-            <string/>
-           </property>
-           <widget class="QWidget" name="layoutWidget">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>8</y>
-              <width>120</width>
-              <height>34</height>
-             </rect>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_3">
-             <item row="0" column="1">
-              <widget class="QRadioButton" name="rbMass">
-               <property name="minimumSize">
-                <size>
-                 <width>56</width>
-                 <height>32</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string notr="true">Center of
-Mass</string>
-               </property>
-               <property name="text">
-                <string notr="true"/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>Mass.png</normaloff>Mass.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>26</width>
-                 <height>26</height>
-                </size>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QRadioButton" name="rbBBox">
-               <property name="minimumSize">
-                <size>
-                 <width>56</width>
-                 <height>32</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string notr="true">Center of
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="rbBBox">
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string notr="true">Center of
 Boundig Box</string>
-               </property>
-               <property name="text">
-                <string notr="true"/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>Bbox.png</normaloff>Bbox.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>26</width>
-                 <height>26</height>
-                </size>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>Bbox.png</normaloff>Bbox.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>26</width>
+               <height>26</height>
+              </size>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QRadioButton" name="rbMass">
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string notr="true">Center of
+Mass</string>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>Mass.png</normaloff>Mass.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>26</width>
+               <height>26</height>
+              </size>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="rbNormal">
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string notr="true">Alignment Normal</string>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>Normal-Up.png</normaloff>Normal-Up.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>26</width>
+               <height>26</height>
+              </size>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QRadioButton" name="rbNormal_Inv">
+             <property name="minimumSize">
+              <size>
+               <width>56</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string notr="true">Alignment Normal
+Inverted</string>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>Normal-Down.png</normaloff>Normal-Down.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>26</width>
+               <height>26</height>
+              </size>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <property name="autoExclusive">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <property name="title">
-            <string/>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
-           <widget class="QWidget" name="layoutWidget">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>8</y>
-              <width>120</width>
-              <height>34</height>
-             </rect>
-            </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="1">
-              <widget class="QRadioButton" name="rbNormal_Inv">
-               <property name="minimumSize">
-                <size>
-                 <width>56</width>
-                 <height>32</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string notr="true">Alignment Normal
-Inverted</string>
-               </property>
-               <property name="text">
-                <string notr="true"/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>Normal-Down.png</normaloff>Normal-Down.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>26</width>
-                 <height>26</height>
-                </size>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QRadioButton" name="rbNormal">
-               <property name="minimumSize">
-                <size>
-                 <width>56</width>
-                 <height>32</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string notr="true">Alignment Normal</string>
-               </property>
-               <property name="text">
-                <string notr="true"/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>Normal-Up.png</normaloff>Normal-Up.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>26</width>
-                 <height>26</height>
-                </size>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -411,7 +412,7 @@ Inverted</string>
     </item>
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="9">
+      <item row="0" column="4">
        <widget class="QLabel" name="Label_Align_Gui">
         <property name="toolTip">
          <string notr="true">Ctrl+Click to select
@@ -422,20 +423,59 @@ Faces/Planes or Edges/Axis</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="10">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="dock_float">
+        <property name="maximumSize">
          <size>
-          <width>40</width>
-          <height>20</height>
+          <width>28</width>
+          <height>28</height>
          </size>
         </property>
-       </spacer>
+        <property name="toolTip">
+         <string>expand</string>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>un_dock.png</normaloff>un_dock.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+       </widget>
       </item>
-      <item row="0" column="8">
+      <item row="0" column="1" alignment="Qt::AlignTop">
+       <widget class="QPushButton" name="dock_minimize">
+        <property name="maximumSize">
+         <size>
+          <width>28</width>
+          <height>28</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>minimize</string>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>minimize.png</normaloff>minimize.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" alignment="Qt::AlignTop">
        <widget class="QPushButton" name="close">
         <property name="maximumSize">
          <size>
@@ -461,7 +501,7 @@ Faces/Planes or Edges/Axis</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="7">
+      <item row="0" column="2" alignment="Qt::AlignTop">
        <widget class="QPushButton" name="Help_Align">
         <property name="maximumSize">
          <size>
@@ -487,35 +527,22 @@ Faces/Planes or Edges/Axis</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="dock_float">
-        <property name="maximumSize">
+      <item row="0" column="5">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
          <size>
-          <width>28</width>
-          <height>28</height>
+          <width>40</width>
+          <height>20</height>
          </size>
         </property>
-        <property name="toolTip">
-         <string>expand</string>
-        </property>
-        <property name="text">
-         <string notr="true"/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>un_dock.png</normaloff>un_dock.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
+       </spacer>
       </item>
      </layout>
     </item>
-    <item row="3" column="0">
+    <item row="2" column="0">
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="0">
        <widget class="QGroupBox" name="ControlsGroup">
@@ -535,6 +562,42 @@ Faces/Planes or Edges/Axis</string>
             </size>
            </property>
           </spacer>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="cbHierarchy">
+           <property name="minimumSize">
+            <size>
+             <width>52</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>64</width>
+             <height>128</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">use Part and Body
+hierarchy in Aligning</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>hierarchy.png</normaloff>hierarchy.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>26</width>
+             <height>26</height>
+            </size>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="0" column="0">
           <layout class="QGridLayout" name="gridLayout_14">
@@ -695,41 +758,18 @@ Faces/Planes or Edges/Axis</string>
            </item>
           </layout>
          </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="cbHierarchy">
-           <property name="minimumSize">
+         <item row="1" column="0">
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
             <size>
-             <width>52</width>
-             <height>48</height>
+             <width>20</width>
+             <height>40</height>
             </size>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>64</width>
-             <height>128</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string notr="true">use Part and Body
-hierarchy in Aligning</string>
-           </property>
-           <property name="text">
-            <string notr="true"/>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>hierarchy.png</normaloff>hierarchy.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>26</width>
-             <height>26</height>
-            </size>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
+          </spacer>
          </item>
         </layout>
        </widget>
