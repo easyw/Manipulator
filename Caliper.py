@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.5" #Manipulator for Parts
+__version__ = "1.5.6" #Manipulator for Parts
 __date__    = "02.2020"
 
 testing=False #true for showing helpers
@@ -1067,10 +1067,12 @@ def dist(first, second):
 
 def recurse_node(obj,plcm,scl):
     #sayerr(obj.Name)
-    if "App::Part" in obj.TypeId or "Body" in obj.TypeId or "Compound" in obj.TypeId or 'App::LinkGroup' in obj.TypeId:
+    if "App::Part" in obj.TypeId or "Body" in obj.TypeId or "Compound" in obj.TypeId \
+        or 'App::LinkGroup' in obj.TypeId or 'App::Link' in obj.TypeId:
         for o in obj.OutList: #for o in obj.Group:
             #sayerr(o.Name)
-            if "App::Part" in o.TypeId  or "Body" in o.TypeId or "Compound" in o.TypeId or 'App::LinkGroup' in obj.TypeId:
+            if "App::Part" in o.TypeId  or "Body" in o.TypeId or "Compound" in o.TypeId \
+               or 'App::LinkGroup' in obj.TypeId  or 'App::Link' in obj.TypeId:
                 #sayerr(o.Name)#+" * "+obj.Name)
                 stop
                 new_plcm=get_node_plc(o,obj)
@@ -1221,7 +1223,7 @@ def get_placement_hierarchy (sel0):
                         if hasattr(listSorted[i],'Placement'):
                             #if 'Plane' not in ob.InListRecursive[i].TypeId:
                             #print(listSorted[i].TypeId)
-                            if listSorted[i].hasExtension("App::GeoFeatureGroupExtension") or listSorted[i].TypeId == 'App::LinkGroup':
+                            if listSorted[i].hasExtension("App::GeoFeatureGroupExtension") or listSorted[i].TypeId == 'App::LinkGroup' or listSorted[i].TypeId == 'App::Link':
                                 acpy.Placement=acpy.Placement.multiply(listSorted[i].Placement)
             #say(acpy.Placement)
             #acpy.Placement=acpy.Placement.multiply(pOriginal)
