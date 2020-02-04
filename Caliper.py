@@ -1791,7 +1791,7 @@ class Ui_DockWidget(object):
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Manipulator-hdpi/Resources/ui/../Documents/GitHub/Manipulator-f3nix/Resources/ui/un_dock.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.dock_float.setIcon(icon1)
-        self.dock_float.setIconSize(QtCore.QSize(16, 16))
+        self.dock_float.setIconSize(QtCore.QSize(24, 24))
         self.dock_float.setObjectName("dock_float")
         self.gridLayout.addWidget(self.dock_float, 0, 0, 1, 1, QtCore.Qt.AlignTop)
         self.dock_minimize = QtWidgets.QPushButton(self.dockWidgetContents)
