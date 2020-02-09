@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.6x" #Manipulator for Parts
+__version__ = "1.5.7" #Manipulator for Parts
 __date__    = "02.2020"
 
 testing=False #true for showing helpers
@@ -405,9 +405,14 @@ class SelObserverCaliper:
         #use_hierarchy=CPDockWidget.ui.cbHierarchy.isChecked()
 
         if 1:#try:
+            if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
+                sel       = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+                ## empty string means current document, '*' means all document. 
+                ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
+            else:
+                sel       = FreeCADGui.Selection.getSelectionEx()         # Select a subObject
             selobject = FreeCADGui.Selection.getSelection()           # Select an object
-            sel       = FreeCADGui.Selection.getSelectionEx()         # Select a  subObject
-
+            
             #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
             if len(selobject) == 1 or len(sel) == 1:# or (len(selobject) == 1 and len(sel) == 1):
                 if len(sel[0].SubObjects)>0: #Faces or Edges
@@ -1223,6 +1228,8 @@ def get_placement_hierarchy (sel0):
                         if hasattr(listSorted[i],'Placement'):
                             #if 'Plane' not in ob.InListRecursive[i].TypeId:
                             #print(listSorted[i].TypeId)
+                            #if 'LinkView' in dir(FreeCADGui):
+                            #    print(sel[0].SubElementNames)
                             if listSorted[i].hasExtension("App::GeoFeatureGroupExtension") or listSorted[i].TypeId == 'App::LinkGroup': # or listSorted[i].TypeId == 'App::Link':
                                 acpy.Placement=acpy.Placement.multiply(listSorted[i].Placement)
             #say(acpy.Placement)
