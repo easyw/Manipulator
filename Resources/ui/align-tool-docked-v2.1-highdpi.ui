@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>375</width>
+    <width>316</width>
     <height>466</height>
    </rect>
   </property>
@@ -42,7 +42,7 @@
             <widget class="QRadioButton" name="rbBBox">
              <property name="minimumSize">
               <size>
-               <width>56</width>
+               <width>48</width>
                <height>32</height>
               </size>
              </property>
@@ -75,7 +75,7 @@ Boundig Box</string>
             <widget class="QRadioButton" name="rbMass">
              <property name="minimumSize">
               <size>
-               <width>56</width>
+               <width>48</width>
                <height>32</height>
               </size>
              </property>
@@ -108,7 +108,7 @@ Mass</string>
             <widget class="QRadioButton" name="rbNormal">
              <property name="minimumSize">
               <size>
-               <width>56</width>
+               <width>48</width>
                <height>32</height>
               </size>
              </property>
@@ -140,7 +140,7 @@ Mass</string>
             <widget class="QRadioButton" name="rbNormal_Inv">
              <property name="minimumSize">
               <size>
-               <width>56</width>
+               <width>48</width>
                <height>32</height>
               </size>
              </property>
