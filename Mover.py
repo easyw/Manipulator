@@ -1004,6 +1004,7 @@ class Ui_DockWidget(object):
         self.DS_MoveInput.setMaximum(Max_move)
         self.DS_RotateInput_Delta.setProperty("value", Step_initial_angle)
         self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
+        self.Label.setText("<html><head/><body><p><span style=\" font-weight:600;\">Click</span><br>Mover btn</p></body></html>")
 
         ####
         #self.MoveDial.valueChanged.connect(self.on_MoveDial)       # connection
