@@ -26,7 +26,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.9" # undo mover with FC native undo redo
+__version__ = "1.6.0" # undo mover with FC native undo redo
 __date__    = "09.2019"
 
 testing=False #true for showing helpers
@@ -69,6 +69,24 @@ def a_clear_console():
 a_clear_console()
 
 from sys import platform as _platform
+
+def getFCversion():
+    FC_majorV=int(float(FreeCAD.Version()[0]))
+    FC_minorV=int(float(FreeCAD.Version()[1]))
+    try:
+        FC_git_Nbr=int (float(FreeCAD.Version()[2].strip(" (Git)").split(' ')[0])) #+int(FreeCAD.Version()[2].strip(" (Git)").split(' ')[1])
+    except:
+        FC_git_Nbr=0
+    return FC_majorV,FC_minorV,FC_git_Nbr
+##    
+def getQtversion():
+    qtv = str(QtCore.qVersion())
+    qtMv = qtv.split('.')[0]
+    qtmv = qtv.split('.')[1]
+    #print (qtMv,qtmv)
+    
+    return qtMv,qtmv
+##
 
 # window GUI dimensions parameters
 wdszX=240;wdszY=294
@@ -1591,6 +1609,18 @@ if Mv_singleInstance():
     #ui.setupUi(AlignDockWidget)
     #AlignDockWidget.show()
 
+    qtM,qtm = getQtversion() 
+    if qtM == '5' and qtm == '6':  #workaround for hdpi on Qt 5.6 bugged release
+        rBtn_Size = '16px'
+        rBtn_Style="QRadioButton::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        MVDockWidget.ui.rbAxis.setStyleSheet(rBtn_Style)
+        MVDockWidget.ui.rbX.setStyleSheet(rBtn_Style)
+        MVDockWidget.ui.rbY.setStyleSheet(rBtn_Style)
+        MVDockWidget.ui.rbZ.setStyleSheet(rBtn_Style)
+        cBtn_Style="QCheckBox::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        MVDockWidget.ui.cbHierarchy.setStyleSheet(cBtn_Style)
+
+    
     MVDockWidget.setObjectName("Mover")
 
     MVDockWidget.setFloating(True)  #undock
@@ -1605,7 +1635,8 @@ if Mv_singleInstance():
     paramGet = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/MainWindow")
     if len(paramGet.GetString("StyleSheet"))>0: #we are using a StyleSheet
         MVDockWidget.setStyleSheet('QPushButton {border-radius: 0px; padding: 1px 2px;}')
-
+    #MVDockWidget.setStyleSheet('QRadioButton::indicator {indicator width: 5px; height: 5px;}')
+    
     MVmw = FreeCADGui.getMainWindow()                 # PySide # the active qt window, = the freecad window since we are inside it
     MVmw.addDockWidget(QtCore.Qt.RightDockWidgetArea,MVDockWidget)
     #MVDockWidget.show()

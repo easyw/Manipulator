@@ -25,7 +25,7 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.8.5" #undo alignment with FC native undo redo
+__version__ = "1.8.6" #undo alignment with FC native undo redo
 __date__    = "02.2020"
 
 testing=False #true for showing helpers
@@ -52,6 +52,25 @@ myXRayed = []
 
 _recompute = False
 
+#print (QtCore.qVersion())
+
+def getFCversion():
+    FC_majorV=int(float(FreeCAD.Version()[0]))
+    FC_minorV=int(float(FreeCAD.Version()[1]))
+    try:
+        FC_git_Nbr=int (float(FreeCAD.Version()[2].strip(" (Git)").split(' ')[0])) #+int(FreeCAD.Version()[2].strip(" (Git)").split(' ')[1])
+    except:
+        FC_git_Nbr=0
+    return FC_majorV,FC_minorV,FC_git_Nbr
+##    
+def getQtversion():
+    qtv = str(QtCore.qVersion())
+    qtMv = qtv.split('.')[0]
+    qtmv = qtv.split('.')[1]
+    #print (qtMv,qtmv)
+    
+    return qtMv,qtmv
+##
 ##--------------------------------------------------------------------------------------
 
 def a_clear_console():
@@ -736,7 +755,23 @@ class Ui_DockWidget(object):
         self.cbHierarchy.setIcon(QtGui.QIcon(pm))
         #self.cbHierarchy.setChecked(False)
         #self.cbHierarchy.clicked.connect(self.onHelp)
-
+        
+        
+        # rBtn_Size = '16px'
+        # rBtn_Style="QRadioButton::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        # self.rbBBox.setStyleSheet(rBtn_Style)
+        # self.rbMass.setStyleSheet(rBtn_Style)
+        # self.rbNormal.setStyleSheet(rBtn_Style)
+        # self.rbNormal_Inv.setStyleSheet(rBtn_Style)
+        # self.rbPlanes.setStyleSheet(rBtn_Style)
+        # self.rbPlanesCenters.setStyleSheet(rBtn_Style)
+        # self.rbCenters.setStyleSheet(rBtn_Style)
+        # cBtn_Style="QCheckBox::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        # self.cbHierarchy.setStyleSheet(cBtn_Style)
+        # self.cbX.setStyleSheet(cBtn_Style)
+        # self.cbY.setStyleSheet(cBtn_Style)
+        # self.cbZ.setStyleSheet(cBtn_Style)
+        
 ###############################################################################################################
 ###############################################################################################################
         self.retranslateUi(DockWidget)
@@ -1138,6 +1173,22 @@ if Alg_singleInstance():
     # #font.setPointSize(2)
     #ALGDockWidget.setFont(font)
     #self.setPixelSize
+    qtM,qtm = getQtversion() 
+    if qtM == '5' and qtm == '6':  #workaround for hdpi on Qt 5.6 bugged release
+        rBtn_Size = '16px'
+        rBtn_Style="QRadioButton::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        ALGDockWidget.ui.rbBBox.setStyleSheet(rBtn_Style)
+        ALGDockWidget.ui.rbMass.setStyleSheet(rBtn_Style)
+        ALGDockWidget.ui.rbNormal.setStyleSheet(rBtn_Style)
+        ALGDockWidget.ui.rbNormal_Inv.setStyleSheet(rBtn_Style)
+        ALGDockWidget.ui.rbPlanes.setStyleSheet(rBtn_Style)
+        ALGDockWidget.ui.rbPlanesCenters.setStyleSheet(rBtn_Style)
+        ALGDockWidget.ui.rbCenters.setStyleSheet(rBtn_Style)
+        cBtn_Style="QCheckBox::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        ALGDockWidget.ui.cbHierarchy.setStyleSheet(cBtn_Style)
+        ALGDockWidget.ui.cbX.setStyleSheet(cBtn_Style)
+        ALGDockWidget.ui.cbY.setStyleSheet(cBtn_Style)
+        ALGDockWidget.ui.cbZ.setStyleSheet(cBtn_Style)
 
     ALGDockWidget.setObjectName("Aligner")
 

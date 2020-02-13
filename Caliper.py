@@ -26,7 +26,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.7" #Manipulator for Parts
+__version__ = "1.5.8" #Manipulator for Parts
 __date__    = "02.2020"
 
 testing=False #true for showing helpers
@@ -63,6 +63,17 @@ else:
     import Draft
     mDraft = Draft
 
+##    
+def getQtversion():
+    qtv = str(QtCore.qVersion())
+    qtMv = qtv.split('.')[0]
+    qtmv = qtv.split('.')[1]
+    #print (qtMv,qtmv)
+    
+    return qtMv,qtmv
+##
+
+    
 import Part, PartGui, DraftTools, DraftVecUtils, DraftGeomUtils
 from FreeCAD import Base
 import sys, math
@@ -2157,7 +2168,6 @@ class Ui_DockWidget(object):
         #self.cbAPlane.setChecked(True)
         #self.rbAngle.setChecked(True)
         #self.rbRadius.setChecked(True)
-
         ####
 
 ###############################################################################################################
@@ -2407,6 +2417,20 @@ if Cp_singleInstance():
     #ui.setupUi(AlignDockWidget)
     #AlignDockWidget.show()
 
+    qtM,qtm = getQtversion() 
+    if qtM == '5' and qtm == '6':  #workaround for hdpi on Qt 5.6 bugged release
+        rBtn_Size = '16px'
+        rBtn_Style="QRadioButton::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        CPDockWidget.ui.rbBbox.setStyleSheet(rBtn_Style)
+        CPDockWidget.ui.rbMass.setStyleSheet(rBtn_Style)
+        CPDockWidget.ui.rbAngle.setStyleSheet(rBtn_Style)
+        CPDockWidget.ui.rbRadius.setStyleSheet(rBtn_Style)
+        CPDockWidget.ui.rbSnap.setStyleSheet(rBtn_Style)
+        CPDockWidget.ui.rbLength.setStyleSheet(rBtn_Style)
+        cBtn_Style="QCheckBox::indicator {  width: "+rBtn_Size+";  height: "+rBtn_Size+"; }"
+        CPDockWidget.ui.cbAPlane.setStyleSheet(cBtn_Style)
+
+    
     CPDockWidget.setObjectName("Caliper")
 
     CPDockWidget.setFloating(True)  #undock
