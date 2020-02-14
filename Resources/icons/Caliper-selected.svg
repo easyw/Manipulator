@@ -9,7 +9,7 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
-   sodipodi:docname="Caliper.svg"
+   sodipodi:docname="Caliper-selected.svg"
    inkscape:version="1.0beta2 (c8d5c0e, 2020-01-08)"
    sodipodi:version="0.32"
    id="svg57"
@@ -191,6 +191,16 @@
        y2="69.460503"
        gradientUnits="userSpaceOnUse" />
     <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3057"
+       id="linearGradient3053"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.9455392,0,0,1.9455392,-47.998185,-58.673094)"
+       x1="42.002884"
+       y1="35.736408"
+       x2="42.984806"
+       y2="40.468704" />
+    <linearGradient
        id="linearGradient3057">
       <stop
          style="stop-color:#729fcf"
@@ -366,6 +376,26 @@
          id="path4500"
          d="M -9.3205591,21.783551 5.679441,7.7835506 l 16,16.0000004 -4,4 -10,-10 -15,6 z"
          style="fill:#c8beb7;fill-rule:evenodd;stroke:#1a1a1a;stroke-width:2px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1" />
+    </g>
+    <g
+       transform="matrix(0.92954988,0,0,0.92954988,16.325402,15.270292)"
+       id="g188">
+      <g
+         transform="matrix(0.8273943,0,0,0.53017134,-20.220353,23.049353)"
+         id="g3048">
+        <path
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:59.9011px;line-height:125%;font-family:'Bitstream Vera Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#3465a4;stroke:#0b1521;stroke-width:1.87555;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+           d="m 40.406357,21.901733 v 0 H 59.510033 V 9.0121121 H 40.406357 v 0 h -13.372574 1e-6 -19.1036765 l -1e-6,12.8896209 h 19.1036765 -1e-6 z"
+           id="text1314"
+           sodipodi:nodetypes="ccccccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:59.9011px;line-height:125%;font-family:'Bitstream Vera Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:url(#linearGradient3053);fill-opacity:1;stroke:#729fcf;stroke-width:1.87555;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 38.495989,20.060359 v 0 H 57.599665 V 10.853487 H 38.495989 v 0 h -9.551838 4e-6 -19.1036768 l -4e-6,9.206872 H 28.944151 v 0 z"
+           id="path7076"
+           sodipodi:nodetypes="ccccccccccccc"
+           inkscape:connector-curvature="0" />
+      </g>
     </g>
   </g>
 </svg>

@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DockWidget</class>
+ <widget class="QDockWidget" name="DockWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>279</width>
+    <height>344</height>
+   </rect>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Caliper.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Caliper.png</iconset>
+  </property>
+  <property name="toolTip">
+   <string notr="true">Measure Tools</string>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
+  <property name="features">
+   <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+  </property>
+  <property name="allowedAreas">
+   <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+  </property>
+  <property name="windowTitle">
+   <string notr="true" extracomment="kicad StepUp 3D tools">Measure Tools</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0" alignment="Qt::AlignTop">
+       <widget class="QPushButton" name="dock_float">
+        <property name="maximumSize">
+         <size>
+          <width>28</width>
+          <height>28</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string notr="true">un-dock (floating)</string>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/un_dock.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/un_dock.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" alignment="Qt::AlignTop">
+       <widget class="QPushButton" name="dock_minimize">
+        <property name="maximumSize">
+         <size>
+          <width>28</width>
+          <height>28</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string notr="true">minimize</string>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/minimize.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/minimize.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" alignment="Qt::AlignTop">
+       <widget class="QPushButton" name="close">
+        <property name="maximumSize">
+         <size>
+          <width>28</width>
+          <height>28</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string notr="true">close</string>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/closeW.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/closeW.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="Label">
+        <property name="toolTip">
+         <string notr="true">Measure Tools
+Click on Measure button
+to start measuring</string>
+        </property>
+        <property name="text">
+         <string notr="true">&lt;b&gt;Click on Measure button&lt;/b&gt;&lt;br&gt;to start measuring</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="1">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="0">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>0</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="Controls_Group">
+      <property name="toolTip">
+       <string notr="true">Controls</string>
+      </property>
+      <property name="title">
+       <string notr="true">Controls</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0" colspan="7">
+        <layout class="QGridLayout" name="gridLayout_8">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="Measure">
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">Measure Button
+Click Measure to start measuring</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Caliper.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Caliper.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QPushButton" name="DimensionP3">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">Dimension position</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/DimensionP3.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/DimensionP3.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="DimensionP2">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">Second Element</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/DimensionP2.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/DimensionP2.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="DimensionP1">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">First Element</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/DimensionP1.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/DimensionP1.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QPushButton" name="APlane">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">Annotation Plane</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/AnnPlane.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/AnnPlane.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="CleanDist">
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">Clean Measures</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Clean.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Clean.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QPushButton" name="Help_Caliper">
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">Help on Caliper</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/help.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/help.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="bLabel">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable extra Label&lt;/p&gt;&lt;p&gt;for dimensioning&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/label-d-2.svg</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/label-d-2.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QRadioButton" name="rbRadius">
+         <property name="minimumSize">
+          <size>
+           <width>64</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">Get Radius of Arc or Circle</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Radius.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Radius.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>28</width>
+           <height>28</height>
+          </size>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QRadioButton" name="rbSnap">
+         <property name="minimumSize">
+          <size>
+           <width>72</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">Snap to EndPoint, MiddlePoint, Center</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Snap_Opt.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Snap_Opt.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>78</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QRadioButton" name="rbMass">
+         <property name="minimumSize">
+          <size>
+           <width>56</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">Center of Mass</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/CenterOfMass.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/CenterOfMass.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>28</width>
+           <height>28</height>
+          </size>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="QRadioButton" name="rbLength">
+         <property name="minimumSize">
+          <size>
+           <width>64</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">Get Length of Edge</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Length.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Length.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3" colspan="2">
+        <widget class="QRadioButton" name="rbAngle">
+         <property name="minimumSize">
+          <size>
+           <width>64</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">Get Angle</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Angle.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/Angle.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QRadioButton" name="rbBbox">
+         <property name="minimumSize">
+          <size>
+           <width>56</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">Center of BoundingBox</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/CenterBBox.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/CenterBBox.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>28</width>
+           <height>28</height>
+          </size>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QCheckBox" name="cbAPlane">
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string notr="true">use Annotation Plane
+for Dimension</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/AnnPlane.png</normaloff>../Documents/GitHub/Manipulator-f3nix/Resources/ui/AnnPlane.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>dock_float</tabstop>
+  <tabstop>dock_minimize</tabstop>
+  <tabstop>close</tabstop>
+  <tabstop>Measure</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
