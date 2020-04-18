@@ -28,8 +28,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.0" # undo mover with FC native undo redo
-__date__    = "09.2019"
+__version__ = "1.6.1" # undo mover with FC native undo redo
+__date__    = "04.2020"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -297,10 +297,10 @@ def get_normal_placement_hierarchy (sel0):
                     Part.show(wf)
                     wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
 
-                    dir=wf.normalAt(0,0)
-                    # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
+                    dirz=wf.normalAt(0,0)
+                    # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dirz))
                     # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
-                    ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dir))
+                    ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dirz))
                     #ccircle_face = Part.Face(ccircle)
                     #Part.show(ccircle_face)
                     #ccircle_face_name=FreeCAD.ActiveDocument.ActiveObject.Name
@@ -404,10 +404,10 @@ def get_normal_placement_hierarchy (sel0):
                     Part.show(wf)
                     wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
 
-                    dir=wf.normalAt(0,0)
-                    # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
+                    dirz=wf.normalAt(0,0)
+                    # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dirz))
                     # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
-                    ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dir))
+                    ccircle = Part.makeCircle(subObj.Curve.Radius, Base.Vector(subObj.Curve.Center), Base.Vector(dirz))
                     #ccircle_face = Part.Face(ccircle)
                     #Part.show(ccircle_face)
                     #ccircle_face_name=FreeCAD.ActiveDocument.ActiveObject.Name
@@ -1088,18 +1088,18 @@ class Ui_DockWidget(object):
 
                     if inv_view==1:
                         sayerr('double click: inversion View')
-                        #dir = faceSel.normalAt(0,0)*-1
-                        dir = norm*-1
+                        #dirz = faceSel.normalAt(0,0)*-1
+                        dirz = norm*-1
                     else:
                         sayw('single click: standard View')
-                        #dir = faceSel.normalAt(0,0)
-                        dir = norm
-                    if dir.z == 1 :
-                        rot = pointAt(dir, FreeCAD.Vector(0.0,1.0,0.0))
-                    elif dir.z == -1 :
-                        rot = pointAt(dir, FreeCAD.Vector(0.0,1.0,0.0))
+                        #dirz = faceSel.normalAt(0,0)
+                        dirz = norm
+                    if dirz.z == 1 :
+                        rot = pointAt(dirz, FreeCAD.Vector(0.0,1.0,0.0))
+                    elif dirz.z == -1 :
+                        rot = pointAt(dirz, FreeCAD.Vector(0.0,1.0,0.0))
                     else :
-                        rot = pointAt(dir, FreeCAD.Vector(0.0,0.0,-1.0))
+                        rot = pointAt(dirz, FreeCAD.Vector(0.0,0.0,-1.0))
 
                     cam.orientation.setValue(rot.Q)
                     #FreeCADGui.SendMsgToActiveView("ViewSelection")
@@ -1724,7 +1724,13 @@ class SelObserver:
 
         if 1:#try:
             selobject = FreeCADGui.Selection.getSelection()           # Select an object
-            sel       = FreeCADGui.Selection.getSelectionEx()         # Select an subObject
+            #sel       = FreeCADGui.Selection.getSelectionEx()         # Select an subObject
+            if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
+                sel     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+                ## empty string means current document, '*' means all document. 
+                ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
+            else:
+                sel       = FreeCADGui.Selection.getSelectionEx()         # Select a subObject
 
             #ui.label_1.setText("Length axis (first object) : " + str(sel[0].SubObjects[0].Length) + " mm")
             if MVDockWidget.ui.rbOneObj.isChecked:

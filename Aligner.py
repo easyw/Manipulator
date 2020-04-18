@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.8.6" #undo alignment with FC native undo redo
-__date__    = "02.2020"
+__version__ = "1.8.7" #undo alignment with FC native undo redo
+__date__    = "04.2020"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -898,15 +898,23 @@ class Ui_DockWidget(object):
         global objs_moved, plc_moved, _recompute
         get_ALGposition()
     
-        selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
+        # selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
+        if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
+            selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+            ## empty string means current document, '*' means all document. 
+            ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
+        else:
+            selEx       = FreeCADGui.Selection.getSelectionEx()         # Select a subObject
+        selection = [s for s in selEx if s.Document == FreeCAD.ActiveDocument ]
+        
         if len(selection) == 1:
             # if FreeCAD.ActiveDocument is not None:
             #     FreeCAD.ActiveDocument.openTransaction('Centering')
-            dir = (0,0,-1)
+            dirz = (0,0,-1)
             #print(Base.Vector(selectedEdge.Point))
             tocenterSel = selection[0]
             # print (tocenterSel)
-            rcircle = Part.makeCircle(1.0, Base.Vector(0,0,0), Base.Vector(dir))
+            rcircle = Part.makeCircle(1.0, Base.Vector(0,0,0), Base.Vector(dirz))
             Part.show(rcircle)
             rcircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
             FreeCAD.ActiveDocument.getObject(rcircle_name).Label='rcircle'
@@ -1275,7 +1283,15 @@ def Move():
 
     say('Move')
     get_ALGposition()
-    selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
+    #selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
+    if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
+        selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+        ## empty string means current document, '*' means all document. 
+        ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
+    else:
+        selEx       = FreeCADGui.Selection.getSelectionEx()         # Select a subObject
+    selection = [s for s in selEx if s.Document == FreeCAD.ActiveDocument ]
+
     if len(selection) == 1:
         if FreeCAD.ActiveDocument is not None:
                 FreeCAD.ActiveDocument.openTransaction('Moving')
@@ -1526,7 +1542,14 @@ def Align(normal,type,mode,cx,cy,cz):
         use_bb = False #align center based on bounding boxes or center of mass
 
     sel = FreeCADGui.Selection.getSelection()
-    selEx = FreeCADGui.Selection.getSelectionEx()
+    #selEx = FreeCADGui.Selection.getSelectionEx()
+    if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
+        selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+        ## empty string means current document, '*' means all document. 
+        ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
+    else:
+        selEx       = FreeCADGui.Selection.getSelectionEx()         # Select a subObject
+
     if len(selEx) < 2 and not testing:
         return
     
@@ -1844,9 +1867,9 @@ def Align(normal,type,mode,cx,cy,cz):
                         if 'Vertex' in str(o):
                             points = True
                     if 'Vertex' in str(selectedEdge):
-                        dir = (0,0,1)
+                        dirz = (0,0,1)
                         #print(Base.Vector(selectedEdge.Point))
-                        ccircle = Part.makeCircle(1.0, Base.Vector(selectedEdge.Point), Base.Vector(dir))
+                        ccircle = Part.makeCircle(1.0, Base.Vector(selectedEdge.Point), Base.Vector(dirz))
                         Part.show(ccircle)
                         ccircle_name=FreeCAD.ActiveDocument.ActiveObject.Name
                         FreeCAD.ActiveDocument.getObject(ccircle_name).Label='ccircle'
@@ -1871,11 +1894,11 @@ def Align(normal,type,mode,cx,cy,cz):
                             Part.show(wf)
                             wf_name=FreeCAD.ActiveDocument.ActiveObject.Name
 
-                            dir=wf.normalAt(0,0)
-                            #sayw(dir)
-                            # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dir))
+                            dirz=wf.normalAt(0,0)
+                            #sayw(dirz)
+                            # ccircle = Part.makeCircle(r, Base.Vector(cnt), Base.Vector(dirz))
                             # > Circle (Radius : 10, Position : (10, 0, 0), Direction : (1, 0, 0))
-                            ccircle = Part.makeCircle(selectedEdge.Curve.Radius, Base.Vector(selectedEdge.Curve.Center), Base.Vector(dir))
+                            ccircle = Part.makeCircle(selectedEdge.Curve.Radius, Base.Vector(selectedEdge.Curve.Center), Base.Vector(dirz))
                             #ccircle_face = Part.Face(ccircle)
                             #Part.show(ccircle_face)
                             #ccircle_face_name=FreeCAD.ActiveDocument.ActiveObject.Name
