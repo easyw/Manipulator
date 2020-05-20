@@ -28,8 +28,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.1" # undo mover with FC native undo redo
-__date__    = "04.2020"
+__version__ = "1.6.2" # undo mover with FC native undo redo
+__date__    = "05.2020"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1726,7 +1726,8 @@ class SelObserver:
             selobject = FreeCADGui.Selection.getSelection()           # Select an object
             #sel       = FreeCADGui.Selection.getSelectionEx()         # Select an subObject
             if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
-                sel     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+                #sel     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+                sel     = FreeCADGui.Selection.getSelectionEx('', 1) # Select a subObject w/ resolving subobject
                 ## empty string means current document, '*' means all document. 
                 ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
             else:

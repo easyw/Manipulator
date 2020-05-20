@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.8.7" #undo alignment with FC native undo redo
-__date__    = "04.2020"
+__version__ = "1.8.8" #undo alignment with FC native undo redo
+__date__    = "05.2020"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -900,7 +900,8 @@ class Ui_DockWidget(object):
     
         # selection = [s for s in FreeCADGui.Selection.getSelectionEx() if s.Document == FreeCAD.ActiveDocument ]
         if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
-            selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+            #selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+            selEx     = FreeCADGui.Selection.getSelectionEx('', 1) # Select a subObject w/ resolving subobject
             ## empty string means current document, '*' means all document. 
             ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
         else:
@@ -1544,7 +1545,8 @@ def Align(normal,type,mode,cx,cy,cz):
     sel = FreeCADGui.Selection.getSelection()
     #selEx = FreeCADGui.Selection.getSelectionEx()
     if 'LinkView' in dir(FreeCADGui): #getting the full hierarchy information
-        selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+        #selEx     = FreeCADGui.Selection.getSelectionEx('', 0) # Select a subObject w/ the full hierarchy information
+        selEx     = FreeCADGui.Selection.getSelectionEx('', 1) # Select a subObject w/ resolving subobject
         ## empty string means current document, '*' means all document. 
         ## The second argument 1 means resolve sub-object, which is the default value. 0 means full hierarchy.
     else:
