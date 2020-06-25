@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.3.6'
+MWB_wb_version='v 1.3.7'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=158 #v 1.3.6
+mycommitsMWB=159 #v 1.3.7
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -157,23 +157,33 @@ class ManipulatorWB ( Workbench ):
                 # everything is fine
                 #the_page = response.read()
                 # print the_page
-                str2='<li class=\"commits\">'
-                pos=the_page.find(str2)
-                str_commits=(the_page[pos:pos+600])
-                # print str_commits
-                pos=str_commits.find('<span class=\"num text-emphasized\">')
-                commits=(str_commits[pos:pos+200])
-                commits=commits.replace('<span class=\"num text-emphasized\">','')
-                #commits=commits.strip(" ")
-                #exp = re.compile("\s-[^\S\r\n]")
-                #print exp
-                #nbr_commits=''
-                my_commits=re.sub('[\s+]', '', commits)
-                pos=my_commits.find('</span>')
-                #print my_commits
-                nbr_commits=my_commits[:pos]
-                nbr_commits=nbr_commits.replace(',','')
-                nbr_commits=nbr_commits.replace('.','')
+                if 0: #old method to get commits nbr
+                    str2='<li class=\"commits\">'
+                    pos=the_page.find(str2)
+                    str_commits=(the_page[pos:pos+600])
+                    # print str_commits
+                    pos=str_commits.find('<span class=\"num text-emphasized\">')
+                    commits=(str_commits[pos:pos+200])
+                    commits=commits.replace('<span class=\"num text-emphasized\">','')
+                    #commits=commits.strip(" ")
+                    #exp = re.compile("\s-[^\S\r\n]")
+                    #print exp
+                    #nbr_commits=''
+                    my_commits=re.sub('[\s+]', '', commits)
+                    pos=my_commits.find('</span>')
+                    #print my_commits
+                    nbr_commits=my_commits[:pos]
+                    nbr_commits=nbr_commits.replace(',','')
+                    nbr_commits=nbr_commits.replace('.','')
+                else:
+                    pos=the_page.find("Commits on master")
+                    page=the_page[:pos]
+                    page.rfind('<strong>')
+                    pos1=page.rfind('<strong>')
+                    pos2=page.rfind('</strong>')
+                    nbr_commits=page[pos1+8:pos2]
+                    nbr_commits=nbr_commits.replace(',','')
+                    nbr_commits=nbr_commits.replace('.','')
 
                 FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
                 delta = int(nbr_commits) - commit_nbr
