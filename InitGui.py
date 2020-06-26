@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.3.7'
+MWB_wb_version='v 1.3.8'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=159 #v 1.3.7
+mycommitsMWB=160 #v 1.3.8
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -178,34 +178,40 @@ class ManipulatorWB ( Workbench ):
                 else:
                     pos=the_page.find("Commits on master")
                     page=the_page[:pos]
-                    page.rfind('<strong>')
                     pos1=page.rfind('<strong>')
                     pos2=page.rfind('</strong>')
-                    nbr_commits=page[pos1+8:pos2]
-                    nbr_commits=nbr_commits.replace(',','')
-                    nbr_commits=nbr_commits.replace('.','')
+                    nbr_commits=''
+                    if pos1 < pos2:
+                        nbr_commits=page[pos1+8:pos2]
+                        nbr_commits=nbr_commits.replace(',','')
+                        nbr_commits=nbr_commits.replace('.','')
+                    if len(nbr_commits) == 0:
+                        nbr_commits = '0'
 
                 FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
-                delta = int(nbr_commits) - commit_nbr
-                if delta > 0:
-                    s = ""
-                    if delta >1:
-                        s="s"
-                    FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB.\n')
-                    msg="""
-                    <font color=red>PLEASE UPDATE "Manipulator" WB.</font>
-                    <br>through \"Tools\" \"Addon manager\" Menu
-                    <br><br><b>your release is """+str(delta)+""" commit"""+s+""" behind</b><br>
-                    <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
-                    <br>
-                    <br>set \'checkUpdates\' to \'False\' to avoid this checking
-                    <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
-                    """
-                    QtGui.QApplication.restoreOverrideCursor()
-                    reply = QtGui.QMessageBox.information(None,"Warning", msg)
+                if int(nbr_commits) == 0:
+                    FreeCAD.Console.PrintWarning('We failed to get the commit numbers from github.\n')
                 else:
-                    FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
-                #<li class="commits">
+                    delta = int(nbr_commits) - commit_nbr
+                    if delta > 0:
+                        s = ""
+                        if delta >1:
+                            s="s"
+                        FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB.\n')
+                        msg="""
+                        <font color=red>PLEASE UPDATE "Manipulator" WB.</font>
+                        <br>through \"Tools\" \"Addon manager\" Menu
+                        <br><br><b>your release is """+str(delta)+""" commit"""+s+""" behind</b><br>
+                        <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
+                        <br>
+                        <br>set \'checkUpdates\' to \'False\' to avoid this checking
+                        <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
+                        """
+                        QtGui.QApplication.restoreOverrideCursor()
+                        reply = QtGui.QMessageBox.information(None,"Warning", msg)
+                    else:
+                        FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
+                    #<li class="commits">
         ##
         if upd and interval:
             check_updates(myurlMWB, mycommitsMWB)
