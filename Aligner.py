@@ -954,7 +954,7 @@ class Ui_DockWidget(object):
 ##
     def onHelp(self):
         msg="""<b>Align Tools</b><br>
-        <b>"""+ctrl_btn+"""+Clik</b> to add selection:<br>
+        <b>"""+ctrl_btn+"""+Click</b> to add selection:<br>
         select Faces, Planes, Edges and Axis<br>
         then click the <i>'Align'</i> button.<br>
         <i>Note:</i><br>The <b>first Selection</b> is the
