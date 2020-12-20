@@ -480,7 +480,7 @@ def formatObject(target,origin=None):
             if hasattr(obrep,"Transparency"):
                 obrep.Transparency = 80
         else:
-            col = ui.getDefaultColor("ui")
+            col = ui.getDefaultColor("line")
             fcol = ui.getDefaultColor("face")
         col = (float(col[0]),float(col[1]),float(col[2]),0.0)
         fcol = (float(fcol[0]),float(fcol[1]),float(fcol[2]),0.0)
@@ -2934,7 +2934,7 @@ def makePoint(X=0, Y=0, Z=0,color=None,name = "Point", point_size= 5):
     if gui:
         _ViewProviderPoint(obj.ViewObject)
         if hasattr(FreeCADGui,"draftToolBar") and (not color):
-            color = FreeCADGui.draftToolBar.getDefaultColor('ui')
+            color = FreeCADGui.draftToolBar.getDefaultColor('line')
         obj.ViewObject.PointColor = (float(color[0]), float(color[1]), float(color[2]))
         obj.ViewObject.PointSize = point_size
         obj.ViewObject.Visibility = True
