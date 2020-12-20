@@ -377,7 +377,7 @@ class Ui_DockWidget(object):
         self.rbBBox = QtWidgets.QRadioButton(self.ReferenceGroup)
         self.rbBBox.setMinimumSize(QtCore.QSize(48, 32))
         self.rbBBox.setToolTip("Center of\n"
-"Boundig Box")
+"Bounding Box")
         self.rbBBox.setText("")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/Bbox.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -954,7 +954,7 @@ class Ui_DockWidget(object):
 ##
     def onHelp(self):
         msg="""<b>Align Tools</b><br>
-        <b>"""+ctrl_btn+"""+Clik</b> to add selection:<br>
+        <b>"""+ctrl_btn+"""+Click</b> to add selection:<br>
         select Faces, Planes, Edges and Axis<br>
         then click the <i>'Align'</i> button.<br>
         <i>Note:</i><br>The <b>first Selection</b> is the
