@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.9" #Manipulator for Parts
-__date__    = "03.2021"
+__version__ = "1.5.8" #Manipulator for Parts
+__date__    = "02.2020"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1995,8 +1995,7 @@ class Ui_DockWidget(object):
         self.rbSnap.setChecked(True)
         self.rbSnap.setObjectName("rbSnap")
         self.gridLayout_2.addWidget(self.rbSnap, 1, 0, 1, 2)
-        ## self.rbMass = QtWidgets.QRadioButton(self.Controls_Group)
-        self.rbMass = QtWidgets.QCheckBox(self.Controls_Group)
+        self.rbMass = QtWidgets.QRadioButton(self.Controls_Group)
         self.rbMass.setMinimumSize(QtCore.QSize(56, 32))
         self.rbMass.setToolTip("Center of Mass")
         self.rbMass.setText("")
@@ -2029,7 +2028,7 @@ class Ui_DockWidget(object):
         self.rbAngle.setChecked(False)
         self.rbAngle.setObjectName("rbAngle")
         self.gridLayout_2.addWidget(self.rbAngle, 3, 3, 1, 2)
-        self.rbBbox = QtWidgets.QCheckBox(self.Controls_Group)
+        self.rbBbox = QtWidgets.QRadioButton(self.Controls_Group)
         self.rbBbox.setMinimumSize(QtCore.QSize(56, 32))
         self.rbBbox.setToolTip("Center of BoundingBox")
         self.rbBbox.setText("")
@@ -2164,12 +2163,6 @@ class Ui_DockWidget(object):
         self.bLabel.toggled.connect(self.onLabel_toggled)
         self.bLabel.setCheckable(True)
         self.bLabel.setChecked(True)
-        
-        self.rbMass.clicked.connect(self.on_rbMass_clicked)
-        self.rbMass.setChecked(True)
-        self.rbBbox.clicked.connect(self.on_rbBbox_clicked)
-        self.rbBbox.setChecked(False)
-                
         #self.bLabel.clicked.connect(self.onLabel_clicked)
         #self.bLabel.setCheckable(True)
         #
@@ -2221,26 +2214,6 @@ class Ui_DockWidget(object):
             for ob in FreeCAD.ActiveDocument.Objects:
                 FreeCADGui.Selection.removeSelection(ob)
         added_dim=[]
-##
-    def on_rbMass_clicked(self):
-        #print('rbMass clicked')
-        if not(self.rbMass.isChecked()):
-            self.rbMass.setChecked(True)
-            self.rbBbox.setChecked(False)
-        else:
-        #    print('rbMass clicked & not checked')
-        #    self.rbMass.setChecked(True)
-            self.rbBbox.setChecked(False)
-    def on_rbBbox_clicked(self):
-        #print('rbBbox clicked')
-        if not(self.rbBbox.isChecked()):
-            self.rbBbox.setChecked(True)
-            self.rbMass.setChecked(False)
-            
-        else:
-        #    print('rbMass clicked & not checked')
-        #    self.rbBbox.setChecked(False)
-            self.rbMass.setChecked(False)
 ##
     def onLabel_toggled(self,checked):
         #print('label toggled')
