@@ -2287,7 +2287,7 @@ class Ui_DockWidget(object):
 ##
     def onHelp(self):
         msg="""<b>Caliper Tools</b><br>
-        <b>Clik on Measure button</b> to start the Measurement.<br>
+        <b>Click on Measure button</b> to start the Measurement.<br>
         Select the type of Snapping you need<br>
         and then Click on a Face, an Edge or a Vertex<br>
         to identify your measurement points.<br>

@@ -1439,7 +1439,7 @@ class Ui_DockWidget(object):
 ##
     def onHelp(self):
         msg="""<b>Mover Tools</b><br>
-        <b>Clik on Mover button</b> to start the Manipulation.<br>
+        <b>Click on Mover button</b> to start the Manipulation.<br>
         Select Face or Plane (Normal At), Edge or Axis<br>
         as reference Axis to be moved/rotated<br>
         and change the Rotation/Position with the <i>'Move/Rotate'</i> spin boxes.<br>
