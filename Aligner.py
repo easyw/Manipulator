@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.8.8" #undo alignment with FC native undo redo
-__date__    = "05.2020"
+__version__ = "1.8.9" #undo alignment with FC native undo redo
+__date__    = "07.2021"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -927,13 +927,29 @@ class Ui_DockWidget(object):
             #s0.Object,s0.SubElementNames)
             selOb = selection[0].Object
             selSubEl = selection[0].SubElementNames
+            if len (selSubEl) == 0:
+                if hasattr(selOb, 'Shape'):
+                    shape = selOb.Shape
+                    if shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell':
+                        shift = shape.CenterOfMass
+                    elif shape.ShapeType == 'Compound' or shape.ShapeType == 'CompSolid':
+                        say('Centering on Bounding Box of Compound '+selOb.Label)
+                        bb = shape.BoundBox
+                        shift = FreeCAD.Vector(bb.XLength/2+bb.XMin,bb.YLength/2+bb.YMin,bb.ZLength/2+bb.ZMin)
+                    #print(shift)
+                    FreeCAD.ActiveDocument.openTransaction('Undo Move to Origin')
+                    base = selOb.Placement
+                    base.move(-shift)
+                    #selOb.Placement=-shift
+                    FreeCAD.ActiveDocument.commitTransaction()
             FreeCADGui.Selection.clearSelection()
             FreeCADGui.Selection.addSelection(rface,'Face1')
             FreeCADGui.Selection.addSelection(selOb,selSubEl)
             #s0.SubElementNames)
             # print('here1')
-            self.onAlign()
-            # print('here2')
+            if len (selSubEl) != 0:
+                self.onAlign()
+                # print('here2')
             FreeCAD.ActiveDocument.removeObject(rface_name)
 ##
 #    def onCenter(self):

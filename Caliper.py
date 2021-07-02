@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.8" #Manipulator for Parts
-__date__    = "02.2020"
+__version__ = "1.5.9" #Manipulator for Parts
+__date__    = "07.2021"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -655,6 +655,14 @@ class SelObserverCaliper:
                                             FreeCAD.ActiveDocument.removeObject(PE.Name)
                                             FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                        if CPDockWidget.ui.bLabel.isChecked():
+                                            anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","RadiusLbl")
+                                            anno.BasePosition = mid
+                                            anno.LabelText = ['radi: '+str(dim.Distance)]
+                                            added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
+                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
+                                            annoG.FontSize = anno_fntsize
+
                                     FreeCAD.ActiveDocument.recompute()
                                     #print 'step#1 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
@@ -751,6 +759,14 @@ class SelObserverCaliper:
                                         sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
                                         sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                        if CPDockWidget.ui.bLabel.isChecked():
+                                            anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
+                                            anno.BasePosition = mid
+                                            anno.LabelText = ['ds: '+str(dim.Distance),'dx: '+str(abs(pnt[0]-P1[0])),'dy: '+str(abs(pnt[1]-P1[1])),'dz: '+str(abs(pnt[2]-P1[2]))]
+                                            added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
+                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
+                                            annoG.FontSize = anno_fntsize
+
                                     FreeCAD.ActiveDocument.recompute()
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
                                 CPDockWidget.ui.APlane.setEnabled(False)
@@ -904,6 +920,14 @@ class SelObserverCaliper:
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                         sayw("Angle : "+'{0:.2f}'.format(angle))
                                         #FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
+                                        if CPDockWidget.ui.bLabel.isChecked():
+                                            anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
+                                            anno.BasePosition = mid2
+                                            anno.LabelText = ['angle: '+'{0:.2f}'.format(angle)+'°']
+                                            added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
+                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
+                                            annoG.FontSize = anno_fntsize
+
 
                                 elif CPDockWidget.ui.APlane.isEnabled(): ## step #3
                                     CPDockWidget.ui.APlane.setEnabled(False)
