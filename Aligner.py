@@ -930,10 +930,11 @@ class Ui_DockWidget(object):
             if len (selSubEl) == 0:
                 if hasattr(selOb, 'Shape'):
                     shape = selOb.Shape
-                    if shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell':
+                    if not self.rbBBox.isChecked() and (shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell'):
                         shift = shape.CenterOfMass
-                    elif shape.ShapeType == 'Compound' or shape.ShapeType == 'CompSolid':
-                        say('Centering on Bounding Box of Compound '+selOb.Label)
+                    else:
+                        if not self.rbBBox.isChecked(): #Warn the user (only) if automatically defaulting to BBox centering
+                            say('Centering on Bounding Box of Compound '+selOb.Label)
                         bb = shape.BoundBox
                         shift = FreeCAD.Vector(bb.XLength/2+bb.XMin,bb.YLength/2+bb.YMin,bb.ZLength/2+bb.ZMin)
                     #print(shift)
