@@ -259,10 +259,10 @@ class Plane:
             return plane
             
         sel = FreeCADGui.Selection.getSelection()
+        from FreeCAD import Base
         if len (sel) == 1:
             if 'App::Part' in sel[0].TypeId or 'PartDesign::Body' in sel[0].TypeId \
                     or 'Part::FeaturePython' in sel[0].TypeId:
-                from FreeCAD import Base
                 try:
                     plc = FreeCAD.Placement(Base.Vector(0.0,0.0,0.000),Base.Rotation(0.000,0.000,0.000,1.000))
                     plane = makePlane(plc)
@@ -275,7 +275,6 @@ class Plane:
                 plc = FreeCAD.Placement(Base.Vector(0.0,0.0,0.000),Base.Rotation(0.000,0.000,0.000,1.000))
                 makePlane(plc)
         else:
-            from FreeCAD import Base
             plc = FreeCAD.Placement(Base.Vector(0.0,0.0,0.000),Base.Rotation(0.000,0.000,0.000,1.000))
             makePlane(plc)        
         FreeCAD.ActiveDocument.recompute()
