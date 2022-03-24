@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.8.9" #undo alignment with FC native undo redo
-__date__    = "07.2021"
+__version__ = "1.9.1" #undo alignment with FC native undo redo
+__date__    = "03.2022"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -523,18 +523,18 @@ class Ui_DockWidget(object):
         self.gridLayout_14 = QtWidgets.QGridLayout()
         self.gridLayout_14.setSpacing(2)
         self.gridLayout_14.setObjectName("gridLayout_14")
-        self.Undo_Align = QtWidgets.QPushButton(self.ControlsGroup)
-        self.Undo_Align.setMinimumSize(QtCore.QSize(48, 48))
-        self.Undo_Align.setMaximumSize(QtCore.QSize(64, 64))
-        self.Undo_Align.setText("")
+        self.Origin_Align = QtWidgets.QPushButton(self.ControlsGroup)
+        self.Origin_Align.setMinimumSize(QtCore.QSize(48, 48))
+        self.Origin_Align.setMaximumSize(QtCore.QSize(64, 64))
+        self.Origin_Align.setText("")
         icon11 = QtGui.QIcon()
         icon11.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/Undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.Undo_Align.setIcon(icon11)
-        self.Undo_Align.setIconSize(QtCore.QSize(24, 24))
-        self.Undo_Align.setCheckable(False)
-        self.Undo_Align.setChecked(False)
-        self.Undo_Align.setObjectName("Undo_Align")
-        self.gridLayout_14.addWidget(self.Undo_Align, 0, 3, 1, 1)
+        self.Origin_Align.setIcon(icon11)
+        self.Origin_Align.setIconSize(QtCore.QSize(24, 24))
+        self.Origin_Align.setCheckable(False)
+        self.Origin_Align.setChecked(False)
+        self.Origin_Align.setObjectName("Origin_Align")
+        self.gridLayout_14.addWidget(self.Origin_Align, 0, 3, 1, 1)
         self.Align = QtWidgets.QPushButton(self.ControlsGroup)
         self.Align.setMinimumSize(QtCore.QSize(48, 48))
         self.Align.setMaximumSize(QtCore.QSize(64, 64))
@@ -733,12 +733,12 @@ class Ui_DockWidget(object):
         self.Move.clicked.connect(self.onMove)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(Undo_b64))
-        self.Undo_Align.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
-        self.Undo_Align.setIcon(QtGui.QIcon(pm))
-        #self.Undo_Align.setEnabled(False)
-        self.Undo_Align.setEnabled(True)
-        # self.Undo_Align.clicked.connect(self.onUndo)
-        self.Undo_Align.clicked.connect(self.onCenter)
+        self.Origin_Align.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
+        self.Origin_Align.setIcon(QtGui.QIcon(pm))
+        #self.Origin_Align.setEnabled(False)
+        self.Origin_Align.setEnabled(True)
+        # self.Origin_Align.clicked.connect(self.onUndo)
+        self.Origin_Align.clicked.connect(self.onCenter)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(help_b64))
         self.Help_Align.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
@@ -789,8 +789,8 @@ class Ui_DockWidget(object):
         self.Move.setToolTip("Move selected")
         self.Align.setToolTip("Align objects\nFirst object is the Reference")
         self.Help_Align.setToolTip("Help tips")
-        #self.Undo_Align.setToolTip("Undo last Alignment")
-        self.Undo_Align.setToolTip("Move Selected Object Face [Edge or Point]<br>aligning it to Origin")
+        #self.Origin_Align.setToolTip("Undo last Alignment")
+        self.Origin_Align.setToolTip("Move Selected Object Face [Edge or Point]<br>aligning it to Origin")
         #self.Label_Align_Gui.setText("<b>"+ctrl_btn+"+Click</b> to add selection:<br>Planes/Faces, Edges/Axis")
         self.Label_Align_Gui.setText("<b>"+ctrl_btn+"+Click</b><br>to add selection")
         self.ReferenceGroup.setTitle("Reference")
@@ -912,6 +912,14 @@ class Ui_DockWidget(object):
             # if FreeCAD.ActiveDocument is not None:
             #     FreeCAD.ActiveDocument.openTransaction('Centering')
             dirz = (0,0,-1)
+            cx=0;cy=0;cz=0
+            if ALGDockWidget.ui.cbX.isChecked():
+                cx=1
+            if ALGDockWidget.ui.cbY.isChecked():
+                cy=1
+            if ALGDockWidget.ui.cbZ.isChecked():
+                cz=1
+            say('aligning options x='+str(cx)+';y='+str(cy)+';z='+str(cz))
             #print(Base.Vector(selectedEdge.Point))
             tocenterSel = selection[0]
             # print (tocenterSel)
@@ -931,11 +939,12 @@ class Ui_DockWidget(object):
                 if hasattr(selOb, 'Shape'):
                     shape = selOb.Shape
                     if shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell':
-                        shift = shape.CenterOfMass
+                        #shift = shape.CenterOfMass
+                        shift = FreeCAD.Vector(shape.CenterOfMass.x*cx,shape.CenterOfMass.y*cy,shape.CenterOfMass.z*cz)
                     elif shape.ShapeType == 'Compound' or shape.ShapeType == 'CompSolid':
                         say('Centering on Bounding Box of Compound '+selOb.Label)
                         bb = shape.BoundBox
-                        shift = FreeCAD.Vector(bb.XLength/2+bb.XMin,bb.YLength/2+bb.YMin,bb.ZLength/2+bb.ZMin)
+                        shift = FreeCAD.Vector(bb.XLength/2*cx+bb.XMin,bb.YLength/2*cy+bb.YMin,bb.ZLength/2*cz+bb.ZMin*cz)
                     #print(shift)
                     FreeCAD.ActiveDocument.openTransaction('Undo Move to Origin')
                     base = selOb.Placement
