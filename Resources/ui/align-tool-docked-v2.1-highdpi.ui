@@ -437,7 +437,7 @@ Inverted</string>
             <number>2</number>
            </property>
            <item row="0" column="3">
-            <widget class="QPushButton" name="Undo_Align">
+            <widget class="QPushButton" name="Origin_Align">
              <property name="minimumSize">
               <size>
                <width>48</width>
