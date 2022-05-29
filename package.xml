@@ -10,7 +10,7 @@
 
   <content>
     <workbench>
-      <classname>Manipulator Workbench</classname>
+      <classname>ManipulatorWB</classname>
       <subdirectory>./</subdirectory>
       <freecadmin>0.17.0</freecadmin>
       <tag>Move</tag>
