@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.9.1" #undo alignment with FC native undo redo
-__date__    = "03.2022"
+__version__ = "1.9.2" #undo alignment with FC native undo redo
+__date__    = "05.2022"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -938,11 +938,14 @@ class Ui_DockWidget(object):
             if len (selSubEl) == 0:
                 if hasattr(selOb, 'Shape'):
                     shape = selOb.Shape
-                    if shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell':
+                    #if shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell':
+                    if not self.rbBBox.isChecked() and (shape.ShapeType == 'Solid' or shape.ShapeType == 'Shell'):
                         #shift = shape.CenterOfMass
                         shift = FreeCAD.Vector(shape.CenterOfMass.x*cx,shape.CenterOfMass.y*cy,shape.CenterOfMass.z*cz)
-                    elif shape.ShapeType == 'Compound' or shape.ShapeType == 'CompSolid':
-                        say('Centering on Bounding Box of Compound '+selOb.Label)
+                    else:
+                        if not self.rbBBox.isChecked(): #Warn the user (only) if automatically defaulting to BBox centering
+                    # elif shape.ShapeType == 'Compound' or shape.ShapeType == 'CompSolid':
+                            say('Centering on Bounding Box of Compound '+selOb.Label)
                         bb = shape.BoundBox
                         shift = FreeCAD.Vector(bb.XLength/2*cx+bb.XMin,bb.YLength/2*cy+bb.YMin,bb.ZLength/2*cz+bb.ZMin*cz)
                     #print(shift)
