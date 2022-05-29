@@ -359,7 +359,7 @@ def shapify(obj):
 
 def getGroupContents(objectslist,walls=False,addgroups=False,spaces=False):
     '''getGroupContents(objectlist,[walls,addgroups]): if any object of the given list
-    is a group, its content is appened to the list, which is returned. If walls is True,
+    is a group, its content is appended to the list, which is returned. If walls is True,
     walls and structures are also scanned for included windows or rebars. If addgroups 
     is true, the group itself is also included in the list.'''
     def getWindows(obj):
@@ -3295,7 +3295,7 @@ def upgrade(objects,delete=False,force=None):
         if DraftGeomUtils.isCoplanar(faces):
             u = DraftGeomUtils.concatenate(u)
             if not DraftGeomUtils.hasCurves(u):
-                # several coplanar and non-curved faces: they can becoem a Draft wire
+                # several coplanar and non-curved faces: they can become a Draft wire
                 newobj = makeWire(u.Wires[0],closed=True,face=True)
             else:
                 # if not possible, we do a non-parametric union
