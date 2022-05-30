@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.5.9" #Manipulator for Parts
-__date__    = "07.2021"
+__version__ = "1.6.1" #Manipulator for Parts
+__date__    = "05.2022"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -58,12 +58,15 @@ def getFCversion():
         FC_git_Nbr=0
     return FC_majorV,FC_minorV,FC_git_Nbr
 
-if getFCversion()[0]==0 and getFCversion()[1]>17:
-    import oDraft
-    mDraft = oDraft
-else:
-    import Draft
-    mDraft = Draft
+# if getFCversion()[0]==0 and getFCversion()[1]>17:
+#     import oDraft
+#     mDraft = oDraft
+# else:
+#     import Draft
+#     mDraft = Draft
+
+import Draft
+mDraft = Draft
 
 ##    
 def getQtversion():
@@ -399,6 +402,12 @@ def remove_all_selection():
             FreeCADGui.Selection.removeSelection(ob)
 
 ##
+def mDraft_makeDimension(p1,p2,p3):
+    import Draft
+    if hasattr(Draft, "make_linear_dimension"):
+        return Draft.make_linear_dimension(p1,p2,p3)
+    else:
+        return Draft.makeDimension(p1,p2,p3)
 
 ##--------------------------------------------------------------------------------------
 class SelObserverCaliper:
@@ -506,7 +515,7 @@ class SelObserverCaliper:
                                     halfedge = (pnt.sub(P1)).multiply(.5)
                                     mid=FreeCAD.Vector.add(P1,halfedge)
                                     if mid!=P1: #non coincident points
-                                        dim=mDraft.makeDimension(pnt,P1,mid)
+                                        dim=mDraft_makeDimension(pnt,P1,mid)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -546,7 +555,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                dim=mDraft.makeDimension(P2,P1,posz)
+                                dim=mDraft_makeDimension(P2,P1,posz)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -622,7 +631,7 @@ class SelObserverCaliper:
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
 
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
-                                        dim=mDraft.makeDimension(pnt,P1,mid)
+                                        dim=mDraft_makeDimension(pnt,P1,mid)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -632,10 +641,13 @@ class SelObserverCaliper:
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
                                             pass
                                         #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
+                                        # recomputing dimension before assigning value
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).touch()
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).recompute()
+                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         if has_radius == 2:
                                             say("Radius approx: "+str(dim.Distance))
                                             FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Radius approx"
@@ -677,7 +689,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                dim=mDraft.makeDimension(P2,P1,posz)
+                                dim=mDraft_makeDimension(P2,P1,posz)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -738,7 +750,7 @@ class SelObserverCaliper:
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
                                         halfedge = (pnt.sub(P1)).multiply(.5)
                                         mid=FreeCAD.Vector.add(P1,halfedge)
-                                        dim=mDraft.makeDimension(pnt,P1,mid)
+                                        dim=mDraft_makeDimension(pnt,P1,mid)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -779,7 +791,7 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                dim=mDraft.makeDimension(P2,P1,posz)
+                                dim=mDraft_makeDimension(P2,P1,posz)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -889,9 +901,9 @@ class SelObserverCaliper:
                                         FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         if mid!=midP: #non coincident points
-                                            dim=mDraft.makeDimension(mid,midP,mid2)
+                                            dim=mDraft_makeDimension(mid,midP,mid2)
                                         else:
-                                            dim=mDraft.makeDimension(pnt,mid,P1)
+                                            dim=mDraft_makeDimension(pnt,mid,P1)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -941,7 +953,7 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP3.setEnabled(False)
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                    dim=mDraft.makeDimension(mid,midP,posz)
+                                    dim=mDraft_makeDimension(mid,midP,posz)
                                     try:
                                         mDraft.autogroup(dim)
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
