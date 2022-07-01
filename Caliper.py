@@ -150,7 +150,7 @@ def closestDistanceBetweenLines(a0,a1,b0,b1,clampAll=False,clampA0=False,clampA1
         clampB1=True
 
 
-    # Calculate denomitator
+    # Calculate denominator
     A = a1 - a0
     B = b1 - b0
     magA = np.linalg.norm(A)
