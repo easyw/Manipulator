@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.1" #Manipulator for Parts
-__date__    = "05.2022"
+__version__ = "1.6.2" #Manipulator for Parts
+__date__    = "07.2022"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -418,7 +418,7 @@ class SelObserverCaliper:
         global added_dim, in_hierarchy, vec1, mid, midP, va, vb, P_T
         global ornt_1, sel1, has_radius, w, angle, dstP
 
-        fntsize='0.2mm'
+        fntsize='2mm'
         ticksize='0.1mm'
         anno_fntsize = 8.0
         Vtx_sel=False
@@ -555,7 +555,9 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                dim=mDraft_makeDimension(P2,P1,posz)
+                                vect_posz=FreeCAD.Vector(posz)
+                                #print(P2,P1,vect_posz)
+                                dim=mDraft_makeDimension(P2,P1,vect_posz)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -689,7 +691,8 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                dim=mDraft_makeDimension(P2,P1,posz)
+                                vect_posz=FreeCAD.Vector(posz)
+                                dim=mDraft_makeDimension(P2,P1,vect_posz)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -791,7 +794,8 @@ class SelObserverCaliper:
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                dim=mDraft_makeDimension(P2,P1,posz)
+                                vect_posz=FreeCAD.Vector(posz)
+                                dim=mDraft_makeDimension(P2,P1,vect_posz)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -953,7 +957,8 @@ class SelObserverCaliper:
                                     CPDockWidget.ui.DimensionP3.setEnabled(False)
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
 
-                                    dim=mDraft_makeDimension(mid,midP,posz)
+                                    vect_posz=FreeCAD.Vector(posz)
+                                    dim=mDraft_makeDimension(mid,midP,vect_posz)
                                     try:
                                         mDraft.autogroup(dim)
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"

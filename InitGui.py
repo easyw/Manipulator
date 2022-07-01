@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.4.5'
+MWB_wb_version='v 1.4.6'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=180 #v 1.4.5
+mycommitsMWB=181 #v 1.4.6
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
