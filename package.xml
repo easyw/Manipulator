@@ -12,7 +12,7 @@
     <workbench>
       <classname>ManipulatorWB</classname>
       <subdirectory>./</subdirectory>
-      <freecadmin>0.17.0</freecadmin>
+      <freecadmin>0.17.1</freecadmin>
       <tag>Move</tag>
       <tag>Align</tag>
       <tag>3D</tag>

@@ -28,7 +28,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.2" #Manipulator for Parts
+__version__ = "1.6.3" #Manipulator for Parts
 __date__    = "07.2022"
 
 testing=False #true for showing helpers
@@ -420,7 +420,7 @@ class SelObserverCaliper:
 
         fntsize='2mm'
         ticksize='0.1mm'
-        anno_fntsize = 8.0
+        anno_fntsize = 12.0
         Vtx_sel=False
         dx=0;dy=0;dz=0
         #dstP=-1
@@ -588,9 +588,13 @@ class SelObserverCaliper:
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
-                                FreeCAD.ActiveDocument.removeObject(APName)
+                                FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
+                                #FreeCAD.ActiveDocument.removeObject(APName)
+                                FreeCAD.ActiveDocument.recompute()
+                                # FreeCAD.ActiveDocument.removeObject(APName)
 
                             FreeCAD.ActiveDocument.recompute()
+                            
 ### -------------------------------------------------- end Snap ------------------------------------------------------------- ###
 
                         elif (CPDockWidget.ui.rbRadius.isChecked() and not Vtx_sel): ### Radius
@@ -724,7 +728,8 @@ class SelObserverCaliper:
                                     FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
-                                FreeCAD.ActiveDocument.removeObject(APName)
+                                FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
+                                #FreeCAD.ActiveDocument.removeObject(APName)
 
                                 FreeCAD.ActiveDocument.recompute()
 ### ---------------------------- end radius ------------------------------------------ ###
@@ -818,7 +823,8 @@ class SelObserverCaliper:
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
-                                FreeCAD.ActiveDocument.removeObject(APName)
+                                FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
+                                #FreeCAD.ActiveDocument.removeObject(APName)
 
                                 FreeCAD.ActiveDocument.recompute()
 ### -------------------------------------- end Length ---------------------------------------------------------- ###
@@ -985,7 +991,8 @@ class SelObserverCaliper:
                                     sayw("Angle : "+'{0:.2f}'.format(angle))
                                     FreeCAD.ActiveDocument.removeObject(PE.Name)
                                     FreeCAD.ActiveDocument.removeObject(PC.Name)
-                                    FreeCAD.ActiveDocument.removeObject(APName)
+                                    FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
+                                    #FreeCAD.ActiveDocument.removeObject(APName)
 
                                 FreeCAD.ActiveDocument.recompute()
 
@@ -2325,6 +2332,8 @@ class Ui_DockWidget(object):
                 if FreeCAD.ActiveDocument is not None:
                     for obj in FreeCAD.ActiveDocument.Objects:
                         FreeCADGui.Selection.removeSelection(obj)
+                        if obj.Name == APName:
+                            FreeCAD.ActiveDocument.removeObject(APName)                    
 ##
     def onHelp(self):
         msg="""<b>Caliper Tools</b><br>
