@@ -28,7 +28,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.3" #Manipulator for Parts
+__version__ = "1.6.4" #Manipulator for Parts
 __date__    = "07.2022"
 
 testing=False #true for showing helpers
@@ -42,6 +42,8 @@ testing2=False #true for showing helpers
 global clp_dock_mode
 clp_dock_mode = ''
 
+global APName
+APName = ''
 ## import statements
 # oDraft -> Draft from FreeCAD_0.17.13488
 
@@ -2280,7 +2282,7 @@ class Ui_DockWidget(object):
 ##
         
     def onMeasure_toggled(self,checked):
-        global selobject, sel
+        global selobject, sel, APName
         global initial_placement, last_selection, objs
         global s1, DSMove_prev_Val, DSRotate_prev_Val
 
