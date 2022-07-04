@@ -28,7 +28,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.4" #Manipulator for Parts
+__version__ = "1.6.5" #Manipulator for Parts
 __date__    = "07.2022"
 
 testing=False #true for showing helpers
@@ -518,6 +518,7 @@ class SelObserverCaliper:
                                     mid=FreeCAD.Vector.add(P1,halfedge)
                                     if mid!=P1: #non coincident points
                                         dim=mDraft_makeDimension(pnt,P1,mid)
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -560,6 +561,7 @@ class SelObserverCaliper:
                                 vect_posz=FreeCAD.Vector(posz)
                                 #print(P2,P1,vect_posz)
                                 dim=mDraft_makeDimension(P2,P1,vect_posz)
+                                FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -640,6 +642,7 @@ class SelObserverCaliper:
 
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
                                         dim=mDraft_makeDimension(pnt,P1,mid)
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -699,6 +702,7 @@ class SelObserverCaliper:
 
                                 vect_posz=FreeCAD.Vector(posz)
                                 dim=mDraft_makeDimension(P2,P1,vect_posz)
+                                FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -761,6 +765,7 @@ class SelObserverCaliper:
                                         halfedge = (pnt.sub(P1)).multiply(.5)
                                         mid=FreeCAD.Vector.add(P1,halfedge)
                                         dim=mDraft_makeDimension(pnt,P1,mid)
+                                        FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -803,6 +808,7 @@ class SelObserverCaliper:
 
                                 vect_posz=FreeCAD.Vector(posz)
                                 dim=mDraft_makeDimension(P2,P1,vect_posz)
+                                FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                 try:
                                     mDraft.autogroup(dim)
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -914,8 +920,10 @@ class SelObserverCaliper:
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         if mid!=midP: #non coincident points
                                             dim=mDraft_makeDimension(mid,midP,mid2)
+                                            FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                         else:
                                             dim=mDraft_makeDimension(pnt,mid,P1)
+                                            FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                         try:
                                             mDraft.autogroup(dim)
                                             FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -967,6 +975,7 @@ class SelObserverCaliper:
 
                                     vect_posz=FreeCAD.Vector(posz)
                                     dim=mDraft_makeDimension(mid,midP,vect_posz)
+                                    FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                     try:
                                         mDraft.autogroup(dim)
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
@@ -2285,6 +2294,7 @@ class Ui_DockWidget(object):
         global selobject, sel, APName
         global initial_placement, last_selection, objs
         global s1, DSMove_prev_Val, DSRotate_prev_Val
+        global added_dim
 
         get_CPposition()
         #say("Move clicked")
@@ -2335,7 +2345,16 @@ class Ui_DockWidget(object):
                     for obj in FreeCAD.ActiveDocument.Objects:
                         FreeCADGui.Selection.removeSelection(obj)
                         if obj.Name == APName:
-                            FreeCAD.ActiveDocument.removeObject(APName)                    
+                            FreeCAD.ActiveDocument.removeObject(APName)
+                    for ad in added_dim:
+                        if FreeCAD.ActiveDocument.getObject('Measurements') is None:
+                            FreeCAD.ActiveDocument.addObject('App::DocumentObjectGroup','Measurements')
+                            FreeCAD.ActiveDocument.ActiveObject.Label = 'Measurements'
+                        try:
+                            FreeCAD.ActiveDocument.getObject('Measurements').addObject(FreeCAD.ActiveDocument.getObject(ad.Name))
+                        except:
+                            pass
+
 ##
     def onHelp(self):
         msg="""<b>Caliper Tools</b><br>
