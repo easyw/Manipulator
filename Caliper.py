@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.5" #Manipulator for Parts
-__date__    = "07.2022"
+__version__ = "1.6.7" #Manipulator for Parts
+__date__    = "01.2023"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -80,7 +80,63 @@ def getQtversion():
     return qtMv,qtmv
 ##
 
+##    
+def mkDim(p1,p2,p3,fs,ts):
     
+    import Draft
+    mDraft = Draft
+    doc=FreeCAD.ActiveDocument
+    dim=mDraft_makeDimension(p1,p2,p3)
+    doc.getObject(dim.Name).recompute(True)
+    clr=(1.000,0.667,0.000) #= (0.333,1.000,0.498)
+    try:
+        mDraft.autogroup(dim)
+        doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
+        doc.getObject(dim.Name).ViewObject.DisplayMode = u"3D"
+    except:
+        try: 
+            doc.getObject(dim.Name).ViewObject.ArrowType = "Tick"
+            doc.getObject(dim.Name).ViewObject.DisplayMode = "3D"
+            pass
+        except:
+            doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
+            doc.getObject(dim.Name).ViewObject.DisplayMode = "Screen"
+    dst=doc.getObject(dim.Name).Distance
+    if getFCversion()[0]==0 and getFCversion()[1]<21:
+        doc.getObject(dim.Name).ViewObject.FontSize = fs
+    doc.getObject(dim.Name).ViewObject.ArrowSize = ts
+    if hasattr(dim.ViewObject, 'TextColor'):
+        doc.getObject(dim.Name).ViewObject.TextColor = clr
+    doc.getObject(dim.Name).ViewObject.LineColor = clr
+    doc.getObject(dim.Name).Label = "Distance"
+    #doc.getObject(dim.Name).ViewObject.ExtLines = '0 mm'
+    return dim
+##
+def mkAnno (nm,bp,txt,afs):
+    
+    doc=FreeCAD.ActiveDocument
+    anno = doc.addObject("App::AnnotationLabel",nm)
+    anno.BasePosition = mid
+    anno.LabelText = txt
+    anno.ViewObject.FontSize=afs
+    return anno
+    
+##
+def mv2Meas(adim):
+
+    doc=FreeCAD.ActiveDocument
+    for ad in adim:
+        if doc.getObject('Measurements') is None:
+            doc.addObject('App::DocumentObjectGroup','Measurements')
+            doc.ActiveObject.Label = 'Measurements'
+        try:
+            doc.getObject('Measurements').addObject(doc.getObject(ad.Name))
+        except:
+            pass
+
+#
+
+
 import Part, PartGui, DraftTools, DraftVecUtils, DraftGeomUtils
 from FreeCAD import Base
 import sys, math
@@ -495,6 +551,7 @@ class SelObserverCaliper:
                                 P1=pnt
                                 PC=mDraft.makePoint(pnt[0],pnt[1],pnt[2])
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                mv2Meas(added_dim)
                                 FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
                                 FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.667,0.000)
                                 CPDockWidget.ui.DimensionP1.setEnabled(False)
@@ -511,39 +568,25 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointColor = (1.000,0.667,0.000)
                                     CPDockWidget.ui.APlane.setEnabled(True)
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
+                                    mv2Meas(added_dim)
                                 else:
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
                                     FreeCAD.ActiveDocument.removeObject(PC.Name)
                                     halfedge = (pnt.sub(P1)).multiply(.5)
                                     mid=FreeCAD.Vector.add(P1,halfedge)
                                     if mid!=P1: #non coincident points
-                                        dim=mDraft_makeDimension(pnt,P1,mid)
-                                        FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                        try:
-                                            mDraft.autogroup(dim)
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                        except:
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                            pass
-                                        dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        #FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (0.333,1.000,0.498)
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                        FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
+                                        dim=mkDim(pnt,P1,mid,fntsize,ticksize)
                                         say("Distance : "+str(dim.Distance))
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                         if CPDockWidget.ui.bLabel.isChecked():
-                                            anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
-                                            anno.BasePosition = mid
-                                            anno.LabelText = ['ds: '+str(dim.Distance),'dx: '+str(abs(pnt[0]-P1[0])),'dy: '+str(abs(pnt[1]-P1[1])),'dz: '+str(abs(pnt[2]-P1[2]))]
+                                            txt=['ds: '+str(dim.Distance),'dx: '+str(abs(pnt[0]-P1[0])),'dy: '+str(abs(pnt[1]-P1[1])),'dz: '+str(abs(pnt[2]-P1[2]))]
+                                            anno=mkAnno("DistanceLbl",mid,txt,anno_fntsize)
                                             added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
-                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
-                                            annoG.FontSize = anno_fntsize
+                                            # annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
+                                        mv2Meas(added_dim)
                                     else:
                                         say("Distance : 0.0")
+                                mv2Meas(added_dim)
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
@@ -554,27 +597,17 @@ class SelObserverCaliper:
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                 APName=makeAPlane(w,0.7,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
+                                mv2Meas(added_dim)
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
                                 vect_posz=FreeCAD.Vector(posz)
                                 #print(P2,P1,vect_posz)
-                                dim=mDraft_makeDimension(P2,P1,vect_posz)
+                                dim=mkDim(P2,P1,vect_posz,fntsize,ticksize)
                                 FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                try:
-                                    mDraft.autogroup(dim)
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                except:
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                    pass
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Distance"
                                 say("Distance : "+str(dim.Distance))
@@ -582,14 +615,13 @@ class SelObserverCaliper:
                                 sayw("Delta Y  : "+str(abs(P2[1]-P1[1])))
                                 sayw("Delta Z  : "+str(abs(P2[2]-P1[2])))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                mv2Meas(added_dim)
                                 if CPDockWidget.ui.bLabel.isChecked():
-                                    anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
-                                    anno.BasePosition = P1
-                                    anno.LabelText = ['ds: '+str(dim.Distance),'dx: '+str(abs(P2[0]-P1[0])),'dy: '+str(abs(P2[1]-P1[1])),'dz: '+str(abs(P2[2]-P1[2]))]
+                                    txt = ['ds: '+str(dim.Distance),'dx: '+str(abs(P2[0]-P1[0])),'dy: '+str(abs(P2[1]-P1[1])),'dz: '+str(abs(P2[2]-P1[2]))]
                                     #['ds: '+str(dim.Distance),'dx: '+str(dx),'dy: '+str(dy),'dz: '+str(dz)] # str(dim.Distance)
-                                    annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
-                                    annoG.FontSize = anno_fntsize
+                                    anno=mkAnno("DistanceLbl",P1,txt,anno_fntsize)
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
+                                    mv2Meas(added_dim)
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
@@ -639,22 +671,11 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
-
+                                    mv2Meas(added_dim)
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
-                                        dim=mDraft_makeDimension(pnt,P1,mid)
+                                        dim=mkDim(pnt,P1,mid,fntsize,ticksize)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                        try:
-                                            mDraft.autogroup(dim)
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                        except:
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                            pass
                                         #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                         # recomputing dimension before assigning value
                                         FreeCAD.ActiveDocument.getObject(dim.Name).touch()
                                         FreeCAD.ActiveDocument.getObject(dim.Name).recompute()
@@ -679,13 +700,11 @@ class SelObserverCaliper:
                                             FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                         if CPDockWidget.ui.bLabel.isChecked():
-                                            anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","RadiusLbl")
-                                            anno.BasePosition = mid
-                                            anno.LabelText = ['radi: '+str(dim.Distance)]
+                                            txt = ['radi: '+str(dim.Distance)]
+                                            anno=mkAnno("RadiusLbl",mid,txt,anno_fntsize)
+                                            # anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","RadiusLbl")
                                             added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
-                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
-                                            annoG.FontSize = anno_fntsize
-
+                                        mv2Meas(added_dim)    
                                     FreeCAD.ActiveDocument.recompute()
                                     #print 'step#1 norm ', norm, ' plcm ',plcm, ' P1 ',P1
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
@@ -695,27 +714,16 @@ class SelObserverCaliper:
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                 APName=makeAPlane(w,2.,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
-
+                                mv2Meas(added_dim)
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
                                 vect_posz=FreeCAD.Vector(posz)
-                                dim=mDraft_makeDimension(P2,P1,vect_posz)
+                                dim=mkDim(P2,P1,vect_posz,fntsize,ticksize)
                                 FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                try:
-                                    mDraft.autogroup(dim)
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                except:
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                    pass
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                 FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 if has_radius == 2:
                                     say("Radius approx: "+str(dim.Distance))
@@ -733,6 +741,7 @@ class SelObserverCaliper:
                                     sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                     FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                mv2Meas(added_dim)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
                                 #FreeCAD.ActiveDocument.removeObject(APName)
@@ -760,24 +769,13 @@ class SelObserverCaliper:
                                     FreeCADGui.ActiveDocument.getObject(PE.Name).PointSize = 10.000
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PE.Name))
-
+                                    mv2Meas(added_dim)
                                     if not CPDockWidget.ui.cbAPlane.isChecked():
                                         halfedge = (pnt.sub(P1)).multiply(.5)
                                         mid=FreeCAD.Vector.add(P1,halfedge)
-                                        dim=mDraft_makeDimension(pnt,P1,mid)
+                                        dim=mkDim(pnt,P1,mid,fntsize,ticksize)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                        try:
-                                            mDraft.autogroup(dim)
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                        except:
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                            pass
                                         dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         FreeCAD.ActiveDocument.removeObject(PC.Name)
@@ -787,12 +785,10 @@ class SelObserverCaliper:
                                         sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
                                         if CPDockWidget.ui.bLabel.isChecked():
-                                            anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
-                                            anno.BasePosition = mid
-                                            anno.LabelText = ['ds: '+str(dim.Distance),'dx: '+str(abs(pnt[0]-P1[0])),'dy: '+str(abs(pnt[1]-P1[1])),'dz: '+str(abs(pnt[2]-P1[2]))]
+                                            txt = ['ds: '+str(dim.Distance),'dx: '+str(abs(pnt[0]-P1[0])),'dy: '+str(abs(pnt[1]-P1[1])),'dz: '+str(abs(pnt[2]-P1[2]))]
+                                            anno=mkAnno("DistanceLbl",mid,txt,anno_fntsize)
                                             added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
-                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
-                                            annoG.FontSize = anno_fntsize
+                                        mv2Meas(added_dim)
 
                                     FreeCAD.ActiveDocument.recompute()
                             elif CPDockWidget.ui.APlane.isEnabled(): ## step #2
@@ -802,33 +798,24 @@ class SelObserverCaliper:
                                 plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                 APName=makeAPlane(w,0.5,norm,plcmT,P1)
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
+                                mv2Meas(added_dim)
                             elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #3
                                 CPDockWidget.ui.DimensionP3.setEnabled(False)
                                 CPDockWidget.ui.DimensionP1.setEnabled(True)
 
                                 vect_posz=FreeCAD.Vector(posz)
-                                dim=mDraft_makeDimension(P2,P1,vect_posz)
+                                dim=mkDim(P2,P1,vect_posz,fntsize,ticksize)
                                 FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                try:
-                                    mDraft.autogroup(dim)
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                except:
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                    pass
                                 #FreeCADGui.ActiveDocument.getObject(dim.Name).FlipArrows = True
                                 dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.667,0.000)
-                                FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 FreeCAD.ActiveDocument.getObject(dim.Name).Label = "Length"
+                                FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                 say("Distance : "+str(dim.Distance))
                                 sayw("Delta X  : "+str(abs(pnt[0]-P1[0])))
                                 sayw("Delta Y  : "+str(abs(pnt[1]-P1[1])))
                                 sayw("Delta Z  : "+str(abs(pnt[2]-P1[2])))
                                 added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                mv2Meas(added_dim)
                                 FreeCAD.ActiveDocument.removeObject(PE.Name)
                                 FreeCAD.ActiveDocument.removeObject(PC.Name)
                                 FreeCADGui.ActiveDocument.getObject(APName).Visibility = False
@@ -859,6 +846,7 @@ class SelObserverCaliper:
                                         ornt_1 = orient
                                         sel1='edge'
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(PC.Name))
+                                    mv2Meas(added_dim)
                                     FreeCADGui.ActiveDocument.getObject(PC.Name).PointSize = 10.000
                                     FreeCADGui.ActiveDocument.getObject(PC.Name).PointColor = (1.000,0.333,0.498)
                                     CPDockWidget.ui.DimensionP1.setEnabled(False)
@@ -919,26 +907,16 @@ class SelObserverCaliper:
                                         FreeCAD.ActiveDocument.removeObject(PC.Name)
                                         FreeCAD.ActiveDocument.removeObject(PE.Name)
                                         if mid!=midP: #non coincident points
-                                            dim=mDraft_makeDimension(mid,midP,mid2)
+                                            dim=mkDim(mid,midP,mid2,fntsize,ticksize)
                                             FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
                                         else:
-                                            dim=mDraft_makeDimension(pnt,mid,P1)
+                                            dim=mkDim(pnt,mid,P1,fntsize,ticksize)
                                             FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                        try:
-                                            mDraft.autogroup(dim)
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                        except:
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                            FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                            pass
                                         dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                         FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
                                         FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
                                         added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                        mv2Meas(added_dim)
                                         #print dstP, ' ', angle
                                         if dstP != -1:
                                             say("""Distance // vectors(planes) : """+'{0:.3f}'.format(dstP))
@@ -953,13 +931,11 @@ class SelObserverCaliper:
                                         sayw("Angle : "+'{0:.2f}'.format(angle))
                                         #FreeCADGui.ActiveDocument.getObject(dim.Name).Override = '{0:.2f}'.format(angle)+'°'
                                         if CPDockWidget.ui.bLabel.isChecked():
+                                            txt = ['angle: '+'{0:.2f}'.format(angle)+'°']
+                                            anno=mkAnno("DistanceLbl",mid2,txt,anno_fntsize)
                                             anno = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","DistanceLbl")
-                                            anno.BasePosition = mid2
-                                            anno.LabelText = ['angle: '+'{0:.2f}'.format(angle)+'°']
                                             added_dim.append(FreeCAD.ActiveDocument.getObject(anno.Name))
-                                            annoG = FreeCADGui.ActiveDocument.getObject(anno.Name)
-                                            annoG.FontSize = anno_fntsize
-
+                                            mv2Meas(added_dim)
 
                                 elif CPDockWidget.ui.APlane.isEnabled(): ## step #3
                                     CPDockWidget.ui.APlane.setEnabled(False)
@@ -968,30 +944,20 @@ class SelObserverCaliper:
                                     plcmT=FreeCAD.Placement(FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
                                     APName=makeAPlane(w,0.5,norm,plcmT,P1)
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(APName))
-
+                                    mv2Meas(added_dim)
                                 elif CPDockWidget.ui.DimensionP3.isEnabled(): ## step #4
                                     CPDockWidget.ui.DimensionP3.setEnabled(False)
                                     CPDockWidget.ui.DimensionP1.setEnabled(True)
 
                                     vect_posz=FreeCAD.Vector(posz)
-                                    dim=mDraft_makeDimension(mid,midP,vect_posz)
+                                    dim=mkDim(mid,midP,vect_posz,fntsize,ticksize)
                                     FreeCAD.ActiveDocument.getObject(dim.Name).recompute(True)
-                                    try:
-                                        mDraft.autogroup(dim)
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = u"Tick"
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = u"3D"
-                                    except:
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowType = "Tick"
-                                        FreeCADGui.ActiveDocument.getObject(dim.Name).DisplayMode = "3D"
-                                        pass
                                     dst=FreeCAD.ActiveDocument.getObject(dim.Name).Distance
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ShowUnit = False
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).FontSize = fntsize
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).ArrowSize = ticksize
-                                    FreeCADGui.ActiveDocument.getObject(dim.Name).LineColor = (1.000,0.333,0.498)
                                     FreeCAD.ActiveDocument.getObject(dim.Name).Label = 'Angle'
                                     FreeCADGui.ActiveDocument.getObject(dim.Name).ExtLines = '0 mm'
                                     added_dim.append(FreeCAD.ActiveDocument.getObject(dim.Name))
+                                    mv2Meas(added_dim)
                                     sayw("Angle : "+'{0:.2f}'.format(angle))
                                     if dstP != -1:
                                         say("Distance // vectors : "+'{0:.3f}'.format(dstP))
@@ -2268,6 +2234,10 @@ class Ui_DockWidget(object):
                 FreeCAD.ActiveDocument.removeObject(d.Name)
             except:
                 pass
+        try:
+            FreeCAD.ActiveDocument.removeObject('Measurements')
+        except:
+            pass
         if FreeCAD.ActiveDocument is not None:
             FreeCAD.ActiveDocument.recompute()
             for ob in FreeCAD.ActiveDocument.Objects:
