@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.7" #Manipulator for Parts
-__date__    = "01.2023"
+__version__ = "1.6.8" #Manipulator for Parts
+__date__    = "09.2023"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -2439,6 +2439,12 @@ def dock_left_CP():
     CPDockWidget.raise_()
     t=FreeCADGui.getMainWindow()
     cv = t.findChild(QtGui.QDockWidget, "Combo View")
+    if cv is None:
+        cv = t.findChild(QtGui.QDockWidget, "ComboView")
+        if cv is None:
+            cv = t.findChild(QtGui.QDockWidget, "Model")
+            if cv is None:
+                cv = t.findChild(QtGui.QDockWidget, "Tree view")
     if CPDockWidget and cv:
         dw=t.findChildren(QtGui.QDockWidget)
         try:

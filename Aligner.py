@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.9.2" #undo alignment with FC native undo redo
-__date__    = "05.2022"
+__version__ = "1.9.3" #undo alignment with FC native undo redo
+__date__    = "09.2023"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -1142,6 +1142,12 @@ def dock_left_ALG():
     ALGDockWidget.raise_()
     t=FreeCADGui.getMainWindow()
     cv = t.findChild(QtGui.QDockWidget, "Combo View")
+    if cv is None:
+        cv = t.findChild(QtGui.QDockWidget, "ComboView")
+        if cv is None:
+            cv = t.findChild(QtGui.QDockWidget, "Model")
+            if cv is None:
+                cv = t.findChild(QtGui.QDockWidget, "Tree view")
     if ALGDockWidget and cv:
         dw=t.findChildren(QtGui.QDockWidget)
         try:

@@ -28,8 +28,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.2" # undo mover with FC native undo redo
-__date__    = "05.2020"
+__version__ = "1.6.3" # undo mover with FC native undo redo
+__date__    = "059.2023"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -117,9 +117,11 @@ chkb_sizeX=20;chkb_sizeY=20;
 btn_sm_sizeX=20;btn_sm_sizeY=20;
 btn_md_sizeX=26;btn_md_sizeY=26;
 
-Max_move=999.0
-Max_angle=360.0
+Max_move=10000.0
+Max_angle=720.0
 Step_initial_angle=15.0
+Max_delta_move=1000.0
+Max_delta_angle=360.0
 
 def close_mover():
     global sO
@@ -1004,6 +1006,10 @@ class Ui_DockWidget(object):
         self.DS_RotateInput.setMaximum(Max_angle)
         self.DS_MoveInput.setMinimum(-Max_move)
         self.DS_MoveInput.setMaximum(Max_move)
+        self.DS_MoveInput_Delta.setMaximum(Max_delta_move)
+        self.DS_MoveInput_Delta.setMinimum(-Max_delta_move)
+        self.DS_RotateInput_Delta.setMaximum(Max_delta_angle)
+        self.DS_RotateInput_Delta.setMinimum(-Max_delta_angle)
         self.DS_RotateInput_Delta.setProperty("value", Step_initial_angle)
         self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
         self.Label.setText("<html><head/><body><p><span style=\" font-weight:600;\">Click</span><br>Mover btn</p></body></html>")
@@ -1244,8 +1250,21 @@ class Ui_DockWidget(object):
         #sign = lambda x: x and (1, -1)[x < 0]
         #delta=math.copysign(1,x)
         self.DS_RotateInput.setSingleStep(self.DS_RotateInput_Delta.value())
+        val = self.DS_RotateInput.value()
+        #print('val real',val)
+        if val >=360:
+            val -= 360
+        if val <=-360:
+            val += 360
+        #print('val rec',val)
+        self.DS_RotateInput.setValue(val)
         delta=self.DS_RotateInput.value()-DSRotate_prev_Val
+        #print('delta real',delta)
+        #if delta >=360:
+        #    delta -= 360
+        #print('delta rec',delta)
         DSRotate_prev_Val=self.DS_RotateInput.value()
+        #DSRotate_prev_Val=val # self.DS_RotateInput.value()
         #delta=sign
         o = objs[0]
         #print 'delta '+str(delta)
@@ -1548,6 +1567,12 @@ def dock_left_MV():
     MVDockWidget.raise_()
     t=FreeCADGui.getMainWindow()
     cv = t.findChild(QtGui.QDockWidget, "Combo View")
+    if cv is None:
+        cv = t.findChild(QtGui.QDockWidget, "ComboView")
+        if cv is None:
+            cv = t.findChild(QtGui.QDockWidget, "Model")
+            if cv is None:
+                cv = t.findChild(QtGui.QDockWidget, "Tree view")
     if MVDockWidget and cv:
         dw=t.findChildren(QtGui.QDockWidget)
         try:
