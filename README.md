@@ -1,7 +1,9 @@
 Manipulator-WB
 ==============
 
-[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+[![made-with-python](Resources/made-with-python.svg)](https://www.python.org/)
+
+[![FreeCAD Addokn manager status](Resources/FreeCAD addon manager available.svg)](https://www.freecad.org)
 
 **FreeCAD Manipulator WorkBench**
 
@@ -48,6 +50,7 @@ Manipulator Cheat sheet
 - FreeCAD v0.15 4671
 - **FreeCAD v0.16 >= 6712** 
 - **FreeCAD v0.17 >= 11707**
+- **FreeCAD v0.18+**
 
 
 ### License
