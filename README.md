@@ -3,7 +3,7 @@ Manipulator-WB
 
 [![made-with-python](Resources/made-with-python.svg)](https://www.python.org/)
 
-[![FreeCAD Addokn manager status](Resources/FreeCAD addon manager available.svg)](https://www.freecad.org)
+[![FreeCAD Addon manager status](Resources/FreeCAD-addon-manager-available.svg)](https://www.freecad.org)
 
 **FreeCAD Manipulator WorkBench**
 
