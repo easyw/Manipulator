@@ -12,7 +12,11 @@
 
 import FreeCAD,FreeCADGui
 import FreeCAD, FreeCADGui, Part, os
-import imp, os, sys, tempfile
+import os, sys, tempfile
+if (sys.version_info < (3, 12)):
+    import imp
+else:
+    import importlib
 import FreeCAD, FreeCADGui
 from PySide import QtGui
 import mvr_locator
