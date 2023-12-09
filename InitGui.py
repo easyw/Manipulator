@@ -169,7 +169,8 @@ class ManipulatorWB ( Workbench ):
                     #exp = re.compile("\s-[^\S\r\n]")
                     #print exp
                     #nbr_commits=''
-                    my_commits=re.sub('[\s+]', '', commits)
+                    # commented out for python3.12 errors on unused code
+                    my_commits=re.sub(r"[\s+]", '', commits)
                     pos=my_commits.find('</span>')
                     #print my_commits
                     nbr_commits=my_commits[:pos]
