@@ -261,7 +261,35 @@ def get_sorted_list (obj):
 
     return listS
 ##
+def createLineCopy(o):
+    import Draft
+    
+    doc = FreeCAD.ActiveDocument
+    obj = doc.getObject("DatumLine")
+    obj.ResizeMode = "Manual"        # Required otherwise the length varies depending on the Body's boundbox.
+    obj.Length = 50                  # To update the line.
+    
+    ln = obj.Length
+    place = obj.getGlobalPlacement() # To get the points in the global CS.
+                                    # Use obj.Placement to get the points in the CS of the Body.
+    
+    # Calculate the points:
+    pt1 = place.multVec(FreeCAD.Vector(0, 0, -ln/2))
+    pt2 = place.multVec(FreeCAD.Vector(0, 0, ln/2))
+    
+    # Create a Draft Line to verify the points:
+    #Draft.makeLine(pt1, pt2)
+    lineNew = Part.makeLine(pt1,pt2)
+    Part.show(lineNew)
+    newShape = FreeCAD.ActiveDocument.ActiveObject
+    newShape.ViewObject.LineColor = (1.00,0.67,0.00)
+    newShape.recompute()
+    LineShape = newShape.Shape.copy()
+    FreeCAD.ActiveDocument.removeObject(newShape.Name)
+    return LineShape
+###
 
+##
 def get_normal_placement_hierarchy (sel0):
     """get normal at face and placement relative to hierarchy
        of first selection object/face
@@ -279,7 +307,6 @@ def get_normal_placement_hierarchy (sel0):
     top_level_obj = get_top_level(Obj)
     if top_level_obj is not None: #hierarchy object
         say('Hierarchy obj')
-
         pad=0
         open_circle=False
         if 'Face' in str(subObj):
@@ -331,10 +358,16 @@ def get_normal_placement_hierarchy (sel0):
                 edge_op=1
             pad=1 #edge
         if use_hierarchy:
-            nwshp = subObj.copy()
+            if 'Datum' in str(Obj.Name):
+                sayw('creating copy of Datum Line')
+                nwshp = createLineCopy(subObj)
+                #stop
+            else:
+                nwshp = subObj.copy()
             pOriginal=subObj.Placement
-            p0 =  FreeCAD.Placement (FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
-            nwshp.Placement=p0
+            if 'Datum' not in str(Obj.Name):
+                p0 =  FreeCAD.Placement (FreeCAD.Vector(0,0,0), FreeCAD.Rotation(0,0,0), FreeCAD.Vector(0,0,0))
+                nwshp.Placement=p0
             r=[]
             t=nwshp.copy()
             #resetting Placement

@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.5.1'
+MWB_wb_version='v 1.5.2'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=188 #v 1.5.1
+mycommitsMWB=192 #v 1.5.2
 
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -87,6 +87,7 @@ class ManipulatorWB ( Workbench ):
         Msg ("Manipulator WB Activated("+MWB_wb_version+")\n")
         from PySide import QtGui
         import time
+        import commits_num_
 
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Manipulator")
         tnow = int(time.time())
@@ -120,103 +121,37 @@ class ManipulatorWB ( Workbench ):
             pg.SetInt("lastCheck",tnow)
         else:
             interval = False
-        def check_updates(url, commit_nbr):
-            import re, sys
-            resp_ok = False
-            if (sys.version_info > (3, 0)):  #py3
-                import urllib
-                from urllib import request, error #URLError, HTTPError
-                req = request.Request(url)
-                try:
-                    response = request.urlopen(req)
-                    resp_ok = True
-                    the_page = response.read().decode("utf-8")
-                except error.HTTPError as e:
-                    FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
-                    FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
-                except error.URLError as e:
-                    FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
-                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
 
-            else:  #py2
-                import urllib2
-                from urllib2 import Request, urlopen, URLError, HTTPError
-                req = Request(url)
-                try:
-                    response = urlopen(req)
-                    resp_ok = True
-                    the_page = response.read()
-                except HTTPError as e:
-                    FreeCAD.Console.PrintWarning('The server couldn\'t fulfill the request.')
-                    FreeCAD.Console.PrintWarning('Error code: ' + str(e.code)+'\n')
-                except URLError as e:
-                    FreeCAD.Console.PrintWarning('We failed to reach a server.\n')
-                    FreeCAD.Console.PrintWarning('Reason: '+ str(e.reason)+'\n')
-
-            if resp_ok:
-                # everything is fine
-                #the_page = response.read()
-                # print the_page
-                if 0: #old method to get commits nbr
-                    str2='<li class=\"commits\">'
-                    pos=the_page.find(str2)
-                    str_commits=(the_page[pos:pos+600])
-                    # print str_commits
-                    pos=str_commits.find('<span class=\"num text-emphasized\">')
-                    commits=(str_commits[pos:pos+200])
-                    commits=commits.replace('<span class=\"num text-emphasized\">','')
-                    #commits=commits.strip(" ")
-                    #exp = re.compile("\s-[^\S\r\n]")
-                    #print exp
-                    #nbr_commits=''
-                    # commented out for python3.12 errors on unused code
-                    my_commits=re.sub(r"[\s+]", '', commits)
-                    pos=my_commits.find('</span>')
-                    #print my_commits
-                    nbr_commits=my_commits[:pos]
-                    nbr_commits=nbr_commits.replace(',','')
-                    nbr_commits=nbr_commits.replace('.','')
-                else:
-                    pos=the_page.find("Commits on master")
-                    page=the_page[:pos]
-                    pos1=page.rfind('<strong>')
-                    pos2=page.rfind('</strong>')
-                    nbr_commits=''
-                    if pos1 < pos2:
-                        nbr_commits=page[pos1+8:pos2]
-                        nbr_commits=nbr_commits.replace(',','')
-                        nbr_commits=nbr_commits.replace('.','')
-                    if len(nbr_commits) == 0:
-                        nbr_commits = '0'
-
-                FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
-                if int(nbr_commits) == 0:
-                    FreeCAD.Console.PrintWarning('We failed to get the commit numbers from github.\n')
-                else:
-                    delta = int(nbr_commits) - commit_nbr
-                    if delta > 0:
-                        s = ""
-                        if delta >1:
-                            s="s"
-                        FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB.\n')
-                        msg="""
-                        <font color=red>PLEASE UPDATE "Manipulator" WB.</font>
-                        <br>through \"Tools\" \"Addon manager\" Menu
-                        <br><br><b>your release is """+str(delta)+""" commit"""+s+""" behind</b><br>
-                        <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
-                        <br>
-                        <br>set \'checkUpdates\' to \'False\' to avoid this checking
-                        <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
-                        """
-                        QtGui.QApplication.restoreOverrideCursor()
-                        reply = QtGui.QMessageBox.information(None,"Warning", msg)
-                    else:
-                        FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
-                    #<li class="commits">
         ##
         if upd and interval:
-            check_updates(myurlMWB, mycommitsMWB)
-
+            # check_updates(myurlMWB, mycommitsMWB)
+            nbr_commits=commits_num_.commitCount('easyw','Manipulator')
+            url=myurlMWB
+            commit_nbr=mycommitsMWB
+            if int(nbr_commits) == 0:
+                FreeCAD.Console.PrintWarning('We failed to get the commit numbers from github.\n')
+            else:
+                FreeCAD.Console.PrintMessage(url+'-> commits:'+str(nbr_commits)+'\n')
+                delta = int(nbr_commits) - commit_nbr
+                if delta > 0:
+                    s = ""
+                    if delta >1:
+                        s="s"
+                    FreeCAD.Console.PrintError('PLEASE UPDATE "Manipulator" WB.\n')
+                    msg="""
+                    <font color=red>PLEASE UPDATE "Manipulator" WB.</font>
+                    <br>through \"Tools\" \"Addon manager\" Menu
+                    <br><br><b>your release is """+str(delta)+""" commit"""+s+""" behind</b><br>
+                    <br><a href=\""""+myurlMWB+"""\">Manipulator WB</a>
+                    <br>
+                    <br>set \'checkUpdates\' to \'False\' to avoid this checking
+                    <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
+                    """
+                    QtGui.QApplication.restoreOverrideCursor()
+                    reply = QtGui.QMessageBox.information(None,"Warning", msg)
+                else:
+                    FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
+                #<li class="commits">
 
     def Deactivated(self):
                 # do something here if needed...
