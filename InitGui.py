@@ -24,8 +24,8 @@ MWB_wb_version='v 1.5.6'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=196 #v 1.5.6
-# NB add cmtnum=195 to commit message
+mycommitsMWB=197 #v 1.5.6
+# NB add cmtnum=197 to commit message
 
 import FreeCAD, FreeCADGui, Part, os, sys
 import re, time
