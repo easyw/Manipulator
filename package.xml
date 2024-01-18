@@ -2,7 +2,7 @@
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
   <name>Manipulator Workbench</name>
   <description>A handy way to Move and Align objects in FreeCAD.</description>
-  <version>1.5.6</version>
+  <version>1.5.7</version>
   <maintainer email="easyw@katamail.com">Maui</maintainer>
   <license file="LICENSE">GPLv3.0</license>
   <url type="repository" branch="master">https://github.com/easyw/Manipulator</url>
@@ -12,7 +12,7 @@
     <workbench>
       <classname>ManipulatorWB</classname>
       <subdirectory>./</subdirectory>
-      <freecadmin>0.17.1</freecadmin>
+      <freecadmin>0.18</freecadmin>
       <tag>Move</tag>
       <tag>Align</tag>
       <tag>3D</tag>
