@@ -28,8 +28,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.3" # undo mover with FC native undo redo
-__date__    = "059.2023"
+__version__ = "1.6.4" # PySide6 compat
+__date__    = "25.04.05"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -57,6 +57,14 @@ from pivy import coin
 
 ninst = 0
 
+##--------------------------------------------------------------------------------------
+def font_setWeight(w):
+    font = QtGui.QFont()
+    try:
+        font.setWeight(w)
+    except:
+        font.setWeight(font.Weight(w))
+    
 ##--------------------------------------------------------------------------------------
 
 def a_clear_console():
@@ -753,7 +761,7 @@ class Ui_DockWidget(object):
         self.label = QtWidgets.QLabel(self.Controls_Group)
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
+        font_setWeight(75)
         self.label.setFont(font)
         self.label.setToolTip("")
         self.label.setText("mm")
@@ -774,7 +782,7 @@ class Ui_DockWidget(object):
         self.label_2 = QtWidgets.QLabel(self.Controls_Group)
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
+        font_setWeight(75)
         self.label_2.setFont(font)
         self.label_2.setToolTip("")
         self.label_2.setText("deg")
@@ -794,7 +802,7 @@ class Ui_DockWidget(object):
         self.label_3 = QtWidgets.QLabel(self.Controls_Group)
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
+        font_setWeight(75)
         self.label_3.setFont(font)
         self.label_3.setToolTip("rotation\n"
 "increment")
@@ -805,7 +813,7 @@ class Ui_DockWidget(object):
         self.label_4 = QtWidgets.QLabel(self.Controls_Group)
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
+        font_setWeight(75)
         self.label_4.setFont(font)
         self.label_4.setToolTip("translation\n"
 "increment")
