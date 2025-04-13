@@ -20,11 +20,11 @@
 #    for detail see the LICENCE text file.                                  *
 #****************************************************************************
 
-MWB_wb_version='v 1.5.8'
+MWB_wb_version='v 1.5.9'
 global myurlMWB
 myurlMWB='https://github.com/easyw/Manipulator'
 global mycommitsMWB
-mycommitsMWB=199 # v 1.5.8
+mycommitsMWB=200 # v 1.5.8
 # NB add cmtnum=197 to commit message
 
 import FreeCAD, FreeCADGui, Part, os, sys
@@ -45,6 +45,9 @@ ManipulatorWB_icons_path =  os.path.join( ManipulatorWBpath, 'Resources', 'icons
 
 global main_MWB_Icon
 main_MWB_Icon = os.path.join( ManipulatorWB_icons_path , 'Manipulator-icon.svg')
+
+from PySide import QtGui
+from threading import Timer
 
 
 #try:
@@ -85,7 +88,7 @@ class ManipulatorWB ( Workbench ):
     def Activated(self):
                 # do something here if needed...
         Msg ("Manipulator WB Activated("+MWB_wb_version+")\n")
-        from PySide import QtGui
+        from PySide import QtGui, QtCore
         import time
         import commits_num_
 
@@ -147,8 +150,14 @@ class ManipulatorWB ( Workbench ):
                     <br>set \'checkUpdates\' to \'False\' to avoid this checking
                     <br>in \"Tools\", \"Edit Parameters\",<br>\"Preferences\"->\"Mod\"->\"Manipulator\"
                     """
-                    QtGui.QApplication.restoreOverrideCursor()
-                    reply = QtGui.QMessageBox.information(None,"Warning", msg)
+                    def warn_update_msg():
+                        QtGui.QApplication.restoreOverrideCursor()
+                        reply = QtGui.QMessageBox.information(None,"Warning", msg)
+                    if FreeCAD.GuiUp:
+                        # avoiding issue in losing panel & toolbar settings
+                        from PySide import QtCore, QtGui
+                        dl=1000.0 #ms
+                        QtCore.QTimer.singleShot(dl,warn_update_msg)
                 else:
                     FreeCAD.Console.PrintMessage('the WB is Up to Date\n')
                 #<li class="commits">

@@ -28,8 +28,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.4" # PySide6 compat
-__date__    = "25.04.05"
+__version__ = "1.6.5" # PySide6 compat
+__date__    = "04.2025"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -48,12 +48,25 @@ mv_dock_mode = ''
 
 ## import statements
 
-import FreeCAD, FreeCADGui, Draft, Part, DraftTools, DraftVecUtils
+import FreeCAD, FreeCADGui, Part
 from FreeCAD import Base
+
 import sys, math
 import threading
 from PySide import QtCore, QtGui
 from pivy import coin
+
+##  workaround for Draft Grid appearing
+def fixDraftGrid():
+    modulename = 'DraftTools'
+    if modulename not in sys.modules:
+        import DraftTools
+        FreeCADGui.runCommand('Draft_ToggleGrid',0)
+##
+
+import Draft
+import DraftVecUtils
+fixDraftGrid()
 
 ninst = 0
 

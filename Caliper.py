@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.8" #Manipulator for Parts
-__date__    = "09.2023"
+__version__ = "1.6.9" #Manipulator for Parts
+__date__    = "04.2025"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -136,14 +136,26 @@ def mv2Meas(adim):
 
 #
 
-
-import Part, PartGui, DraftTools, DraftVecUtils, DraftGeomUtils
+import Part, PartGui
 from FreeCAD import Base
 import sys, math
 from PySide import QtCore, QtGui
 from pivy import coin
 
 import numpy as np
+
+
+##  workaround for Draft Grid appearing
+def fixDraftGrid():
+    modulename = 'DraftTools'
+    if modulename not in sys.modules:
+        import DraftTools
+        FreeCADGui.runCommand('Draft_ToggleGrid',0)
+##
+
+import DraftVecUtils, DraftGeomUtils
+fixDraftGrid()
+
 
 angle_tolerance = 1e-5 #
 ninst = 0

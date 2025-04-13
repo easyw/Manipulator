@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.9.3" #undo alignment with FC native undo redo
-__date__    = "09.2023"
+__version__ = "1.9.4" #undo alignment with FC native undo redo
+__date__    = "04.2025"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -43,11 +43,25 @@ testing2=False #true for showing helpers
 
 ## import statements
 
-import FreeCAD, FreeCADGui, Draft, Part, DraftTools, DraftVecUtils
+import FreeCAD, FreeCADGui, Part
 import threading 
 from FreeCAD import Base
 import sys
 from PySide import QtCore, QtGui
+
+##  workaround for Draft Grid appearing
+def fixDraftGrid():
+    modulename = 'DraftTools'
+    if modulename not in sys.modules:
+        import DraftTools
+        FreeCADGui.runCommand('Draft_ToggleGrid',0)
+##
+
+import Draft
+import DraftVecUtils
+fixDraftGrid()
+
+
 global libraryX,myXRayed
 libraryX = {} #dict. Key = object, Value = TempoVis_instance  ##NB this must be in the WB not in the Macro
 myXRayed = []
