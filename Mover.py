@@ -28,7 +28,7 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.5" # PySide6 compat
+__version__ = "1.6.7" # PySide6 compat
 __date__    = "04.2025"
 
 testing=False #true for showing helpers
@@ -687,11 +687,13 @@ class Ui_DockWidget(object):
         icon1.addPixmap(QtGui.QPixmap("C:\\Users\\userC\\AppData\\Roaming\\FreeCAD\\Mod\\Manipulator\\Resources\\ui\\un_dock.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.dock_float.setIcon(icon1)
         self.dock_float.setIconSize(QtCore.QSize(24, 24))
+        self.dock_float.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.dock_float.setObjectName("dock_float")
         self.gridLayout_3.addWidget(self.dock_float, 0, 0, 1, 1, QtCore.Qt.AlignTop)
         self.dock_minimize = QtWidgets.QPushButton(self.dockWidgetContents)
         self.dock_minimize.setMaximumSize(QtCore.QSize(28, 28))
         self.dock_minimize.setToolTip("minimize")
+        self.dock_minimize.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.dock_minimize.setText("")
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap("C:\\Users\\userC\\AppData\\Roaming\\FreeCAD\\Mod\\Manipulator\\Resources\\ui\\minimize.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -708,12 +710,14 @@ class Ui_DockWidget(object):
         icon3.addPixmap(QtGui.QPixmap("C:\\Users\\userC\\AppData\\Roaming\\FreeCAD\\Mod\\Manipulator\\Resources\\ui\\help.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Help_Mover.setIcon(icon3)
         self.Help_Mover.setIconSize(QtCore.QSize(24, 24))
+        self.Help_Mover.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.Help_Mover.setCheckable(False)
         self.Help_Mover.setChecked(False)
         self.Help_Mover.setObjectName("Help_Mover")
         self.gridLayout_3.addWidget(self.Help_Mover, 0, 2, 1, 1, QtCore.Qt.AlignTop)
         self.close = QtWidgets.QPushButton(self.dockWidgetContents)
         self.close.setMaximumSize(QtCore.QSize(28, 28))
+        self.close.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.close.setToolTip("close")
         self.close.setText("")
         icon4 = QtGui.QIcon()
@@ -749,6 +753,7 @@ class Ui_DockWidget(object):
         self.Confirm_Move = QtWidgets.QPushButton(self.Controls_Group)
         self.Confirm_Move.setMinimumSize(QtCore.QSize(36, 36))
         self.Confirm_Move.setMaximumSize(QtCore.QSize(48, 48))
+        self.Confirm_Move.setStyleSheet("min-width: 48px;" "min-height: 36px;");
         self.Confirm_Move.setToolTip("Mover button\n"
 "Click it to enable\n"
 "Move/Rotation")
@@ -1055,6 +1060,7 @@ class Ui_DockWidget(object):
         self.ViewAlign.setIconSize(QtCore.QSize(btn_md_sizeX,btn_md_sizeY))
         self.ViewAlign.setIcon(QtGui.QIcon(pm))
         self.ViewAlign.clicked.connect(self.onViewAlign)
+        self.ViewAlign.setStyleSheet("min-width: 32px;" "min-height: 32px;");
         ####
         self.DS_RotateInput.setMinimum(-Max_angle)
         self.DS_RotateInput.setMaximum(Max_angle)

@@ -27,7 +27,7 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.9.4" #undo alignment with FC native undo redo
+__version__ = "1.9.5" #undo alignment with FC native undo redo
 __date__    = "04.2025"
 
 testing=False #true for showing helpers
@@ -540,11 +540,12 @@ class Ui_DockWidget(object):
         self.Origin_Align = QtWidgets.QPushButton(self.ControlsGroup)
         self.Origin_Align.setMinimumSize(QtCore.QSize(48, 48))
         self.Origin_Align.setMaximumSize(QtCore.QSize(64, 64))
+        self.Origin_Align.setStyleSheet(u"min-width: 48px;min-height: 48px; ")
         self.Origin_Align.setText("")
         icon11 = QtGui.QIcon()
         icon11.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/Undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Origin_Align.setIcon(icon11)
-        self.Origin_Align.setIconSize(QtCore.QSize(24, 24))
+        self.Origin_Align.setIconSize(QtCore.QSize(48, 24))
         self.Origin_Align.setCheckable(False)
         self.Origin_Align.setChecked(False)
         self.Origin_Align.setObjectName("Origin_Align")
@@ -552,6 +553,7 @@ class Ui_DockWidget(object):
         self.Align = QtWidgets.QPushButton(self.ControlsGroup)
         self.Align.setMinimumSize(QtCore.QSize(48, 48))
         self.Align.setMaximumSize(QtCore.QSize(64, 64))
+        self.Align.setStyleSheet(u"min-width: 48px;min-height: 48px; ")
         self.Align.setText("")
         self.Align.setIcon(icon)
         self.Align.setIconSize(QtCore.QSize(32, 32))
@@ -562,11 +564,12 @@ class Ui_DockWidget(object):
         self.Move = QtWidgets.QPushButton(self.ControlsGroup)
         self.Move.setMinimumSize(QtCore.QSize(48, 48))
         self.Move.setMaximumSize(QtCore.QSize(64, 64))
+        self.Move.setStyleSheet(u"min-width: 48px;min-height: 28px; ")
         self.Move.setText("")
         icon12 = QtGui.QIcon()
         icon12.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/Move.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Move.setIcon(icon12)
-        self.Move.setIconSize(QtCore.QSize(24, 24))
+        self.Move.setIconSize(QtCore.QSize(48, 24))
         self.Move.setCheckable(False)
         self.Move.setChecked(False)
         self.Move.setObjectName("Move")
@@ -574,6 +577,7 @@ class Ui_DockWidget(object):
         self.XRayBtn = QtWidgets.QPushButton(self.ControlsGroup)
         self.XRayBtn.setMinimumSize(QtCore.QSize(48, 48))
         self.XRayBtn.setMaximumSize(QtCore.QSize(64, 64))
+        self.XRayBtn.setStyleSheet(u"min-width: 48px;min-height: 48px; ")
         self.XRayBtn.setToolTip("XRay toggle")
         self.XRayBtn.setText("")
         icon13 = QtGui.QIcon()
@@ -609,6 +613,9 @@ class Ui_DockWidget(object):
         self.close = QtWidgets.QPushButton(self.dockWidgetContents)
         self.close.setMaximumSize(QtCore.QSize(28, 28))
         self.close.setText("")
+        #self.close.setStyleSheet("padding: 1px;"  "margin: 1px;"  "border: 1px solid;"
+        #                          "min-width: 24px;");
+        self.close.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         icon15 = QtGui.QIcon()
         icon15.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/closeW.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.close.setIcon(icon15)
@@ -617,6 +624,7 @@ class Ui_DockWidget(object):
         self.gridLayout_2.addWidget(self.close, 0, 5, 1, 1, QtCore.Qt.AlignTop)
         self.dock_minimize = QtWidgets.QPushButton(self.dockWidgetContents)
         self.dock_minimize.setMaximumSize(QtCore.QSize(28, 28))
+        self.dock_minimize.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.dock_minimize.setText("")
         icon16 = QtGui.QIcon()
         icon16.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/minimize.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -632,6 +640,7 @@ class Ui_DockWidget(object):
         self.Help_Align.setIcon(icon17)
         self.Help_Align.setIconSize(QtCore.QSize(24, 24))
         self.Help_Align.setObjectName("Help_Align")
+        self.Help_Align.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.gridLayout_2.addWidget(self.Help_Align, 0, 4, 1, 1, QtCore.Qt.AlignTop)
         self.Label_Align_Gui = QtWidgets.QLabel(self.dockWidgetContents)
         self.Label_Align_Gui.setMinimumSize(QtCore.QSize(3, 0))
@@ -640,7 +649,9 @@ class Ui_DockWidget(object):
         self.Label_Align_Gui.setObjectName("Label_Align_Gui")
         self.gridLayout_2.addWidget(self.Label_Align_Gui, 0, 6, 1, 1)
         self.dock_float = QtWidgets.QPushButton(self.dockWidgetContents)
+        self.dock_float.setStyleSheet("padding: 4px 20px;");
         self.dock_float.setMaximumSize(QtCore.QSize(28, 28))
+        self.dock_float.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.dock_float.setText("")
         icon18 = QtGui.QIcon()
         icon18.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/un_dock.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)

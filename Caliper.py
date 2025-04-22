@@ -28,7 +28,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.9" #Manipulator for Parts
+__version__ = "1.7.0" #Manipulator for Parts
 __date__    = "04.2025"
 
 testing=False #true for showing helpers
@@ -1852,6 +1852,7 @@ class Ui_DockWidget(object):
         self.gridLayout.addWidget(self.Label, 0, 4, 1, 1)
         self.dock_float = QtWidgets.QPushButton(self.dockWidgetContents)
         self.dock_float.setMaximumSize(QtCore.QSize(28, 28))
+        self.dock_float.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.dock_float.setToolTip("un-dock (floating)")
         self.dock_float.setText("")
         icon1 = QtGui.QIcon()
@@ -1862,6 +1863,7 @@ class Ui_DockWidget(object):
         self.gridLayout.addWidget(self.dock_float, 0, 0, 1, 1, QtCore.Qt.AlignTop)
         self.dock_minimize = QtWidgets.QPushButton(self.dockWidgetContents)
         self.dock_minimize.setMaximumSize(QtCore.QSize(28, 28))
+        self.dock_minimize.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.dock_minimize.setToolTip("minimize")
         self.dock_minimize.setText("")
         icon2 = QtGui.QIcon()
@@ -1872,6 +1874,7 @@ class Ui_DockWidget(object):
         self.gridLayout.addWidget(self.dock_minimize, 0, 1, 1, 1, QtCore.Qt.AlignTop)
         self.close = QtWidgets.QPushButton(self.dockWidgetContents)
         self.close.setMaximumSize(QtCore.QSize(28, 28))
+        self.close.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.close.setToolTip("close")
         self.close.setText("")
         icon3 = QtGui.QIcon()
@@ -1879,10 +1882,11 @@ class Ui_DockWidget(object):
         self.close.setIcon(icon3)
         self.close.setIconSize(QtCore.QSize(24, 24))
         self.close.setObjectName("close")
-        self.gridLayout.addWidget(self.close, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.close, 0, 3, 1, 1, QtCore.Qt.AlignTop)
         self.Help_Caliper = QtWidgets.QPushButton(self.dockWidgetContents)
-        self.Help_Caliper.setMinimumSize(QtCore.QSize(0, 0))
+        #self.Help_Caliper.setMinimumSize(QtCore.QSize(28, 28))
         self.Help_Caliper.setMaximumSize(QtCore.QSize(28, 28))
+        self.Help_Caliper.setStyleSheet("min-width: 28px;" "min-height: 28px;");
         self.Help_Caliper.setToolTip("Help on Caliper")
         self.Help_Caliper.setText("")
         icon4 = QtGui.QIcon()
@@ -1892,7 +1896,7 @@ class Ui_DockWidget(object):
         self.Help_Caliper.setCheckable(False)
         self.Help_Caliper.setChecked(False)
         self.Help_Caliper.setObjectName("Help_Caliper")
-        self.gridLayout.addWidget(self.Help_Caliper, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.Help_Caliper, 0, 2, 1, 1, QtCore.Qt.AlignTop)
         self.gridLayout_3.addLayout(self.gridLayout, 0, 0, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_3.addItem(spacerItem, 2, 1, 1, 1)
@@ -1916,6 +1920,7 @@ class Ui_DockWidget(object):
         self.DimensionP2.setEnabled(False)
         self.DimensionP2.setMinimumSize(QtCore.QSize(32, 48))
         self.DimensionP2.setMaximumSize(QtCore.QSize(48, 48))
+        self.DimensionP2.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         self.DimensionP2.setToolTip("Second Element")
         self.DimensionP2.setText("")
         icon5 = QtGui.QIcon()
@@ -1928,8 +1933,9 @@ class Ui_DockWidget(object):
         self.gridLayout_8.addWidget(self.DimensionP2, 1, 1, 1, 1)
         self.bLabel = QtWidgets.QPushButton(self.Controls_Group)
         self.bLabel.setEnabled(False)
-        self.bLabel.setMinimumSize(QtCore.QSize(32, 32))
-        self.bLabel.setMaximumSize(QtCore.QSize(32, 32))
+        self.bLabel.setMinimumSize(QtCore.QSize(48, 32))
+        self.bLabel.setMaximumSize(QtCore.QSize(48, 48))
+        self.bLabel.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         self.bLabel.setToolTip("<html><head/><body><p>Enable extra Label</p><p>for dimensioning</p></body></html>")
         self.bLabel.setText("")
         icon6 = QtGui.QIcon()
@@ -1957,6 +1963,7 @@ class Ui_DockWidget(object):
         self.Measure = QtWidgets.QPushButton(self.Controls_Group)
         self.Measure.setMinimumSize(QtCore.QSize(32, 48))
         self.Measure.setMaximumSize(QtCore.QSize(48, 48))
+        self.Measure.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         self.Measure.setToolTip("Measure Button\n"
 "Click Measure to start measuring")
         self.Measure.setText("")
@@ -1970,6 +1977,7 @@ class Ui_DockWidget(object):
         self.DimensionP3.setEnabled(False)
         self.DimensionP3.setMinimumSize(QtCore.QSize(32, 48))
         self.DimensionP3.setMaximumSize(QtCore.QSize(48, 48))
+        self.DimensionP3.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         self.DimensionP3.setToolTip("Dimension position")
         self.DimensionP3.setText("")
         icon8 = QtGui.QIcon()
@@ -1984,6 +1992,7 @@ class Ui_DockWidget(object):
         self.DimensionP1.setEnabled(False)
         self.DimensionP1.setMinimumSize(QtCore.QSize(32, 48))
         self.DimensionP1.setMaximumSize(QtCore.QSize(48, 48))
+        self.DimensionP1.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         self.DimensionP1.setToolTip("First Element")
         self.DimensionP1.setText("")
         icon9 = QtGui.QIcon()
@@ -1997,6 +2006,7 @@ class Ui_DockWidget(object):
         self.CleanDist = QtWidgets.QPushButton(self.Controls_Group)
         self.CleanDist.setMinimumSize(QtCore.QSize(32, 48))
         self.CleanDist.setMaximumSize(QtCore.QSize(48, 48))
+        self.CleanDist.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         self.CleanDist.setToolTip("Clean Measures")
         self.CleanDist.setText("")
         icon10 = QtGui.QIcon()
@@ -2139,6 +2149,7 @@ class Ui_DockWidget(object):
         pm.loadFromData(base64.b64decode(AnnotationPlane_b64))
         self.APlane.setIconSize(QtCore.QSize(btn_sizeX,btn_sizeY))
         self.APlane.setIcon(QtGui.QIcon(pm))
+        self.APlane.setStyleSheet("min-width: 48px;" "min-height: 32px;");
         #self.DimensionP2.setEnabled(True)
         pm = QtGui.QPixmap()
         pm.loadFromData(base64.b64decode(help_b64))
