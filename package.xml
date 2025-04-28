@@ -4,7 +4,7 @@
   <description>A handy way to Move and Align objects in FreeCAD.</description>
   <version>1.6.0</version>
   <maintainer email="easyw@katamail.com">Maui</maintainer>
-  <license file="LICENSE">GPLv3.0</license>
+  <license file="LICENSE">GPL-3.0-or-later</license>
   <url type="repository" branch="master">https://github.com/easyw/Manipulator</url>
   <icon>Resources/icons/Manipulator-icon.svg</icon> <!-- If you include your icon here, you don't have to submit it to the main FreeCAD repo -->
 
