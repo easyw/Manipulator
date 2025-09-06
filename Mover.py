@@ -1539,7 +1539,10 @@ def Mv_centerOnScreen (widg):
     Centers the window on the screen.'''
     # sayw(widg.width());sayw(widg.height())
     # sayw(widg.pos().x());sayw(widg.pos().y())
-    resolution = QtGui.QDesktopWidget().screenGeometry()
+    if hasattr(QtGui.QGuiApplication, "primaryScreen"):
+        resolution = QtGui.QGuiApplication.primaryScreen().availableGeometry()
+    else:
+        resolution = QtGui.QDesktopWidget().screenGeometry()
     xp=(resolution.width() / 2) - sizeX/2 +5 # - (KSUWidget.frameSize().width() / 2)
     yp=(resolution.height() / 2) - sizeY/2 # - (KSUWidget.frameSize().height() / 2))
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
