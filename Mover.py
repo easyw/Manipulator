@@ -28,8 +28,8 @@
 __title__   = "Mover of Parts"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.6.7" # PySide6 compat
-__date__    = "04.2025"
+__version__ = "1.6.8" # PySide6 compat
+__date__    = "09.2025"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers

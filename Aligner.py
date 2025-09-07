@@ -27,8 +27,8 @@
 __title__   = "Aligner"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.9.5" #undo alignment with FC native undo redo
-__date__    = "04.2025"
+__version__ = "1.9.6" #undo alignment with FC native undo redo
+__date__    = "09.2025"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -371,6 +371,8 @@ class Ui_DockWidget(object):
         DockWidget.resize(316, 466)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("/home/mau/.FreeCAD/Mod/Manipulator/Resources/ui/Center-Align.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        #DockWidget.setStyleSheet("padding: 0px;"  "margin: 0px;"  "border: 0px solid transparent;"
+        #                          "border-radius: 2px;" "border-image: none;" "outline: 0;" "background-color: #dee2e6;");
         DockWidget.setWindowIcon(icon)
         DockWidget.setLayoutDirection(QtCore.Qt.LeftToRight)
         DockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable|QtWidgets.QDockWidget.DockWidgetMovable)
@@ -664,6 +666,10 @@ class Ui_DockWidget(object):
         self.gridLayout_5.addItem(spacerItem5, 3, 0, 1, 1)
         spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_5.addItem(spacerItem6, 4, 0, 1, 1)
+        # DockWidget.setStyleSheet("padding: 0px;"  "margin: 0px;"  "border: 0px solid transparent;"
+        #                           "border-radius: 2px;" "border-image: none;" "outline: 0;" "background-color: #dee2e6;");
+        
+        # setting style sheet to the  dock widget
         DockWidget.setWidget(self.dockWidgetContents)
 
 ###############################################################################################################
@@ -1070,10 +1076,11 @@ def Alg_centerOnScreen (widg):
     Centers the window on the screen.'''
     # sayw(widg.width());sayw(widg.height())
     # sayw(widg.pos().x());sayw(widg.pos().y())
+    
     if hasattr(QtGui.QGuiApplication, "primaryScreen"):
         resolution = QtGui.QGuiApplication.primaryScreen().availableGeometry()
     else:
-        resolution = QtGui.QDesktopWidget().screenGeometry()
+        resolution = QtGui.QDesktopWidget().screenGeometry()    
     xp=(resolution.width() / 2) - sizeX/2 # - (KSUWidget.frameSize().width() / 2)
     yp=(resolution.height() / 2) - sizeY/2 # - (KSUWidget.frameSize().height() / 2))
     # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2

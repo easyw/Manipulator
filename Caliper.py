@@ -29,7 +29,7 @@ __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
 __version__ = "1.7.0" #Manipulator for Parts
-__date__    = "04.2025"
+__date__    = "09.2025"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
