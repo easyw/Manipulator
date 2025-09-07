@@ -535,7 +535,7 @@ def select(objs=None):
                     FreeCADGui.Selection.addSelection(obj)
 
 def loadSvgPatterns():
-    "loads the default Draft SVG patterns and custom patters if available"
+    "loads the default Draft SVG patterns and custom patterns if available"
     import importSVG
     from PySide import QtCore
     FreeCAD.svgpatterns = {}
@@ -925,7 +925,7 @@ def makeBSpline(pointslist,closed=False,placement=None,face=None,support=None):
         else:                                                                            # len == 2 and first == last   GIGO
             msg(translate("draft","Draft.makeBSpline: Invalid pointslist\n"), 'error')
             return
-    # should have sensible parms from here on
+    # should have sensible params from here on
     if placement: typecheck([(placement,FreeCAD.Placement)], "makeBSpline")
     if len(pointslist) == 2: fname = "Line"
     else: fname = "BSpline"
@@ -5703,7 +5703,7 @@ class _PathArray(_DraftObject):
         return(edge.getParameterByLength(length))
 
     def orientShape(self,shape,edge,offset,RefPt,xlate,align,normal=None):
-        '''Orient shape to tangent at parm offset along edge.'''
+        '''Orient shape to tangent at param offset along edge.'''
         # http://en.wikipedia.org/wiki/Euler_angles
         import Part
         import DraftGeomUtils
