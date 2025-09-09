@@ -28,7 +28,7 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.0" #Manipulator for Parts
+__version__ = "1.7.1" #Manipulator for Parts
 __date__    = "09.2025"
 
 testing=False #true for showing helpers
@@ -2366,19 +2366,32 @@ class Ui_DockWidget(object):
 ##
 
 ###############################################################################################################
-def Cp_centerOnScreen (widg):
+def Cp_centerOnScreen (widget):
     '''centerOnScreen()
     Centers the window on the screen.'''
     # sayw(widg.width());sayw(widg.height())
     # sayw(widg.pos().x());sayw(widg.pos().y())
-    if hasattr(QtGui.QGuiApplication, "primaryScreen"):
-        resolution = QtGui.QGuiApplication.primaryScreen().availableGeometry()
-    else:
-        resolution = QtGui.QDesktopWidget().screenGeometry()
-    xp=(resolution.width() / 2) - sizeX/2 # - (KSUWidget.frameSize().width() / 2)
-    yp=(resolution.height() / 2) - sizeY/2 # - (KSUWidget.frameSize().height() / 2))
-    # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
-    widg.setGeometry(xp+wdszX+10, yp, sizeX, sizeY)
+    if 0:
+        if hasattr(QtGui.QGuiApplication, "primaryScreen"):
+            resolution = QtGui.QGuiApplication.primaryScreen().availableGeometry()
+        else:
+            resolution = QtGui.QDesktopWidget().screenGeometry()
+        xp=(resolution.width() / 2) - sizeX/2 # - (KSUWidget.frameSize().width() / 2)
+        yp=(resolution.height() / 2) - sizeY/2 # - (KSUWidget.frameSize().height() / 2))
+        # xp=widg.pos().x()-sizeXMax/2;yp=widg.pos().y()#+sizeY/2
+        widg.setGeometry(xp+wdszX+10, yp, sizeX, sizeY)
+    
+    mainWin = FreeCAD.Gui.getMainWindow()
+    #App.Console.PrintMessage(mainWin.geometry().center())
+    xp=mainWin.geometry().center().x()
+    yp=mainWin.geometry().center().y()
+    centerPoint = QtCore.QPoint(xp, yp - sizeY/2)
+    fg = widget.frameGeometry()
+    fg.moveCenter(centerPoint)
+    widget.move(fg.topLeft())
+    #xp=(mainWin.geometry().width() / 2) - sizeX/2 
+    #yp=(mainWin.geometry().height() / 2) - sizeY/2
+    #widget.setGeometry(xp+wdszX+10, yp, sizeX, sizeY)  
 ##
 
 global CPDockWidget
