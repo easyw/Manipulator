@@ -28,8 +28,8 @@
 __title__   = "Caliper for Measuring Part, App::Part & Body objects"
 __author__  = "maurice"
 __url__     = "kicad stepup"
-__version__ = "1.7.1" #Manipulator for Parts
-__date__    = "09.2025"
+__version__ = "1.7.2" #Manipulator for Parts
+__date__    = "03.2026"
 
 testing=False #true for showing helpers
 testing2=False #true for showing helpers
@@ -89,22 +89,32 @@ def mkDim(p1,p2,p3,fs,ts):
     dim=mDraft_makeDimension(p1,p2,p3)
     doc.getObject(dim.Name).recompute(True)
     clr=(1.000,0.667,0.000) #= (0.333,1.000,0.498)
+    
+    if hasattr(doc.getObject(dim.Name).ViewObject, "ArrowType"):
+        doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
+    else:
+        doc.getObject(dim.Name).ViewObject.ArrowTypeEnd = u"Tick-2"
+        doc.getObject(dim.Name).ViewObject.ArrowTypeStart = u"Tick-2"
     try:
         mDraft.autogroup(dim)
-        doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
+        # doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
         doc.getObject(dim.Name).ViewObject.DisplayMode = u"3D"
     except:
         try: 
-            doc.getObject(dim.Name).ViewObject.ArrowType = "Tick"
+            # doc.getObject(dim.Name).ViewObject.ArrowType = "Tick"
             doc.getObject(dim.Name).ViewObject.DisplayMode = "3D"
             pass
         except:
-            doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
+            # doc.getObject(dim.Name).ViewObject.ArrowType = u"Tick"
             doc.getObject(dim.Name).ViewObject.DisplayMode = "Screen"
     dst=doc.getObject(dim.Name).Distance
     if getFCversion()[0]==0 and getFCversion()[1]<21:
         doc.getObject(dim.Name).ViewObject.FontSize = fs
-    doc.getObject(dim.Name).ViewObject.ArrowSize = ts
+    if hasattr(doc.getObject(dim.Name).ViewObject, "ArrowSize"):
+        doc.getObject(dim.Name).ViewObject.ArrowSize = ts
+    else:
+        doc.getObject(dim.Name).ViewObject.ArrowSizeStart = ts
+        doc.getObject(dim.Name).ViewObject.ArrowSizeEnd = ts
     if hasattr(dim.ViewObject, 'TextColor'):
         doc.getObject(dim.Name).ViewObject.TextColor = clr
     doc.getObject(dim.Name).ViewObject.LineColor = clr
