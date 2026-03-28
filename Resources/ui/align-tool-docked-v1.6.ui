@@ -208,7 +208,7 @@ Mass</string>
         </property>
         <property name="toolTip">
          <string notr="true">Center of
-Boundig Box</string>
+Bounding Box</string>
         </property>
         <property name="text">
          <string notr="true"/>
